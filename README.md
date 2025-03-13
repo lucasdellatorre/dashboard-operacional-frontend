@@ -8,8 +8,7 @@
 ### INSTALAÇÃO
 
 - _Clone o repositório_
-
-  - git clone https://github.com/seu-usuario/frontend.git
+  - git clone https://tools.ages.pucrs.br/dashboard-operacional/frontend.git
   - cd frontend
 
 - _Instalação das dependências_
