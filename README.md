@@ -1,19 +1,89 @@
-# DASHBOARD OPERACIONAL FRONTEND
+# Dashboard Operacional - Frontend
 
-## PRÉ-REQUISITOS
+This document provides a step-by-step guide to setting up and running the development environment, tests, and execution of the project.
 
-- Node.js (versão (verificar) ou superior)
-- npm
+## Requirements
 
-### INSTALAÇÃO
+Make sure you have the following installed:
 
-- _Clone o repositório_
-  - git clone https://tools.ages.pucrs.br/dashboard-operacional/frontend.git
-  - cd frontend
+- [Node.js](https://nodejs.org/) (recommended version: LTS)
+- [npm](https://www.npmjs.com/)
+- [Cypress](https://www.cypress.io/)
+- [Jest](https://jestjs.io/)
 
-- _Instalação das dependências_
-  - npm install
+## Project Setup
 
-### COMO EXECUTAR
+### 1. Clone the Repository
 
-    - npm run dev
+```sh
+git clone https://tools.ages.pucrs.br/dashboard-operacional/frontend.git
+cd frontend
+```
+
+### 2. Install Dependencies
+
+```sh
+npm install
+```
+
+## Running the Development Server
+
+To start the application in development mode, run:
+
+```sh
+npm start
+```
+
+The project will be available at `http://localhost:5173/`.
+
+## Testing
+
+### Unit and Integration Tests (Jest)
+
+To run unit and integration tests with Jest:
+
+```sh
+npm test
+```
+
+### End-to-End Tests (Cypress)
+
+To run E2E tests, first start the server:
+
+```sh
+npm start
+```
+
+Then, run Cypress:
+
+To open the Cypress interactive interface:
+```sh
+npm run cypress
+```
+
+To run tests in headless mode:
+```sh
+npm run cypress:headless
+```
+
+## Building for Production
+
+To generate an optimized production build, run:
+
+```sh
+npm run build
+```
+
+The final files will be available in the `build/` directory.
+
+## Final Considerations
+
+This project follows best practices for React development, including automated testing with Jest and Cypress. Be sure to keep dependencies updated and follow best practices when writing new tests.
+
+If you have any questions, check the official documentation of the tools used:
+
+- [React](https://react.dev/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Jest](https://jestjs.io/)
+- [Cypress](https://www.cypress.io/)
+
