@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "cypress": "npx cypress open",
+    "cypress:headless": "npx cypress run --browser chrome"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.11.0",
