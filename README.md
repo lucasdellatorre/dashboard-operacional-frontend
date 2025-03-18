@@ -8,8 +8,6 @@ Make sure you have the following installed:
 
 - [Node.js](https://nodejs.org/) (recommended version: LTS)
 - [npm](https://www.npmjs.com/)
-- [Cypress](https://www.cypress.io/)
-- [Jest](https://jestjs.io/)
 
 ## Project Setup
 
