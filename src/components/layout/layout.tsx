@@ -1,30 +1,33 @@
 import React from "react";
-import Header from "./header";
 import NavigationBar from "./navigationBar";
 import { Outlet } from "react-router-dom";
-import { Box, Flex } from "@chakra-ui/react";
+import { Box } from "@mui/material";
 
 const Layout: React.FC = () => {
   return (
-    <Flex
-      w="100%"
-      maxW="2000px"
-      mx="auto"
-      bg="background.terciary"
+    <Box
+      width="100%"
+      bgcolor="background.default"
+      display="flex"
       flexDirection="column"
-      minH="100vh"
+      minHeight="100vh"
       overflow="hidden"
+      maxWidth={"2000px"}
+      mx="auto"
     >
-      <Flex flex="1" overflow="hidden">
+      <Box display={"flex"} height={"100vh"} overflow={"hidden"} flex={1}>
         <NavigationBar />
-        <Flex flexDirection="column" flex="1" overflow="hidden">
-          <Header />
-          <Box flex="1" overflowY="auto" position="relative">
-            <Outlet />
-          </Box>
-        </Flex>
-      </Flex>
-    </Flex>
+        <Box
+          display={"flex"}
+          flex={1}
+          flexDirection={"column"}
+          height={"100%"}
+          overflow={"auto"}
+        >
+          <Outlet />
+        </Box>
+      </Box>
+    </Box>
   );
 };
 

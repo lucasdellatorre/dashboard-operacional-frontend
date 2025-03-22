@@ -1,34 +1,39 @@
-import { createSystem, defaultConfig, defineConfig } from "@chakra-ui/react";
+import { createTheme } from "@mui/material/styles";
 
-const customConfig = defineConfig({
-  theme: {
-    semanticTokens: {
-      colors: {
-        background: {
-          primary: {
-            value: "#1c1c1c",
-          },
-          secondary: {
-            value: "#181818",
-          },
-          black: {
-            value: "#000000",
-          },
-        },
-        brand: {
-          primary: {
-            value: "#c1a047",
-          },
-        },
-        text: {
-          white: { value: "#ffffff" },
-          black: { value: "#000000" },
-          gold: { value: "#c1a047" },
-          warning: { value: "#f23030)" },
-        },
-      },
+const theme = createTheme({
+  palette: {
+    mode: "dark",
+    primary: {
+      main: "#c1a047",
+    },
+    warning: {
+      main: "#f23030",
+    },
+    background: {
+      paper: "#1c1c1c",
+      default: "#181818",
+    },
+    text: {
+      primary: "#ffffff",
+      secondary: "#c1a047",
+    },
+    custom: {
+      gold: "#c1a047",
     },
   },
 });
 
-export const system = createSystem(defaultConfig, customConfig);
+declare module "@mui/material/styles" {
+  interface Palette {
+    custom: {
+      gold: string;
+    };
+  }
+  interface PaletteOptions {
+    custom?: {
+      gold?: string;
+    };
+  }
+}
+
+export default theme;
