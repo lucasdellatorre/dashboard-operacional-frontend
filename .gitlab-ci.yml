@@ -1,0 +1,26 @@
+stages:
+  - test
+  - build
+
+test:
+  tags:
+    - deploy
+    - pipeline
+  image: node:22-alpine
+  stage: test
+  script:
+    - npm ci
+    - npm run test
+
+build:
+  tags:
+    - deploy
+    - pipeline
+  image: node:22-alpine
+  stage: build
+  script:
+    - npm ci
+    - npm run build
+  artifacts:
+    paths:
+      - build/
