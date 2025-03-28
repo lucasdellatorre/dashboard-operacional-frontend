@@ -2,7 +2,6 @@ import { createTheme } from "@mui/material/styles";
 
 const theme = createTheme({
   palette: {
-    mode: "dark",
     primary: {
       main: "#c1a047",
     },
@@ -20,6 +19,9 @@ const theme = createTheme({
     custom: {
       gold: "#c1a047",
     },
+    input: {
+      primary: "",
+    },
   },
 });
 
@@ -28,10 +30,16 @@ declare module "@mui/material/styles" {
     custom: {
       gold: string;
     };
+    input: {
+      primary: string;
+    };
   }
   interface PaletteOptions {
     custom?: {
       gold?: string;
+    };
+    input: {
+      primary: string;
     };
   }
 }
