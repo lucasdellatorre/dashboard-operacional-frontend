@@ -61,7 +61,8 @@ const Chart: React.FC<{ data: Data }> = ({ data }) => {
       .attr("width", width)
       .attr("height", height)
       .attr("viewBox", [0, 0, width, height])
-      .attr("style", "max-width: 100%; height: auto;");
+      .attr("style", "max-width: 100%; height: auto;")
+      .attr("data-testid", "chart-svg");
 
     const link = svg
       .append("g")
@@ -81,7 +82,8 @@ const Chart: React.FC<{ data: Data }> = ({ data }) => {
       .join("circle")
       .attr("r", 15)
       .attr("fill", (d) => color(d.group))
-      .on("dblclick", (_event, d) => { // opens node info with double click
+      .on("dblclick", (_event, d) => {
+        // opens node info with double click
         window.open(`/node/${d.id}`, "_blank");
       });
 

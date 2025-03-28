@@ -26,7 +26,7 @@ const Users: React.FC = () => {
         flex={1}
         gap={"1rem"}
       >
-        <Typography sx={{ color: "text.primary" }}>Aqui é dashboard</Typography>
+        <Typography sx={{ color: "text.primary" }}>Aqui é users</Typography>
       </Box>
     </Box>
   );
