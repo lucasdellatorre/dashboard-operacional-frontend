@@ -9,7 +9,7 @@ const NavigationBar: React.FC = () => {
 
   const pathPositions: Record<string, number> = {
     "/": 0,
-    "/usuarios": 48,
+    "/users": 48,
   };
 
   const yPosition = pathPositions[currentPath] ?? pathPositions["/"];
@@ -55,7 +55,7 @@ const NavigationBar: React.FC = () => {
         <Link to="/">
           <FaHome color="#ffff" size={25} />
         </Link>
-        <Link to="/usuarios">
+        <Link to="/users">
           <FaUserCircle color="#ffff" size={25} />
         </Link>
       </Box>
