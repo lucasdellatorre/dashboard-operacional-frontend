@@ -9,12 +9,12 @@ import Suspects from "./routes/suspects";
 function App() {
   return (
     <Routes>
+      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/login" element={<Login />} />
       <Route element={<Layout />}>
-        <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/users" element={<Users />} />
         <Route path="/alvos" element={<Suspects />} />
-        <Route path="/login" element={<Login />} />
       </Route>
     </Routes>
   );
