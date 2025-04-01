@@ -8,7 +8,7 @@ const Layout: React.FC = () => {
   return (
     <Box
       width="100%"
-      bgcolor="background.default"
+      bgcolor={"customBackground.secondary"}
       display="flex"
       flexDirection="column"
       minHeight="100vh"
