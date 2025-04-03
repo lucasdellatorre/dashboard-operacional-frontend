@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import NavigationBar from "./navigationBar";
 import { Outlet } from "react-router-dom";
 import { Box } from "@mui/material";
 import Header from "./header";
 
 const Layout: React.FC = () => {
+  const [headerInputValue, setHeaderInputValue] = useState("");
   return (
     <Box
       width="100%"
@@ -19,7 +20,10 @@ const Layout: React.FC = () => {
       <Box display={"flex"} height={"100vh"} overflow={"hidden"} flex={1}>
         <NavigationBar />
         <Box display="flex" flexDirection="column" flex="1" overflow="hidden">
-          <Header />
+          <Header
+            inputValue={headerInputValue}
+            setInputValue={setHeaderInputValue}
+          />
           <Box
             display={"flex"}
             flex={1}
@@ -27,7 +31,7 @@ const Layout: React.FC = () => {
             height={"100%"}
             overflow={"auto"}
           >
-            <Outlet />
+            <Outlet context={{ headerInputValue, setHeaderInputValue }} />
           </Box>
         </Box>
       </Box>

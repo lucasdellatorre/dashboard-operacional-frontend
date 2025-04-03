@@ -9,6 +9,7 @@ interface SuspectCardInterface {
   id: string;
   isRelevant?: boolean;
   photo?: string;
+  onClick?: (id: string) => void;
 }
 
 const SuspectCard: React.FC<SuspectCardInterface> = ({
@@ -16,11 +17,23 @@ const SuspectCard: React.FC<SuspectCardInterface> = ({
   isRelevant,
   photo,
   id,
+  onClick,
 }) => {
   return (
-    <Box position="relative" width={"11.438rem"} height={"15.063rem"}>
+    <Box
+      position="relative"
+      width={"11.438rem"}
+      height={"15.063rem"}
+      sx={{ cursor: "pointer" }}
+      onClick={() => onClick && onClick(id)}
+    >
       <ShieldWithPicture
-        style={{ position: "absolute", top: 0, left: 0, zIndex: 0 }}
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          zIndex: 0,
+        }}
       />
 
       <Box

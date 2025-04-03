@@ -9,13 +9,13 @@ const theme = createTheme({
       black: "#000000",
     },
     customButton: {
-      primary: "#D9D9D9",
+      primary: "#191919",
       white: "#FFFFFF",
       black: "#D9D9D9",
       gray: "#4E4E4E",
     },
     customText: {
-      black: "#000000",
+      black: "#191919",
       gray: "#565656",
       lightGrey: "#8D8D8D",
       white: "#FFFFFF",
