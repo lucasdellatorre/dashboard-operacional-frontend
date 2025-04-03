@@ -9,7 +9,7 @@ const theme = createTheme({
       black: "#000000",
     },
     customButton: {
-      primary: "#D9D9D9",
+      primary: "#191919",
       white: "#FFFFFF",
       black: "#D9D9D9",
       gray: "#4E4E4E",
