@@ -18,7 +18,6 @@ const ViewSelectionFilter: React.FC<ViewSelectionProps> = ({
   selectedFilter,
   onChange,
 }) => {
-  console.log(filters, selectedFilter);
   return (
     <div
       style={{
