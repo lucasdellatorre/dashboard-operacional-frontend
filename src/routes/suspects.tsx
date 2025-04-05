@@ -26,6 +26,7 @@ const Suspects: React.FC = () => {
   const filter = [
     { label: "A-Z", value: FilterType.ALPHABETICAL_ORDER },
     { label: "Relevante", value: FilterType.RELEVANT },
+    { label: "Recente", value: FilterType.RECENT },
   ];
   const mockSuspects = useMemo<SuspectInterface[]>(
     () => [
@@ -58,8 +59,10 @@ const Suspects: React.FC = () => {
 
     if (headerInputValue && headerInputValue.trim() !== "") {
       const searchTerm = normalizeString(headerInputValue.trim());
-      result = result.filter((suspect) =>
-        normalizeString(suspect.name).includes(searchTerm)
+      result = result.filter(
+        (suspect) =>
+          normalizeString(suspect.name).includes(searchTerm) ||
+          String(suspect.id).includes(searchTerm)
       );
     }
 
