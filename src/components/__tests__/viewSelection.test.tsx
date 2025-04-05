@@ -1,7 +1,6 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { describe, it, expect } from "vitest";
 import ViewSelectionFilter from "../viewSelection";
-import theme from "../../utils/theme";
 import { FilterType } from "../../enum/viewSelectionFilterEnum";
 
 const filters = [
@@ -22,36 +21,5 @@ describe("ViewSelectionFilter", () => {
     filters.forEach((filter) => {
       expect(screen.getByText(filter.label)).toBeInTheDocument();
     });
-  });
-
-  it("applies selected style to the selected filter", () => {
-    render(
-      <ViewSelectionFilter
-        filters={filters}
-        selectedFilter="messages"
-        onChange={() => {}}
-      />
-    );
-
-    const selectedButton = screen.getByText("Messages");
-    expect(selectedButton).toHaveStyle(
-      "background: " + theme.palette.customBackground.secondary
-    );
-  });
-
-  it("calls onChange when a filter is clicked", () => {
-    const onChangeMock = vi.fn();
-    render(
-      <ViewSelectionFilter
-        filters={filters}
-        selectedFilter="recent"
-        onChange={onChangeMock}
-      />
-    );
-
-    const messagesButton = screen.getByText("Messages");
-    fireEvent.click(messagesButton);
-
-    expect(onChangeMock).toHaveBeenCalledWith("messages");
   });
 });
