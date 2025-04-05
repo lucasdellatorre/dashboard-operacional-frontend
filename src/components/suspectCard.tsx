@@ -10,6 +10,7 @@ interface SuspectCardInterface {
   isRelevant?: boolean;
   photo?: string;
   onClick?: (id: string) => void;
+  dateCreated?: string;
 }
 
 const SuspectCard: React.FC<SuspectCardInterface> = ({

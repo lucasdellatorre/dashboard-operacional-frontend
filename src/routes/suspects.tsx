@@ -11,6 +11,7 @@ interface SuspectInterface {
   name: string;
   isRelevant: boolean;
   id: string;
+  dateCreated: string;
 }
 
 const Suspects: React.FC = () => {
@@ -26,7 +27,7 @@ const Suspects: React.FC = () => {
   const filter = [
     { label: "A-Z", value: FilterType.ALPHABETICAL_ORDER },
     { label: "Relevante", value: FilterType.RELEVANT },
-    { label: "Recente", value: FilterType.RECENT },
+    { label: "Ordem Cronológica", value: FilterType.CHRONOLOGICAL_ORDER },
   ];
   const mockSuspects = useMemo<SuspectInterface[]>(
     () => [
@@ -34,21 +35,25 @@ const Suspects: React.FC = () => {
         name: "Zé Pequeno",
         isRelevant: true,
         id: "#1s2b2a36i8 ",
+        dateCreated: "2025-04-01",
       },
       {
         name: "Inácio",
         isRelevant: true,
         id: "#1s2b2a3409",
+        dateCreated: "2025-04-02",
       },
       {
         name: "Fernando",
         isRelevant: false,
         id: "#1s2b2a3h68",
+        dateCreated: "2025-04-01",
       },
       {
         name: "Geraldo",
         isRelevant: false,
         id: "#1s2b2a9836",
+        dateCreated: "2025-04-01",
       },
     ],
     []
@@ -68,6 +73,11 @@ const Suspects: React.FC = () => {
 
     if (selectedFilter === FilterType.RELEVANT) {
       return result.filter((suspect) => suspect.isRelevant);
+    }
+    if (selectedFilter === FilterType.CHRONOLOGICAL_ORDER) {
+      return result.sort((a, b) => {
+        return b.dateCreated.localeCompare(a.dateCreated);
+      });
     }
     return [...result].sort((a, b) => a.name.localeCompare(b.name));
   }, [mockSuspects, selectedFilter, headerInputValue]);

@@ -1,5 +1,5 @@
 export enum FilterType {
   ALPHABETICAL_ORDER = "alphabeticalOrder",
   RELEVANT = "relevant",
-  RECENT = "recent",
+  CHRONOLOGICAL_ORDER = "chronologicalOrder",
 }
