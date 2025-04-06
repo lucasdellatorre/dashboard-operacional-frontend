@@ -5,6 +5,7 @@ import Dashboard from "./routes/dashboard";
 import Login from "./routes/login";
 import Users from "./routes/users";
 import Suspects from "./routes/suspects";
+import Operation from "./routes/operation";
 
 function App() {
   return (
@@ -12,9 +13,10 @@ function App() {
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<Login />} />
       <Route element={<Layout />}>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/users" element={<Users />} />
+        <Route path="/operacoes" element={<Operation />} />
         <Route path="/alvos" element={<Suspects />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/usuarios" element={<Users />} />
       </Route>
     </Routes>
   );
