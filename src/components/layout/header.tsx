@@ -2,21 +2,16 @@ import React from "react";
 
 import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
 import ArrowOutwardRoundedIcon from "@mui/icons-material/ArrowOutwardRounded";
-import SearchBar from "./searchBar";
+import SearchBar from "../searchBar";
 
-const Header: React.FC = () => {
-  const mockedData = {
-    name: "Mendonça",
+interface HeaderProps {
+  inputValue: string;
+  setInputValue: (value: string) => void;
+}
+const Header: React.FC<HeaderProps> = ({ inputValue, setInputValue }) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
   };
-
-  function handleExport() {
-    console.log("Exportando...");
-  }
-
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(event.target.value);
-  };
-
   return (
     <AppBar
       position="static"
@@ -58,7 +53,7 @@ const Header: React.FC = () => {
               color: "#565656",
             }}
           >
-            Olá {mockedData.name}, seja bem vindo!
+            Olá, seja bem vindo!
           </Typography>
         </Box>
 
@@ -72,7 +67,8 @@ const Header: React.FC = () => {
         >
           <SearchBar
             placeholder="Procure aqui pelos alvos"
-            onSearchChange={handleSearchChange}
+            value={inputValue}
+            onSearchChange={handleChange}
           ></SearchBar>
 
           <Button
@@ -88,7 +84,7 @@ const Header: React.FC = () => {
                 backgroundColor: "#333",
               },
             }}
-            onClick={handleExport}
+            onClick={() => console.log("Exportar")}
             startIcon={<ArrowOutwardRoundedIcon sx={{ scale: "2.5" }} />}
           >
             Exportar

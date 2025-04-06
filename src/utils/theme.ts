@@ -18,6 +18,7 @@ const theme = createTheme({
       black: "#191919",
       gray: "#565656",
       lightGrey: "#8D8D8D",
+      white: "#FFFFFF",
     },
     customInput: {
       primary: "#E3E3E3",
@@ -30,6 +31,8 @@ const theme = createTheme({
     icon: {
       black: "#000000",
       white: "#FFFFFF",
+      gold: "#C1A047",
+      gray: "#7A7474",
     },
     chart: {
       darkBrown: "#4A4331",
@@ -54,6 +57,9 @@ const theme = createTheme({
       black: "#000000",
       white: "#F1F1F5",
     },
+    border: {
+      primary: "#E3E3E3",
+    },
   },
 });
 
@@ -75,6 +81,7 @@ declare module "@mui/material/styles" {
       black: string;
       gray: string;
       lightGrey: string;
+      white: string;
     };
     customInput: {
       primary: string;
@@ -87,6 +94,8 @@ declare module "@mui/material/styles" {
     icon: {
       black: string;
       white: string;
+      gold: string;
+      gray: string;
     };
     suspectTable: {
       paleBeige: string;
@@ -110,6 +119,9 @@ declare module "@mui/material/styles" {
     table: {
       primary: string;
       white: string;
+    };
+    border: {
+      primary: string;
     };
   }
   interface PaletteOptions {
@@ -129,6 +141,7 @@ declare module "@mui/material/styles" {
       black: string;
       gray: string;
       lightGrey: string;
+      white: string;
     };
     customInput: {
       primary: string;
@@ -141,6 +154,8 @@ declare module "@mui/material/styles" {
     icon: {
       black: string;
       white: string;
+      gold: string;
+      gray: string;
     };
     chart: {
       darkBrown: string;
@@ -164,6 +179,9 @@ declare module "@mui/material/styles" {
       gold: string;
       black: string;
       white: string;
+    };
+    border: {
+      primary: string;
     };
   }
 }

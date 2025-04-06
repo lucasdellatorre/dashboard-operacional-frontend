@@ -5,11 +5,13 @@ import { Search as SearchIcon } from "@mui/icons-material";
 interface SearchBarProps {
   placeholder: string;
   onSearchChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  value?: string;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
   placeholder,
   onSearchChange,
+  value,
   ...rest
 }) => {
   return (
@@ -26,6 +28,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
     >
       <InputBase
         {...rest}
+        value={value}
+        type="text"
         onChange={onSearchChange}
         placeholder={placeholder}
         inputProps={{ "aria-label": "search" }}
