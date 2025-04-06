@@ -6,6 +6,7 @@ const theme = createTheme({
       primary: "#EEEEEE",
       secondary: "#F7F7F7",
       gray: "#8D8D8D",
+      darkGray: "#1c1c1c",
       black: "#000000",
     },
     customButton: {
@@ -69,6 +70,7 @@ declare module "@mui/material/styles" {
       primary: string;
       secondary: string;
       gray: string;
+      darkGray: string;
       black: string;
     };
     customButton: {
@@ -129,6 +131,7 @@ declare module "@mui/material/styles" {
       primary?: string;
       secondary?: string;
       gray?: string;
+      darkGray?: string;
       black?: string;
     };
     customButton: {

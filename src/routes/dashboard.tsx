@@ -4,7 +4,7 @@ import React from "react";
 const Dashboard: React.FC = () => {
   return (
     <Box
-      bgcolor={"background.paper"}
+      bgcolor={"customBackground.darkGray"}
       width={"100%"}
       display={"flex"}
       height={"100vh"}

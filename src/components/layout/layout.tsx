@@ -1,24 +1,36 @@
 import React, { useState } from "react";
-import NavigationBar from "./navigationBar";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { Box } from "@mui/material";
 import Header from "./header";
+import NavigationBar from "./NavigationBar";
 
 const Layout: React.FC = () => {
   const [headerInputValue, setHeaderInputValue] = useState("");
+  const [isMenuCollapsed, setIsMenuCollapsed] = useState(false);
+  const location = useLocation();
+  const isLoginPage = location.pathname === "/login";
+
+  const toggleNavigation = () => {
+    setIsMenuCollapsed(!isMenuCollapsed);
+  };
+
   return (
     <Box
       width="100%"
-      bgcolor={"customBackground.secondary"}
       display="flex"
       flexDirection="column"
-      minHeight="100vh"
+      height="100vh"
       overflow="hidden"
       maxWidth={"2000px"}
       mx="auto"
     >
-      <Box display={"flex"} height={"100vh"} overflow={"hidden"} flex={1}>
-        <NavigationBar />
+      <Box display={"flex"} height={"100%"} flex={1}>
+        {!isLoginPage && (
+          <NavigationBar
+            isCollapsed={isMenuCollapsed}
+            onToggle={toggleNavigation}
+          />
+        )}
         <Box display="flex" flexDirection="column" flex="1" overflow="hidden">
           <Header
             inputValue={headerInputValue}
