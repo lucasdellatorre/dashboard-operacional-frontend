@@ -29,19 +29,19 @@ npm install
 To start the application in development mode, run:
 
 ```sh
-npm start
+npm run dev
 ```
 
 The project will be available at `http://localhost:5173/`.
 
 ## Testing
 
-### Unit and Integration Tests (Jest)
+### Unit and Integration Tests (Vitest)
 
-To run unit and integration tests with Jest:
+To run unit and integration tests with Vitest:
 
 ```sh
-npm test
+npm run test
 ```
 
 ### End-to-End Tests (Cypress)
@@ -49,10 +49,10 @@ npm test
 To run E2E tests, first start the server:
 
 ```sh
-npm start
+npm run dev
 ```
 
-Then, run Cypress:
+Then, in another terminal, run Cypress:
 
 To open the Cypress interactive interface:
 ```sh
@@ -82,6 +82,6 @@ If you have any questions, check the official documentation of the tools used:
 
 - [React](https://react.dev/)
 - [TypeScript](https://www.typescriptlang.org/)
-- [Jest](https://jestjs.io/)
+- [Vitest](https://vitest.dev/)
 - [Cypress](https://www.cypress.io/)
 
