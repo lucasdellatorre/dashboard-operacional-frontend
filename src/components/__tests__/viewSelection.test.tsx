@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
-import ViewSelectionFilter from "../viewSelection";
+import ViewSelectionFilter from "../operations/ViewSelection/ViewSelection";
 import { FilterType } from "../../enum/viewSelectionFilterEnum";
 
 const filters = [

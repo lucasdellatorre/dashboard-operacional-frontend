@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import Dashboard from "../dashboard";
+import Dashboard from "../Dashboard";
 import "@testing-library/jest-dom/vitest";
 
 describe("Dashboard Component", () => {

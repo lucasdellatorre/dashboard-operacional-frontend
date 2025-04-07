@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import Chart from "../webChart";
+import Chart from "../dashboard/WebChart/WebChart";
 
 describe("Chart Component", () => {
   const mockData = {

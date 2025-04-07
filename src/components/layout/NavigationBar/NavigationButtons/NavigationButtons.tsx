@@ -3,7 +3,7 @@ import TableChartIcon from "@mui/icons-material/TableChart";
 import MediationIcon from "@mui/icons-material/Mediation";
 import TargetIcon from "@mui/icons-material/AdsClickOutlined";
 import AssessmentIcon from "@mui/icons-material/Assessment";
-import { textStyles } from "../../../../../theme/typography";
+import { textStyles } from "../../../../theme/typography";
 import { Link, useLocation } from "react-router-dom";
 
 const NavigationButtons: React.FC = () => {
@@ -65,76 +65,75 @@ const NavigationButtons: React.FC = () => {
         </Box>
       </Link>
 
-      {(!isOperationsPage &&
-        !isSuspectsPage) && (
-          <>
+      {!isOperationsPage && !isSuspectsPage && (
+        <>
+          <Box
+            onClick={(e) => e.preventDefault()}
+            sx={{
+              textDecoration: "none",
+              color: "white",
+              cursor: "pointer",
+            }}
+          >
             <Box
-              onClick={(e) => e.preventDefault()}
+              display="flex"
+              alignItems="center"
+              mb={2}
+              gap={2}
+              p={1.5}
+              borderRadius="8px"
               sx={{
-                textDecoration: "none",
-                color: "white",
-                cursor: "pointer",
+                background:
+                  "linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 100%)",
+                transition: "all 0.3s ease",
+                "&:hover": {
+                  background:
+                    "linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%)",
+                  transform: "translateX(5px)",
+                },
               }}
             >
-              <Box
-                display="flex"
-                alignItems="center"
-                mb={2}
-                gap={2}
-                p={1.5}
-                borderRadius="8px"
-                sx={{
-                  background:
-                    "linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 100%)",
-                  transition: "all 0.3s ease",
-                  "&:hover": {
-                    background:
-                      "linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%)",
-                    transform: "translateX(5px)",
-                  },
-                }}
-              >
-                <MediationIcon />
-                <Typography sx={{ ...textStyles.navigationBarTitle }}>
-                  Teia
-                </Typography>
-              </Box>
+              <MediationIcon />
+              <Typography sx={{ ...textStyles.navigationBarTitle }}>
+                Teia
+              </Typography>
             </Box>
+          </Box>
 
+          <Box
+            onClick={(e) => e.preventDefault()}
+            sx={{
+              textDecoration: "none",
+              color: "white",
+              cursor: "pointer",
+            }}
+          >
             <Box
-              onClick={(e) => e.preventDefault()}
+              display="flex"
+              alignItems="center"
+              mb={2}
+              gap={2}
+              p={1.5}
+              borderRadius="8px"
               sx={{
-                textDecoration: "none",
-                color: "white",
-                cursor: "pointer",
+                background:
+                  "linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 100%)",
+                transition: "all 0.3s ease",
+                "&:hover": {
+                  background:
+                    "linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%)",
+                  transform: "translateX(5px)",
+                },
               }}
             >
-              <Box
-                display="flex"
-                alignItems="center"
-                mb={2}
-                gap={2}
-                p={1.5}
-                borderRadius="8px"
-                sx={{
-                  background:
-                    "linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 100%)",
-                  transition: "all 0.3s ease",
-                  "&:hover": {
-                    background:
-                      "linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%)",
-                    transform: "translateX(5px)",
-                  },
-                }}
-              >
-                <TableChartIcon />
-                <Typography sx={{ ...textStyles.navigationBarTitle }}>
-                  Tabelas
-                </Typography>
-              </Box>
+              <TableChartIcon />
+              <Typography sx={{ ...textStyles.navigationBarTitle }}>
+                Tabelas
+              </Typography>
             </Box>
-          </>
-        )}
+          </Box>
+        </>
+      )}
     </Box>
   );
 };

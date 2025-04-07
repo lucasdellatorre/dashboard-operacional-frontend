@@ -2,16 +2,22 @@ import React from "react";
 
 import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
 import ArrowOutwardRoundedIcon from "@mui/icons-material/ArrowOutwardRounded";
-import SearchBar from "../searchBar";
+import SearchBar from "../SearchBar/SearchBar";
+import { useLocation } from "react-router-dom";
 
 interface HeaderProps {
   inputValue: string;
   setInputValue: (value: string) => void;
 }
+
 const Header: React.FC<HeaderProps> = ({ inputValue, setInputValue }) => {
+  const location = useLocation();
+  const isOperationsPage = location.pathname === "/operacoes";
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
   };
+
   return (
     <AppBar
       position="static"
@@ -66,7 +72,11 @@ const Header: React.FC<HeaderProps> = ({ inputValue, setInputValue }) => {
           }}
         >
           <SearchBar
-            placeholder="Procure aqui pelos alvos"
+            placeholder={
+              isOperationsPage
+                ? "Procure aqui pelas operações"
+                : "Procure aqui pelos alvos"
+            }
             value={inputValue}
             onSearchChange={handleChange}
           ></SearchBar>

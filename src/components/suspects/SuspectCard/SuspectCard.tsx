@@ -2,7 +2,7 @@ import { Avatar, Box, Typography } from "@mui/material";
 import StarIcon from "@mui/icons-material/Star";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import React from "react";
-import ShieldWithPicture from "./shieldWithPicture";
+import ShieldWithPicture from "../ShieldWithPicture/ShieldWithPicture";
 
 interface SuspectCardInterface {
   name: string;

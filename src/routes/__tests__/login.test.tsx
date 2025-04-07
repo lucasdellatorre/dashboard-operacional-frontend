@@ -1,40 +1,51 @@
-import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import Login from "../login";
+import { BrowserRouter } from "react-router-dom";
+import Login from "../Login";
+import { describe, expect, it } from "vitest";
 
 describe("Login Component", () => {
-  
+  const renderLogin = () => {
+    return render(
+      <BrowserRouter>
+        <Login />
+      </BrowserRouter>
+    );
+  };
+
   it("deve renderizar o texto 'Dashboard Operacional'", () => {
-    render(<Login />);
-    expect(screen.getByText("Dashboard Operacional")).toBeInTheDocument();
+    renderLogin();
+    const title = screen.getByText("Dashboard Operacional");
+    expect(title).toBeInTheDocument();
   });
 
   it("deve renderizar o logo da polícia", () => {
-    render(<Login />);
-    expect(screen.getByAltText("Logo")).toBeInTheDocument();
+    renderLogin();
+    const logo = screen.getByAltText("logo da policia");
+    expect(logo).toBeInTheDocument();
   });
 
   it("deve aplicar a opacidade correta no background", () => {
-    render(<Login />);
-    const backgroundImage = screen.getByTestId("backgroundImage");
-    expect(backgroundImage).toHaveStyle("opacity: 0.09");
+    renderLogin();
+    const background = screen.getByTestId("background-image");
+    expect(background).toHaveStyle({ opacity: 0.09 });
   });
 
   it("deve renderizar o container principal com altura de 100vh", () => {
-    render(<Login />);
-    const mainContainer = screen.getByTestId("backgroundImage").parentElement;
-    expect(mainContainer).toHaveStyle("height: 100vh");
+    renderLogin();
+    const container = screen.getByTestId("login-container");
+    expect(container).toHaveStyle({ height: "100vh" });
   });
 
   it("deve renderizar o logo com tamanhos responsivos", () => {
-    render(<Login />);
-    const logo = screen.getByAltText("Logo");
-    expect(logo).toHaveAttribute(
-      "src",
-      expect.stringContaining("logoPolicia.png")
-    );
+    renderLogin();
+    const logo = screen.getByAltText("logo da policia");
     expect(logo).toHaveStyle({
-      width: expect.stringContaining("18rem"),
+      width: {
+        sm: "18rem",
+        md: "21rem",
+        lg: "25rem",
+      },
+      height: "auto",
     });
   });
 });

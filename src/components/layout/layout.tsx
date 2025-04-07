@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { Box } from "@mui/material";
-import Header from "./header";
-import NavigationBar from "./NavigationBar";
+import Header from "./Header/Header";
+import NavigationBar from "./NavigationBar/NavigationBar";
 
 const Layout: React.FC = () => {
   const [headerInputValue, setHeaderInputValue] = useState("");

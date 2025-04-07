@@ -1,5 +1,5 @@
 import { Box, Button, Typography } from "@mui/material";
-import { textStyles } from "../../../../../theme/typography";
+import { textStyles } from "../../../../theme/typography";
 import LogoutIcon from "@mui/icons-material/Logout";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
 

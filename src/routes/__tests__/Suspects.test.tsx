@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import Suspects from "../suspects";
+import Suspects from "../Suspects";
 import { useHeaderInput } from "../../hooks/useHeaderInput";
 import { MemoryRouter } from "react-router-dom";
 

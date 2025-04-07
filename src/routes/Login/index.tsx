@@ -1,13 +1,14 @@
 import React from "react";
-import bubbleTexture from "../../assets/bubbleTexture.svg";
-import paperTexture from "../../assets/paperTexture.svg";
-import logoPolicia from "../../assets/logoPolicia.png";
-import ContainerLogin from "../components/layout/containerLogin";
+import bubbleTexture from "../../../assets/bubbleTexture.svg";
+import paperTexture from "../../../assets/paperTexture.svg";
+import logoPolicia from "../../../assets/logoPolicia.png";
+import ContainerLogin from "../../components/login/ContainerLogin/ContainerLogin";
 import { Box, Container, Typography } from "@mui/material";
 
 const Login: React.FC = () => {
   return (
     <Box
+      data-testid="login-container"
       position="relative"
       height="100vh"
       display="flex"
@@ -22,14 +23,13 @@ const Login: React.FC = () => {
         backgroundSize: "cover",
       }}
     >
-
       <Box
         position="absolute"
         top={0}
         left={0}
         width="100%"
         height="100%"
-        data-testid="backgroundImage"
+        data-testid="background-image"
         sx={{
           backgroundColor: "#000000",
           backgroundImage: `url(${paperTexture})`,
@@ -52,16 +52,15 @@ const Login: React.FC = () => {
           padding: "1rem",
         }}
       >
-
         <Box
           component="img"
+          alt="logo da policia"
           src={logoPolicia}
-          alt="Logo"
           sx={{
             width: {
               sm: "18rem",
               md: "21rem",
-              lg: "25rem", 
+              lg: "25rem",
             },
             height: "auto",
           }}
@@ -75,10 +74,10 @@ const Login: React.FC = () => {
           textAlign="center"
           sx={{
             fontSize: {
-              xs: "1.0rem", 
-              sm: "1.5rem", 
-              md: "2.1rem", 
-              lg: "2.5rem", 
+              xs: "1.0rem",
+              sm: "1.5rem",
+              md: "2.1rem",
+              lg: "2.5rem",
             },
           }}
         >

@@ -1,11 +1,11 @@
 import "./App.css";
 import { Navigate, Route, Routes } from "react-router-dom";
-import Layout from "./components/layout/layout";
-import Dashboard from "./routes/dashboard";
-import Login from "./routes/login";
-import Users from "./routes/users";
-import Suspects from "./routes/suspects";
-import Operation from "./routes/operation";
+import Layout from "./components/layout/Layout";
+import Dashboard from "./routes/Dashboard";
+import Login from "./routes/Login";
+import Users from "./routes/Users";
+import Suspects from "./routes/Suspects";
+import Operation from "./routes/Operations";
 
 function App() {
   return (

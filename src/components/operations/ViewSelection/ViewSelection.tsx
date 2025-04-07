@@ -1,6 +1,6 @@
 import React from "react";
-import theme from "../utils/theme";
-import { FilterType } from "../enum/viewSelectionFilterEnum";
+import theme from "../../../utils/theme";
+import { FilterType } from "../../../enum/viewSelectionFilterEnum";
 
 interface Filter {
   label: string;

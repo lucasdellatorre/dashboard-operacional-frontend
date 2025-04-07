@@ -1,9 +1,9 @@
 import { Box } from "@mui/material";
 import React from "react";
-import UserProfile from "./components/UserProfile";
-import NavigationButtons from "./components/NavigationButtons";
-import FooterButtons from "./components/FooterButtons/FooterButtons";
-import ToggleButton from "./components/ToggleButton";
+import UserProfile from "./UserProfile/UserProfile";
+import NavigationButtons from "./NavigationButtons/NavigationButtons";
+import FooterButtons from "./FooterButtons/FooterButtons";
+import ToggleButton from "./ToggleButton/ToggleButton";
 import { useLocation } from "react-router-dom";
 import logoPolicia from "../../../assets/logo-policia.svg";
 
