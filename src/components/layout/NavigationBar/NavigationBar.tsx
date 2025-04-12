@@ -4,7 +4,7 @@ import UserProfile from "./UserProfile/UserProfile";
 import NavigationButtons from "./NavigationButtons/NavigationButtons";
 import FooterButtons from "./FooterButtons/FooterButtons";
 import ToggleButton from "./ToggleButton/ToggleButton";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import logoPolicia from "../../../assets/logo-policia.svg";
 
 interface NavigationBarProps {
@@ -16,9 +16,15 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
   isCollapsed,
   onToggle,
 }) => {
+  const navigate = useNavigate();
   const location = useLocation();
   const isOperationsPage = location.pathname === "/operacoes";
   const isSuspectsPage = location.pathname === "/alvos";
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
 
   return (
     <>
@@ -74,7 +80,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
             <UserProfile />
           )}
           <NavigationButtons />
-          <FooterButtons />
+          <FooterButtons logout={logout} />
         </Box>
       </Box>
       <ToggleButton isCollapsed={isCollapsed} onToggle={onToggle} />

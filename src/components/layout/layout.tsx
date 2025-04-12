@@ -9,6 +9,8 @@ const Layout: React.FC = () => {
   const [isMenuCollapsed, setIsMenuCollapsed] = useState(false);
   const location = useLocation();
   const isLoginPage = location.pathname === "/login";
+  const isSuspectsPage = location.pathname === "/alvos";
+  const isOperationsPage = location.pathname === "/operacoes";
 
   const toggleNavigation = () => {
     setIsMenuCollapsed(!isMenuCollapsed);
@@ -32,10 +34,13 @@ const Layout: React.FC = () => {
           />
         )}
         <Box display="flex" flexDirection="column" flex="1" overflow="hidden">
-          <Header
-            inputValue={headerInputValue}
-            setInputValue={setHeaderInputValue}
-          />
+          {(isSuspectsPage || isOperationsPage) && (
+            <Header
+              inputValue={headerInputValue}
+              setInputValue={setHeaderInputValue}
+            />
+          )}
+
           <Box
             display={"flex"}
             flex={1}

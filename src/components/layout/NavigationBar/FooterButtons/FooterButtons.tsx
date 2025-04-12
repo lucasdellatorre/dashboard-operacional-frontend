@@ -3,7 +3,11 @@ import { textStyles } from "../../../../theme/typography";
 import LogoutIcon from "@mui/icons-material/Logout";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
 
-const FooterButtons: React.FC = () => {
+interface FooterButtonsProps {
+  logout: () => void;
+}
+
+const FooterButtons: React.FC<FooterButtonsProps> = ({ logout }) => {
   return (
     <>
       <Box left={0} p={2}>
@@ -50,6 +54,7 @@ const FooterButtons: React.FC = () => {
       {/* Botão de Logout */}
       <Box p={2}>
         <Button
+          onClick={logout}
           fullWidth
           sx={{
             display: "flex",

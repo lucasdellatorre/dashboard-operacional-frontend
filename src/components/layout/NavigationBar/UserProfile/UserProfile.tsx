@@ -1,23 +1,8 @@
 import { Box, Button, Typography } from "@mui/material";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
 const UserProfile: React.FC = () => {
-
   return (
     <Box p={2} display="flex" flexDirection="column" alignItems="flex-start">
-      <AccountCircleIcon
-        sx={{
-          width: 128,
-          height: 128,
-          mb: 2,
-          alignSelf: "center",
-          color: "rgba(255, 255, 255, 0.7)",
-          "@media (max-height: 800px)": {
-            width: 100,
-            height: 100,
-          },
-        }}
-      />
       <Box
         width="100%"
         pb={2}

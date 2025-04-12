@@ -1,7 +1,5 @@
 import React from "react";
-
-import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
-import ArrowOutwardRoundedIcon from "@mui/icons-material/ArrowOutwardRounded";
+import { AppBar, Toolbar, Typography, Box } from "@mui/material";
 import SearchBar from "../SearchBar/SearchBar";
 import { useLocation } from "react-router-dom";
 
@@ -80,25 +78,6 @@ const Header: React.FC<HeaderProps> = ({ inputValue, setInputValue }) => {
             value={inputValue}
             onSearchChange={handleChange}
           ></SearchBar>
-
-          <Button
-            sx={{
-              padding: "0.5rem 1rem",
-              fontWeight: "bold",
-              textTransform: "none",
-              backgroundColor: "#191919",
-              color: "customButton.white",
-              borderRadius: 25,
-
-              "&:hover": {
-                backgroundColor: "#333",
-              },
-            }}
-            onClick={() => console.log("Exportar")}
-            startIcon={<ArrowOutwardRoundedIcon sx={{ scale: "2.5" }} />}
-          >
-            Exportar
-          </Button>
         </Box>
       </Toolbar>
     </AppBar>

@@ -15,14 +15,6 @@ describe("Header Component", () => {
     );
   };
 
-  it("Deve localizar o botão na tela", () => {
-    renderHeader();
-
-    // Localiza o botão pelo texto
-    const button = screen.getByRole("button", { name: /exportar/i });
-    expect(button).toBeInTheDocument();
-  });
-
   it("Deve renderizar o título do dashboard", () => {
     renderHeader();
 
