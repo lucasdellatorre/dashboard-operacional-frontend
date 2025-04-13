@@ -1,118 +1,126 @@
-import { Box, Typography } from "@mui/material";
-import React, { useState } from "react";
-import SuspectCard from "../../components/suspects/SuspectCard/SuspectCard";
-import ViewSelection from "../../components/operations/ViewSelection/ViewSelection";
+import { Box, Button, Typography } from "@mui/material";
+import React, { useCallback, useState } from "react";
+import GenericTable from "../../components/operationSuspectTable/table";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { FilterType } from "../../enum/viewSelectionFilterEnum";
 import { useHeaderInput } from "../../hooks/useHeaderInput";
-import { useSuspects } from "../../hooks/useSuspects";
-
-const FILTER_OPTIONS = [
-  { label: "A-Z", value: FilterType.ALPHABETICAL_ORDER },
-  { label: "Relevante", value: FilterType.RELEVANT },
-  { label: "Ordem Cronológica", value: FilterType.CHRONOLOGICAL_ORDER },
-];
+import { HeadCell } from "../../interface/operationSuspectTable/operationSuspectTableInterface";
+import { Targets, useOperations } from "../../hooks/useSuspects";
 
 const Suspects: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { headerInputValue } = useHeaderInput();
-  const [selectedFilter, setSelectedFilter] = useState<FilterType>(
-    FilterType.ALPHABETICAL_ORDER
-  );
+  const [selectedOperations, setSelectedOperations] = useState<Targets[]>([]);
+  const [selectedIds, setSelectedIds] = useState<readonly number[]>([]);
   const operationId = searchParams.get("operacao");
 
-  const { filteredSuspects } = useSuspects({
+  const suspectsHeaderCells: readonly HeadCell<Targets>[] = [
+    {
+      id: "id",
+      label: "ID de indentificação",
+    },
+    {
+      id: "suspectName",
+      label: "Nome/Apelido",
+    },
+
+    {
+      id: "date",
+      label: "Data de inserção",
+    },
+    {
+      id: "relevance",
+      label: "Relevância",
+    },
+    {
+      id: "operationName",
+      label: "Operações",
+    },
+    {
+      id: "type",
+      label: "Tipo",
+    },
+  ];
+
+  const handleSelectionChange = useCallback(
+    (selectedIds: readonly number[], selectedItems: Targets[]) => {
+      setSelectedIds(selectedIds);
+      setSelectedOperations(selectedItems);
+    },
+    [setSelectedOperations]
+  );
+
+  const { filteredSuspects } = useOperations({
     searchTerm: headerInputValue,
-    filter: selectedFilter,
   });
 
-  const handleSuspectClick = (id: string) => {
+  const operationsSelected = () => {
     const newSearchParams = new URLSearchParams(searchParams);
+    const operationIds = selectedOperations
+      .map((item: Targets) => item.id)
+      .join("-");
     newSearchParams.set("operacao", operationId ?? "");
-    newSearchParams.set("alvo", id);
+    newSearchParams.set("alvo", operationIds);
     navigate(`/dashboard?${newSearchParams.toString()}`);
   };
 
   return (
-    <Box
-      width="100%"
-      display="flex"
-      height="100vh"
-      alignItems="stretch"
-      overflow="hidden"
-      justifyContent="center"
-      sx={{ backgroundPosition: "center" }}
-    >
+    <Box p={3} sx={{ fontFamily: "Inter, sans-serif" }}>
       <Box
-        bgcolor="customBackground.primary"
-        width="100%"
-        display="flex"
-        flexDirection="column"
-        flex={1}
+        display={"flex"}
+        justifyContent={"space-between"}
+        alignItems={"baseline"}
       >
-        <Box
-          bgcolor="customBackground.secondary"
-          borderBottom={1}
-          px="1.5rem"
-          py="1rem"
-          borderTop={1}
-          display="flex"
-          gap="0.5rem"
-          flexDirection="column"
-          borderColor="border.primary"
+        <Typography
+          variant="h5"
+          color="#000000"
+          mb={4}
+          fontWeight={700}
+          sx={{ fontFamily: "Inter, sans-serif" }}
         >
-          <Typography
-            fontSize="0.85rem"
-            fontWeight={400}
-            color="customText.gray"
-          >
-            Seleção de visualização
-          </Typography>
-          <ViewSelection
-            filters={FILTER_OPTIONS}
-            selectedFilter={selectedFilter}
-            onChange={setSelectedFilter}
-          />
-        </Box>
+          Selecione uma operação para iniciar a investigação
+        </Typography>
 
-        <Box
-          paddingLeft="1.75rem"
-          paddingTop="1.875rem"
-          display="flex"
-          flexDirection="column"
-          gap="1.5rem"
+        <Button
+          sx={{
+            bgcolor: "customButton.gold",
+            color: "customText.white",
+            textTransform: "none",
+            fontWeight: 600,
+          }}
         >
-          <Typography
-            fontSize="1.239rem"
-            fontWeight={800}
-            color="customText.black"
-          >
-            Selecione um alvo para iniciar investigação
-          </Typography>
-          <Box display="flex" flexDirection="row" flexWrap="wrap" gap="2.5rem">
-            {filteredSuspects.length === 0 ? (
-              <Typography
-                fontSize="0.939rem"
-                fontWeight={400}
-                color="customText.gray"
-              >
-                Nenhum alvo encontrado com o filtro atual
-              </Typography>
-            ) : (
-              filteredSuspects.map((suspect) => (
-                <SuspectCard
-                  data-testid="suspect-card"
-                  key={suspect.id}
-                  name={suspect.name}
-                  id={suspect.id}
-                  isRelevant={suspect.isRelevant}
-                  onClick={() => handleSuspectClick(suspect.id)}
-                />
-              ))
-            )}
-          </Box>
-        </Box>
+          Criar novo alvo
+        </Button>
+      </Box>
+
+      <GenericTable
+        rows={filteredSuspects}
+        headCells={suspectsHeaderCells}
+        title="Alvos"
+        defaultOrderBy="suspectName"
+        onSelectionChange={handleSelectionChange}
+        initialSelected={selectedIds}
+        noDataMessage="Nenhum alvo encontrado"
+        onDelete={() => {}}
+      />
+      <Box sx={{ width: "100%", display: "flex", justifyContent: "end" }}>
+        <Button
+          disabled={selectedIds.length === 0}
+          onClick={operationsSelected}
+          sx={{
+            bgcolor: "customButton.black",
+            color: "customText.white",
+            fontWeight: 600,
+            textTransform: "none",
+            "&.Mui-disabled": {
+              bgcolor: "customText.grey",
+              color: "customText.lightGrey",
+              cursor: "not-allowed",
+            },
+          }}
+        >
+          Confirmar Seleção
+        </Button>
       </Box>
     </Box>
   );
