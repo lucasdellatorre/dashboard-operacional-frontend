@@ -1,53 +1,39 @@
 import { useMemo } from "react";
-import { FilterType } from "../enum/viewSelectionFilterEnum";
 import { normalizeString } from "../utils/formatUtils";
+import { GenericData } from "../interface/operationSuspectTable/operationSuspectTableInterface";
 
-interface Operation {
-  id: string;
-  title: string;
-  date: string;
-  relevance: number;
+export interface Operation extends GenericData {
+  id: number;
+  operationName: string;
+  operationDate: string;
+  numberOfSuspects: number;
 }
-
 interface UseOperationsProps {
   searchTerm: string;
-  filter: FilterType;
 }
 
-const mockOperations: Operation[] = [
+export const mockOperations: Operation[] = [
   {
-    id: "ID:#1fs2b2a36i8",
-    title: "Castelo Branco",
-    date: "2024-03-20",
-    relevance: 5,
+    id: 2934,
+    operationName: "Operação A",
+    operationDate: "2023-01-01",
+    numberOfSuspects: 10,
   },
   {
-    id: "ID:#1fs2b2a36i8",
-    title: "Prainha",
-    date: "2024-03-19",
-    relevance: 3,
+    id: 3945,
+    operationName: "Operação B",
+    operationDate: "2023-02-01",
+    numberOfSuspects: 20,
   },
   {
-    id: "ID:#1fs2b2a36i8",
-    title: "Sucuri",
-    date: "2024-03-18",
-    relevance: 4,
-  },
-  {
-    id: "ID:#1fs2b2a36i8",
-    title: "Nicotina",
-    date: "2024-03-17",
-    relevance: 2,
-  },
-  {
-    id: "ID:#1fs2b2a36i8",
-    title: "Carne Fraca",
-    date: "2024-03-16",
-    relevance: 1,
+    id: 203,
+    operationName: "Operação C",
+    operationDate: "2023-03-01",
+    numberOfSuspects: 30,
   },
 ];
 
-export const useOperations = ({ searchTerm, filter }: UseOperationsProps) => {
+export const useOperations = ({ searchTerm }: UseOperationsProps) => {
   const filteredOperations = useMemo(() => {
     let result = [...mockOperations];
 
@@ -55,21 +41,15 @@ export const useOperations = ({ searchTerm, filter }: UseOperationsProps) => {
       const normalizedSearch = normalizeString(searchTerm.trim());
       result = result.filter(
         (operation) =>
-          normalizeString(operation.title).includes(normalizedSearch) ||
+          normalizeString(operation.operationName).includes(normalizedSearch) ||
           String(operation.id).includes(normalizedSearch)
       );
     }
 
-    if (filter === FilterType.RELEVANT) {
-      return result.sort((a, b) => b.relevance - a.relevance);
-    }
-
-    if (filter === FilterType.CHRONOLOGICAL_ORDER) {
-      return result.sort((a, b) => b.date.localeCompare(a.date));
-    }
-
-    return result.sort((a, b) => a.title.localeCompare(b.title));
-  }, [searchTerm, filter]);
+    return result.sort((a, b) =>
+      a.operationName.localeCompare(b.operationName)
+    );
+  }, [searchTerm]);
 
   return { operations: mockOperations, filteredOperations };
 };

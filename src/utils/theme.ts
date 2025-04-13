@@ -12,8 +12,9 @@ const theme = createTheme({
     customButton: {
       primary: "#191919",
       white: "#FFFFFF",
-      black: "#D9D9D9",
-      gray: "#4E4E4E",
+      black: "#191919",
+      gray: "#191919",
+      gold: "#9E833B",
     },
     customText: {
       black: "#191919",
@@ -50,6 +51,9 @@ const theme = createTheme({
     table: {
       primary: "#D9D9D9",
       white: "#FFFFFF",
+      grey: "#f6f6f6",
+      darkGrey: "#E7E7E7",
+      lightGrey: "#F6F6F6",
     },
     suspectTable: {
       paleBeige: "#EFE5C9",
@@ -78,6 +82,7 @@ declare module "@mui/material/styles" {
       white: string;
       black: string;
       gray: string;
+      gold: string;
     };
     customText: {
       black: string;
@@ -121,6 +126,9 @@ declare module "@mui/material/styles" {
     table: {
       primary: string;
       white: string;
+      grey: string;
+      darkGrey: string;
+      lightGrey: string;
     };
     border: {
       primary: string;
@@ -139,6 +147,7 @@ declare module "@mui/material/styles" {
       white: string;
       black: string;
       gray: string;
+      gold: string;
     };
     customText: {
       black: string;
@@ -175,6 +184,9 @@ declare module "@mui/material/styles" {
     table: {
       primary: string;
       white: string;
+      grey: string;
+      darkGrey: string;
+      lightGrey: string;
     };
     suspectTable: {
       paleBeige: string;

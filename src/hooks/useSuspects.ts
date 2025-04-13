@@ -1,47 +1,47 @@
 import { useMemo } from "react";
-import { FilterType } from "../enum/viewSelectionFilterEnum";
 import { normalizeString } from "../utils/formatUtils";
+import { GenericData } from "../interface/operationSuspectTable/operationSuspectTableInterface";
 
-interface Suspect {
-  name: string;
-  isRelevant: boolean;
-  id: string;
-  dateCreated: string;
+export interface Targets extends GenericData {
+  id: number;
+  suspectName: string;
+  relevance: string;
+  date: string;
+  operationName: string[];
+  type: string;
 }
-
 interface UseSuspectsProps {
   searchTerm: string;
-  filter: FilterType;
 }
 
-const mockSuspects: Suspect[] = [
+export const mockSuspects: Targets[] = [
   {
-    name: "Zé Pequeno",
-    isRelevant: true,
-    id: "#1s2b2a36i8",
-    dateCreated: "2025-04-01",
+    id: 28933,
+    suspectName: "Jorge",
+    date: "2024-01-01",
+    relevance: "Relevante",
+    operationName: ["Operação A", "Operação B"],
+    type: "Alvo",
   },
   {
-    name: "Inácio",
-    isRelevant: true,
-    id: "#1s2b2a3409",
-    dateCreated: "2025-04-02",
+    id: 38466,
+    suspectName: "Marcinho",
+    date: "2025-01-01",
+    relevance: "Não relevante",
+    operationName: ["Operação A", "Operação B"],
+    type: "Alvo",
   },
   {
-    name: "Fernando",
-    isRelevant: false,
-    id: "#1s2b2a3h68",
-    dateCreated: "2025-04-01",
-  },
-  {
-    name: "Geraldo",
-    isRelevant: false,
-    id: "#1s2b2a9836",
-    dateCreated: "2025-04-01",
+    id: 39374,
+    suspectName: "Rogerinho",
+    date: "2028-01-01",
+    relevance: "Não relevante",
+    operationName: ["Operação A", "Operação B"],
+    type: "Número",
   },
 ];
 
-export const useSuspects = ({ searchTerm, filter }: UseSuspectsProps) => {
+export const useOperations = ({ searchTerm }: UseSuspectsProps) => {
   const filteredSuspects = useMemo(() => {
     let result = [...mockSuspects];
 
@@ -49,21 +49,14 @@ export const useSuspects = ({ searchTerm, filter }: UseSuspectsProps) => {
       const normalizedSearch = normalizeString(searchTerm.trim());
       result = result.filter(
         (suspect) =>
-          normalizeString(suspect.name).includes(normalizedSearch) ||
-          String(suspect.id).includes(normalizedSearch)
+          normalizeString(suspect.suspectName).includes(normalizedSearch) ||
+          String(suspect.id).includes(normalizedSearch) ||
+          normalizeString(suspect.type).includes(normalizedSearch)
       );
     }
 
-    if (filter === FilterType.RELEVANT) {
-      return result.filter((suspect) => suspect.isRelevant);
-    }
+    return result.sort((a, b) => a.suspectName.localeCompare(b.suspectName));
+  }, [searchTerm]);
 
-    if (filter === FilterType.CHRONOLOGICAL_ORDER) {
-      return result.sort((a, b) => b.dateCreated.localeCompare(a.dateCreated));
-    }
-
-    return result.sort((a, b) => a.name.localeCompare(b.name));
-  }, [searchTerm, filter]);
-
-  return { suspects: mockSuspects, filteredSuspects };
+  return { operations: mockSuspects, filteredSuspects };
 };
