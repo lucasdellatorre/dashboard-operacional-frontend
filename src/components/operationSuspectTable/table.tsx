@@ -149,17 +149,17 @@ function GenericTable<T extends GenericData>({
         />
         <TableContainer
           sx={{
-            height: {
-              xs: "10rem",
-              sm: "15rem",
-              md: "20rem",
-              lg: "30rem",
-              xl: "38rem",
-            },
+            height: "calc(100vh - 400px)",
+            maxHeight: "100%",
+            overflow: "auto",
           }}
         >
           <Table
-            sx={{ minWidth: 750, tableLayout: "fixed" }}
+            sx={{
+              minWidth: 750,
+              tableLayout: "auto",
+              width: "100%",
+            }}
             aria-labelledby="tableTitle"
             size={"medium"}
           >

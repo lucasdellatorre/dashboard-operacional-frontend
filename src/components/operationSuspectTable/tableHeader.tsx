@@ -51,7 +51,7 @@ const EnhancedTableHead = <T extends GenericData>({
             sx={{
               bgcolor: "table.darkGrey",
               fontWeight: "bold",
-              fontSize: "1.14rem",
+              fontSize: "0.925rem",
             }}
             key={String(headCell.id)}
             align="center"
