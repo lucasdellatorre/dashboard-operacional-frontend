@@ -185,6 +185,7 @@ const CreateSuspectModal: React.FC<CreateSuspectModalProps> = ({
             name={"suspectNumbers"}
             render={({ field }) => (
               <MultiSelect
+                style="white"
                 placeholder="Selecione os números"
                 height="2.5rem"
                 options={suspectNumbers}
@@ -221,6 +222,7 @@ const CreateSuspectModal: React.FC<CreateSuspectModalProps> = ({
             name={"suspectOperation"}
             render={({ field }) => (
               <MultiSelect
+                style="white" 
                 placeholder="Selecione as operações"
                 height="2.5rem"
                 options={operation}
