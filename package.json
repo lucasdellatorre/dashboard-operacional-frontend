@@ -12,7 +12,8 @@
     "cypress:headless": "npx cypress run --browser chrome",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "build:test": "vitest run --coverage && vite build"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
