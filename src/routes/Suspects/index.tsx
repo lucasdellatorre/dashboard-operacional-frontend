@@ -5,9 +5,11 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useHeaderInput } from "../../hooks/useHeaderInput";
 import { HeadCell } from "../../interface/operationSuspectTable/operationSuspectTableInterface";
 import { Targets, useOperations } from "../../hooks/useSuspects";
+import CreateSuspectModal from "../../components/modal/createSuspectModal";
 
 const Suspects: React.FC = () => {
   const navigate = useNavigate();
+  const [openModal, setOpenModal] = useState<boolean>(false);
   const [searchParams] = useSearchParams();
   const { headerInputValue } = useHeaderInput();
   const [selectedOperations, setSelectedOperations] = useState<Targets[]>([]);
@@ -82,6 +84,7 @@ const Suspects: React.FC = () => {
         </Typography>
 
         <Button
+          onClick={() => setOpenModal(true)}
           sx={{
             bgcolor: "customButton.gold",
             color: "customText.white",
@@ -122,6 +125,10 @@ const Suspects: React.FC = () => {
           Confirmar Seleção
         </Button>
       </Box>
+      <CreateSuspectModal
+        isOpen={openModal}
+        onClose={() => setOpenModal(false)}
+      />
     </Box>
   );
 };
