@@ -13,7 +13,7 @@ const theme = createTheme({
       primary: "#191919",
       white: "#FFFFFF",
       black: "#191919",
-      gray: "#191919",
+      gray: "#D3D3D3",
       gold: "#9E833B",
     },
     customText: {
@@ -29,6 +29,7 @@ const theme = createTheme({
       darkGrey: "#8D8D8D",
       lightGrey: "#D1D1D1",
       veryLightGray: "#EEEEEE",
+      hover: "#9e833b",
     },
     icon: {
       black: "#000000",
@@ -97,6 +98,7 @@ declare module "@mui/material/styles" {
       darkGrey: string;
       lightGrey: string;
       veryLightGray: string;
+      hover: string;
     };
     icon: {
       black: string;
@@ -162,6 +164,7 @@ declare module "@mui/material/styles" {
       darkGrey: string;
       lightGrey: string;
       veryLightGray: string;
+      hover: string;
     };
     icon: {
       black: string;
