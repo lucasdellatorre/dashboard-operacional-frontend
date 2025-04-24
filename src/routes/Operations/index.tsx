@@ -6,10 +6,12 @@ import { useHeaderInput } from "../../hooks/useHeaderInput";
 import { useOperations } from "../../hooks/useOperations";
 import type { Operation } from "../../hooks/useOperations";
 import { HeadCell } from "../../interface/operationSuspectTable/operationSuspectTableInterface";
+import CreateOperationModal from "../../components/modal/createOperationModal";
 
 const Operation: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const [openModal, setOpenModal] = useState<boolean>(false);
   const { headerInputValue } = useHeaderInput();
   const [selectedOperations, setSelectedOperations] = useState<Operation[]>([]);
   const [selectedIds, setSelectedIds] = useState<readonly number[]>([]);
@@ -66,8 +68,8 @@ const Operation: React.FC = () => {
         >
           Selecione uma operação para iniciar a investigação
         </Typography>
-
         <Button
+          onClick={() => setOpenModal(true)}
           sx={{
             bgcolor: "customButton.gold",
             color: "customText.white",
@@ -102,11 +104,16 @@ const Operation: React.FC = () => {
               bgcolor: "customText.grey",
               color: "customText.lightGrey",
               cursor: "not-allowed",
+              fontFamily: "Inter, sans-serif",
             },
           }}
         >
           Confirmar Seleção
         </Button>
+        <CreateOperationModal
+          isOpen={openModal}
+          onClose={() => setOpenModal(false)}
+        />
       </Box>
     </Box>
   );
