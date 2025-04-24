@@ -1,15 +1,20 @@
 import { Box, Button, Typography } from "@mui/material";
-import React from "react";
+import React, { useState } from "react";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 
 interface UploadAreaInputProps {
   onFileSelect: (file: File) => void;
 }
 
-const UploadAreaInput: React.FC<UploadAreaInputProps> = ({ onFileSelect }) => {
+const UploadAreaInput: React.FC<UploadAreaInputProps> = ({
+  onFileSelect,
+}) => {
+  const [fileName, setFileName] = useState<string | null>(null);
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const selectedFile = e.target.files[0];
+      setFileName(selectedFile.name);
       console.log(selectedFile);
       onFileSelect(selectedFile);
     }
@@ -38,8 +43,8 @@ const UploadAreaInput: React.FC<UploadAreaInputProps> = ({ onFileSelect }) => {
 
       <CloudUploadIcon sx={{ fontSize: 80, color: "#ccc", mb: 2 }} />
 
-      <Typography fontSize={"1rem"} sx={{ color: "#555", mb: 2 }}>
-        Drag and Drop seu arquivo aqui
+      <Typography fontSize={"1rem"} sx={{ color: "#555", mb: 2 , textAlign: "center"}}>
+        {fileName || "Selecione seu arquivo"}{" "}
       </Typography>
 
       <Button

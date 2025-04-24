@@ -1,23 +1,31 @@
-import { Box, Button, Dialog, IconButton, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Dialog,
+  IconButton,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CloseIcon from "@mui/icons-material/Close";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { z } from "zod";
 import UploadAreaInput from "../uploadAreaInput";
 import MultiSelect from "../multiSelect";
 
 const uploadModalSchema = z.object({
   uploadFile: z
-    .string({
-      required_error: "O upload de arquivo é obrigatório",
-    })
-    .min(1, "O upload de arquivo não pode estar vazio"),
+    .instanceof(File, {
+      message: "O upload de arquivo é obrigatório",
+    }),
   operations: z
     .array(z.string())
     .min(1, "Deve fornecer pelo menos uma operação")
     .nonempty("Lista de operações não pode estar vazia"),
 });
+
 
 interface UploadModalProps {
   isOpen: boolean;
@@ -42,7 +50,7 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
     setValue("operations", selected as [string, ...string[]]);
   };
   const handleFileSelected = (file: File) => {
-    setValue("uploadFile", file.name);
+    setValue("uploadFile", file);
   };
   const {
     control,
@@ -54,7 +62,7 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
     mode: "all",
     resolver: zodResolver(uploadModalSchema),
     defaultValues: {
-      uploadFile: "",
+      uploadFile: undefined,
       operations: [],
     },
   });
@@ -70,6 +78,7 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
           left: "55%",
           transform: "translate(-50%, -50%)",
           margin: 0,
+          overflow: "hidden",
         },
       }}
       open={isOpen}
@@ -92,12 +101,34 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
       <Box
         alignItems={"center"}
         display="flex"
-        flexDirection="column"
+        justifyContent={"center"}
         marginBottom={"0.8rem"}
+        gap={"0.3rem"}
       >
         <Typography sx={{ fontWeight: "900", fontSize: "1.2rem" }}>
           Upload de planilha
         </Typography>
+        <Tooltip
+          title={
+            "A planilha deve estar no formato .xlsx e conter as colunas obrigatórias: Especificações planilhas"
+          }
+          componentsProps={{
+            tooltip: {
+              sx: {
+                backgroundColor: "#fff",
+                borderRadius: "12px",
+                color: "rgba(0, 0, 0, 0.87)",
+                maxWidth: 220,
+                border: "1px solid #dadde9",
+                boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.3)",
+              },
+            },
+          }}
+        >
+          <IconButton size="small" sx={{ padding: 0 }}>
+            <InfoOutlinedIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
       </Box>
       <Box
         display={"flex"}
@@ -112,7 +143,7 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
           gap="0.4rem"
         >
           <Typography sx={{ fontWeight: "800", fontSize: "1rem" }}>
-            Operações
+            Operações*
           </Typography>
           <Controller
             control={control}
@@ -150,7 +181,7 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
           <Controller
             control={control}
             name={"uploadFile"}
-            render={({ field }) => (
+            render={() => (
               <UploadAreaInput onFileSelect={handleFileSelected} />
             )}
           />
