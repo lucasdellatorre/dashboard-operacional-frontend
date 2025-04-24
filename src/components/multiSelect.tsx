@@ -43,11 +43,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
           displayEmpty: true,
           renderValue: (selected) => {
             if ((selected as string[]).length === 0) {
-              return (
-                <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>
-                  {placeholder}
-                </span>
-              );
+              return <span style={{ color: "#a2a2a2" }}>{placeholder}</span>;
             }
             return (
               <div

@@ -45,6 +45,7 @@ const Header: React.FC<HeaderProps> = ({ inputValue, setInputValue }) => {
               fontWeight: "bold",
               color: "#191919",
               marginBottom: "0.25rem",
+              fontFamily: "Inter, sans-serif",
             }}
           >
             Dashboard Operacional
@@ -55,6 +56,7 @@ const Header: React.FC<HeaderProps> = ({ inputValue, setInputValue }) => {
             sx={{
               fontSize: "0.9rem",
               color: "#565656",
+              fontFamily: "Inter, sans-serif",
             }}
           >
             Olá, seja bem vindo!

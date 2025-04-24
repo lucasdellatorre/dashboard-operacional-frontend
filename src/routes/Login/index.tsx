@@ -72,7 +72,7 @@ const Login: React.FC = () => {
           fontFamily="'Inter', sans-serif"
           fontWeight="bold"
           textAlign="center"
-          sx={{
+          sx={{ 
             fontSize: {
               xs: "1.0rem",
               sm: "1.5rem",
