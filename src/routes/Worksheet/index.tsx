@@ -1,10 +1,11 @@
 import { Box, Button, Typography } from "@mui/material";
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GenericData, HeadCell } from "../../interface/table/tableInterface";
 import GenericTable from "../../components/Table/Table";
 import { useWorksheets } from "../../hooks/useWorksheets";
 import { useHeaderInput } from "../../hooks/useHeaderInput";
+import UploadWorksheetModal from "../../components/modal/uploadWorksheetModal";
 
 export interface Worksheet extends GenericData {
   id: number;
@@ -28,6 +29,7 @@ const Worksheet: React.FC = () => {
   const operationsSelected = () => {
     navigate("/operacoes");
   };
+  const [openModal, setOpenModal] = useState<boolean>(false);
   const { headerInputValue } = useHeaderInput();
   const { filteredWorksheets } = useWorksheets({
     searchTerm: headerInputValue,
@@ -51,6 +53,7 @@ const Worksheet: React.FC = () => {
         </Typography>
 
         <Button
+          onClick={() => setOpenModal(true)}
           sx={{
             bgcolor: "customButton.gold",
             color: "customText.white",
@@ -90,6 +93,10 @@ const Worksheet: React.FC = () => {
           Próximo
         </Button>
       </Box>
+      <UploadWorksheetModal
+        isOpen={openModal}
+        onClose={() => setOpenModal(false)}
+      />
     </Box>
   );
 };
