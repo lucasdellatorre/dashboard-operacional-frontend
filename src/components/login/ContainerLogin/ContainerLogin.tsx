@@ -11,7 +11,7 @@ const ContainerLogin: React.FC = () => {
 
   const salvaCpf = () => {
     localStorage.setItem("cpf", cpf);
-    navigate('/operacoes');
+    navigate("/operacoes");
   };
 
   const formatCPF = (value: string): string => {
@@ -28,18 +28,18 @@ const ContainerLogin: React.FC = () => {
       flexDirection="column"
       justifyContent="center"
       alignItems="center"
-      padding="2rem" 
-      gap="1.5rem" 
+      padding="2rem"
+      gap="1.5rem"
       width="100%"
       maxWidth={{
-        sm: "30rem", 
-        md: "35rem", 
-        lg: "49rem", 
+        sm: "30rem",
+        md: "35rem",
+        lg: "49rem",
       }}
       sx={{
         background: "#FAFAFA",
-        boxShadow: "0 0.25rem 1rem rgba(0, 0, 0, 0.15)", 
-        borderRadius: "1rem", 
+        boxShadow: "0 0.25rem 1rem rgba(0, 0, 0, 0.15)",
+        borderRadius: "1rem",
         fontFamily: "'Inter', sans-serif",
       }}
     >
@@ -64,8 +64,14 @@ const ContainerLogin: React.FC = () => {
           size="small"
           sx={{
             "& .MuiOutlinedInput-root": {
-              borderRadius: "0.5rem", 
+              borderRadius: "0.5rem",
               fontSize: "1rem",
+              "&:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: "customButton.gold",
+              },
+              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                borderColor: "customButton.gold",
+              },
             },
           }}
         />
@@ -81,8 +87,8 @@ const ContainerLogin: React.FC = () => {
         sx={{
           textTransform: "none",
           width: "100%",
-          maxWidth: "45rem", 
-          height: "3rem", 
+          maxWidth: "45rem",
+          height: "3rem",
           backgroundColor: "#C1A047",
           fontSize: "1.125rem",
           fontWeight: "600",

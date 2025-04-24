@@ -11,6 +11,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ inputValue, setInputValue }) => {
   const location = useLocation();
   const isOperationsPage = location.pathname === "/operacoes";
+  const isWorksheetPage = location.pathname === "/planilhas";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
@@ -75,6 +76,8 @@ const Header: React.FC<HeaderProps> = ({ inputValue, setInputValue }) => {
             placeholder={
               isOperationsPage
                 ? "Procure aqui pelas operações"
+                : isWorksheetPage
+                ? "Procure aqui pelas planilhas"
                 : "Procure aqui pelos alvos"
             }
             value={inputValue}

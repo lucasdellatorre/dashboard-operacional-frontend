@@ -3,16 +3,12 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { GenericData, HeadCell } from "../../interface/table/tableInterface";
 import GenericTable from "../../components/Table/Table";
+import { useWorksheets } from "../../hooks/useWorksheets";
+import { useHeaderInput } from "../../hooks/useHeaderInput";
 
 export interface Worksheet extends GenericData {
   id: number;
   label: string;
-}
-
-export interface WorksheetData extends GenericData {
-  id: number;
-  worksheet: string;
-  date: string;
 }
 
 const Worksheet: React.FC = () => {
@@ -29,27 +25,13 @@ const Worksheet: React.FC = () => {
     },
   ];
 
-  const mockWorksheets: WorksheetData[] = [
-    {
-      id: 1,
-      worksheet: "Planilha 1",
-      date: "2023-01-01",
-    },
-    {
-      id: 2,
-      worksheet: "Planilha 2",
-      date: "2023-01-01",
-    },
-    {
-      id: 3,
-      worksheet: "Planilha 3",
-      date: "2023-01-01",
-    },
-  ];
-
   const operationsSelected = () => {
     navigate("/operacoes");
   };
+  const { headerInputValue } = useHeaderInput();
+  const { filteredWorksheets } = useWorksheets({
+    searchTerm: headerInputValue,
+  });
 
   return (
     <Box p={3} sx={{ fontFamily: "Inter, sans-serif" }}>
@@ -81,13 +63,13 @@ const Worksheet: React.FC = () => {
       </Box>
 
       <GenericTable
-        rows={mockWorksheets}
+        rows={filteredWorksheets}
         headCells={workSheetsHeaderCells}
         title="Planilhas"
         defaultOrderBy="suspectName"
         onSelectionChange={() => {}}
         initialSelected={[]}
-        noDataMessage="Nenhum alvo encontrado"
+        noDataMessage="Nenhuma planilha encontrada"
         onDelete={() => {}}
       />
       <Box sx={{ width: "100%", display: "flex", justifyContent: "end" }}>
