@@ -1,29 +1,36 @@
 import { Box, Button, Typography } from "@mui/material";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { GenericData, HeadCell } from "../../interface/table/tableInterface";
+import { HeadCell } from "../../interface/table/tableInterface";
 import GenericTable from "../../components/Table/Table";
-import { useWorksheets } from "../../hooks/useWorksheets";
+import { useWorksheets, WorkSheet } from "../../hooks/useWorksheets";
 import { useHeaderInput } from "../../hooks/useHeaderInput";
 import UploadWorksheetModal from "../../components/modal/uploadWorksheetModal";
-
-export interface Worksheet extends GenericData {
-  id: number;
-  label: string;
-}
 
 const Worksheet: React.FC = () => {
   const navigate = useNavigate();
 
-  const workSheetsHeaderCells: readonly HeadCell<Worksheet>[] = [
+  const workSheetsHeaderCells: readonly HeadCell<WorkSheet>[] = [
     {
       id: "worksheet",
       label: "Planilhas",
     },
     {
+      id: "size",
+      label: "Tamanho do arquivo",
+    },    
+    {
+      id: "insertedBy",
+      label: "Adicionado por",
+    },
+    {
+      id: "operationName",
+      label: "Operações",
+    },
+    {
       id: "date",
       label: "Data de Inserção",
-    },
+    },    
   ];
 
   const operationsSelected = () => {
@@ -96,6 +103,7 @@ const Worksheet: React.FC = () => {
       <UploadWorksheetModal
         isOpen={openModal}
         onClose={() => setOpenModal(false)}
+        existingFiles={filteredWorksheets.map((worksheet) => worksheet.worksheet)}
       />
     </Box>
   );

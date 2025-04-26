@@ -1,10 +1,10 @@
 import { Box, Button, Typography } from "@mui/material";
 import React, { useCallback, useState } from "react";
-import GenericTable from "../../components/operationSuspectTable/table";
+import GenericTable from "../../components/Table/Table";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useHeaderInput } from "../../hooks/useHeaderInput";
-import { HeadCell } from "../../interface/operationSuspectTable/operationSuspectTableInterface";
-import { Targets, useOperations } from "../../hooks/useSuspects";
+import { HeadCell } from "../../interface/table/tableInterface";
+import { Targets, useSuspects } from "../../hooks/useSuspects";
 import CreateSuspectModal from "../../components/modal/createSuspectModal";
 
 const Suspects: React.FC = () => {
@@ -52,7 +52,7 @@ const Suspects: React.FC = () => {
     [setSelectedOperations]
   );
 
-  const { filteredSuspects } = useOperations({
+  const { filteredSuspects } = useSuspects({
     searchTerm: headerInputValue,
   });
 
@@ -80,7 +80,7 @@ const Suspects: React.FC = () => {
           fontWeight={700}
           sx={{ fontFamily: "Inter, sans-serif" }}
         >
-          Selecione uma operação para iniciar a investigação
+          Selecione os alvos para exibição do dashboard
         </Typography>
 
         <Button
@@ -106,6 +106,7 @@ const Suspects: React.FC = () => {
         noDataMessage="Nenhum alvo encontrado"
         onDelete={() => {}}
       />
+
       <Box sx={{ width: "100%", display: "flex", justifyContent: "end" }}>
         <Button
           disabled={selectedIds.length === 0}

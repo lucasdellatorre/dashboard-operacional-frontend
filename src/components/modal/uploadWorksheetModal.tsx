@@ -6,7 +6,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import React from "react";
+import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CloseIcon from "@mui/icons-material/Close";
@@ -30,12 +30,16 @@ const uploadModalSchema = z.object({
 interface UploadModalProps {
   isOpen: boolean;
   onClose: () => void;
+  existingFiles: string[];
 }
 type uploadModalSchemaType = z.infer<typeof uploadModalSchema>;
 const UploadWorksheetModal: React.FC<UploadModalProps> = ({
   isOpen,
   onClose,
+  existingFiles,
 }) => {
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
   const operation = [
     "Operação A",
     "Operação B",
@@ -46,12 +50,7 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
     "Operação G",
     "Operação H",
   ];
-  const handleChangeOperations = (selected: string[]) => {
-    setValue("operations", selected as [string, ...string[]]);
-  };
-  const handleFileSelected = (file: File) => {
-    setValue("uploadFile", file);
-  };
+
   const {
     control,
     handleSubmit,
@@ -66,6 +65,30 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
       operations: [],
     },
   });
+
+  const handleChangeOperations = (selected: string[]) => {
+    setValue("operations", selected as [string, ...string[]]);
+  };
+
+  const handleFileSelected = (file: File) => {
+    // clear any previous submit error when user picks a new file
+    setSubmitError(null);
+    setValue("uploadFile", file);
+  };
+
+  const onSubmit = (data: uploadModalSchemaType) => {
+    const fileName = data.uploadFile.name;
+    if (existingFiles.includes(fileName)) {
+      setSubmitError("Já existe um arquivo com esse nome.");
+      return;
+    }
+
+    setSubmitError(null);
+    console.log("Form data:", data);
+    reset();
+    onClose();
+  };
+  
 
   return (
     <Dialog
@@ -181,9 +204,7 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
           <Controller
             control={control}
             name={"uploadFile"}
-            render={() => (
-              <UploadAreaInput onFileSelect={handleFileSelected} />
-            )}
+            render={() => <UploadAreaInput onFileSelect={handleFileSelected} />}
           />
 
           <Box sx={{ height: "1.5rem" }}>
@@ -197,22 +218,25 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
           </Box>
         </Box>
 
-        <Button
-          onClick={handleSubmit((data) => {
-            console.log(data);
-            reset();
-            onClose();
-          })}
-          sx={{
-            bgcolor: "customButton.gold",
-            color: "customText.white",
-            textTransform: "none",
-            fontWeight: 600,
-            width: "100%",
-          }}
-        >
-          Fazer Upload
-        </Button>
+        <Box width="100%">
+          <Button
+            fullWidth
+            onClick={handleSubmit(onSubmit)}
+            sx={{
+              bgcolor: "customButton.gold",
+              color: "customText.white",
+              textTransform: "none",
+              fontWeight: 600,
+            }}
+          >
+            Fazer Upload
+          </Button>
+          {submitError && (
+            <Typography color="error" variant="caption" sx={{ mt: 1 }}>
+              {submitError}
+            </Typography>
+          )}
+        </Box>
       </Box>
     </Dialog>
   );

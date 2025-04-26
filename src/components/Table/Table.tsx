@@ -8,6 +8,7 @@ import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Checkbox from "@mui/material/Checkbox";
+import { Tooltip } from "@mui/material";
 import {
   GenericData,
   GenericTableProps,
@@ -208,20 +209,18 @@ function GenericTable<T extends GenericData>({
                     {headCells.map((headCell, cellIndex) => {
                       const value = row[headCell.id];
                       const isFirstCell = cellIndex === 5;
-
                       return (
                         <TableCell
-                          sx={{
-                            bgcolor: isSelected(row.id)
-                              ? "table.lightGrey"
-                              : "table.white",
-                          }}
                           key={String(headCell.id)}
-                          align={"center"}
-                          padding={"normal"}
-                          component={"td"}
-                          id={isFirstCell ? labelId : undefined}
+                          align="center"
+                          padding="normal"
+                          component="td"
                           scope={isFirstCell ? "row" : undefined}
+                          id={isFirstCell ? labelId : undefined}
+                          sx={{
+                            bgcolor: isSelected(row.id) ? "table.lightGrey" : "table.white",
+                            maxWidth: "10rem",
+                          }}
                         >
                           {headCell.iconAction ? (
                             <Box
@@ -240,18 +239,26 @@ function GenericTable<T extends GenericData>({
                             >
                               {headCell.iconAction.icon}
                             </Box>
-                          ) : Array.isArray(value) ? (
-                            value.join(", ")
-                          ) : typeof value === "string" ||
-                            typeof value === "number" ||
-                            React.isValidElement(value) ? (
-                            value
                           ) : (
-                            String(value)
+                            <Tooltip title={Array.isArray(value) ? value.join(", ") : String(value)} arrow>
+                              <Box
+                                sx={{
+                                  // these three are the magic for ellipsis:
+                                  overflow: "hidden",
+                                  whiteSpace: "nowrap",
+                                  textOverflow: "ellipsis",
+                                  // make sure it actually respects the maxWidth:
+                                  display: "block",
+                                }}
+                              >
+                                {Array.isArray(value) ? value.join(", ") : String(value)}
+                              </Box>
+                            </Tooltip>
                           )}
                         </TableCell>
                       );
                     })}
+
                   </TableRow>
                 );
               })}
@@ -290,7 +297,7 @@ function GenericTable<T extends GenericData>({
           }
         />
       </Paper>
-    </Box>
+    </Box >
   );
 }
 

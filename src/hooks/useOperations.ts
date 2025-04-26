@@ -42,7 +42,8 @@ export const useOperations = ({ searchTerm }: UseOperationsProps) => {
       result = result.filter(
         (operation) =>
           normalizeString(operation.operationName).includes(normalizedSearch) ||
-          String(operation.id).includes(normalizedSearch)
+          String(operation.id).includes(normalizedSearch) ||
+          normalizeString(operation.operationDate).includes(normalizedSearch)
       );
     }
 
