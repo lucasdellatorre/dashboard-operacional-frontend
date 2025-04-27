@@ -1,13 +1,27 @@
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import TableChartIcon from "@mui/icons-material/TableChart";
 import MediationIcon from "@mui/icons-material/Mediation";
 import TargetIcon from "@mui/icons-material/AdsClickOutlined";
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import Groups2Icon from "@mui/icons-material/Groups2";
-import { textStyles } from "../../../../theme/typography";
-import { Link, useLocation } from "react-router-dom";
+import LogoutIcon from "@mui/icons-material/Logout";
+import { useLocation } from "react-router-dom";
+import MenuIcon from "@mui/icons-material/Menu";
+import MenuOpenIcon from "@mui/icons-material/MenuOpen";
+import NavigationButton from "./NavigationButton/NavigationButton";
+import ToggleButton from "../ToggleButton/ToggleButton";
 
-const NavigationButtons: React.FC = () => {
+interface NavigationButtonsProps {
+  isCollapsed: boolean;
+  onToggle: () => void;
+  logout: () => void;
+}
+
+const NavigationButtons: React.FC<NavigationButtonsProps> = ({
+  isCollapsed,
+  onToggle,
+  logout,
+}) => {
   const location = useLocation();
   const isOperationsPage = location.pathname === "/operacoes";
   const isSuspectsPage = location.pathname === "/alvos";
@@ -15,166 +29,75 @@ const NavigationButtons: React.FC = () => {
   const isActive = (path: string): boolean => location.pathname === path;
 
   return (
-    <Box p={2} flex={1}>
-      <Link to="/operacoes" style={{ textDecoration: "none", color: "white" }}>
-        <Box
-          display="flex"
-          alignItems="center"
-          mb={2}
-          gap={2}
-          p={1.5}
-          borderRadius="8px"
-          sx={{
-            background: isActive("/operacoes")
-              ? "#9E833B"
-              : "linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 100%)",
-            transition: "all 0.3s ease",
-            "&:hover": {
-              background: isActive("/operacoes")
-                ? "#9E833B"
-                : "linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%)",
-              transform: "translateX(5px)",
-            },
-          }}
-        >
-          <TargetIcon />
-          <Typography sx={{ ...textStyles.navigationBarTitle }}>
-            Operações
-          </Typography>
-        </Box>
-      </Link>
-      <Link to="/alvos" style={{ textDecoration: "none", color: "white" }}>
-        <Box
-          display="flex"
-          alignItems="center"
-          mb={2}
-          gap={2}
-          p={1.5}
-          borderRadius="8px"
-          sx={{
-            background: isActive("/alvos")
-              ? "#9E833B"
-              : "linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 100%)",
-            transition: "all 0.3s ease",
-            "&:hover": {
-              background: isActive("/alvos")
-                ? "#9E833B"
-                : "linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%)",
-              transform: "translateX(5px)",
-            },
-          }}
-        >
-          <Groups2Icon />
+    <Box
+      mt={!isCollapsed ? 0 : 6}
+      py={2}
+      px={isCollapsed ? 1 : 2}
+      display="flex"
+      flexDirection="column"
+      height="100%"
+    >
+      <Box flex={1}>
+        <ToggleButton
+          icon={isCollapsed ? <MenuIcon /> : <MenuOpenIcon />}
+          isCollapsed={isCollapsed}
+          onClick={onToggle}
+        />
 
-          <Typography sx={{ ...textStyles.navigationBarTitle }}>
-            Alvos
-          </Typography>
-        </Box>
-      </Link>
+        <NavigationButton
+          to="/operacoes"
+          icon={<TargetIcon />}
+          label="Operações"
+          isCollapsed={isCollapsed}
+          isActive={isActive("/operacoes")}
+        />
 
-      {!isOperationsPage && !isSuspectsPage && (
-        <>
-          <Link
-            to="/dashboard"
-            style={{ textDecoration: "none", color: "white" }}
-          >
-            <Box
-              display="flex"
-              alignItems="center"
-              mb={2}
-              gap={2}
-              p={1.5}
-              borderRadius="8px"
-              sx={{
-                background: isActive("/dashboard")
-                  ? "#9E833B"
-                  : "linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 100%)",
-                transition: "all 0.3s ease",
-                "&:hover": {
-                  background: isActive("/operacoes")
-                    ? "#9E833B"
-                    : "linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%)",
-                  transform: "translateX(5px)",
-                },
-              }}
-            >
-              <AssessmentIcon />
-              <Typography sx={{ ...textStyles.navigationBarTitle }}>
-                Dashboard
-              </Typography>
-            </Box>
-          </Link>
-          <Box
-            onClick={(e) => e.preventDefault()}
-            sx={{
-              textDecoration: "none",
-              color: "white",
-              cursor: "pointer",
-            }}
-          >
-            <Box
-              display="flex"
-              alignItems="center"
-              mb={2}
-              gap={2}
-              p={1.5}
-              borderRadius="8px"
-              sx={{
-                background: isActive("/teia")
-                  ? "#9E833B"
-                  : "linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 100%)",
-                transition: "all 0.3s ease",
-                "&:hover": {
-                  background: isActive("/operacoes")
-                    ? "#9E833B"
-                    : "linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%)",
-                  transform: "translateX(5px)",
-                },
-              }}
-            >
-              <MediationIcon />
-              <Typography sx={{ ...textStyles.navigationBarTitle }}>
-                Teia
-              </Typography>
-            </Box>
-          </Box>
+        <NavigationButton
+          to="/alvos"
+          icon={<Groups2Icon />}
+          label="Alvos"
+          isCollapsed={isCollapsed}
+          isActive={isActive("/alvos")}
+        />
 
-          <Box
-            onClick={(e) => e.preventDefault()}
-            sx={{
-              textDecoration: "none",
-              color: "white",
-              cursor: "pointer",
-            }}
-          >
-            <Box
-              display="flex"
-              alignItems="center"
-              mb={2}
-              gap={2}
-              p={1.5}
-              borderRadius="8px"
-              sx={{
-                background: isActive("/tabelas")
-                  ? "#9E833B"
-                  : "linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 100%)",
-                transition: "all 0.3s ease",
-                "&:hover": {
-                  background: isActive("/operacoes")
-                    ? "#9E833B"
-                    : "linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%)",
-                  transform: "translateX(5px)",
-                },
-              }}
-            >
-              <TableChartIcon />
-              <Typography sx={{ ...textStyles.navigationBarTitle }}>
-                Tabelas
-              </Typography>
-            </Box>
-          </Box>
-        </>
-      )}
+        {!isOperationsPage && !isSuspectsPage && (
+          <>
+            <NavigationButton
+              to="/dashboard"
+              icon={<AssessmentIcon />}
+              label="Dashboard"
+              isCollapsed={isCollapsed}
+              isActive={isActive("/dashboard")}
+            />
+
+            <NavigationButton
+              icon={<MediationIcon />}
+              label="Teia"
+              isCollapsed={isCollapsed}
+              isActive={isActive("/teia")}
+              onClick={(e) => e.preventDefault()}
+            />
+
+            <NavigationButton
+              icon={<TableChartIcon />}
+              label="Tabelas"
+              isCollapsed={isCollapsed}
+              isActive={isActive("/tabelas")}
+              onClick={(e) => e.preventDefault()}
+            />
+          </>
+        )}
+      </Box>
+
+      <Box>
+        <NavigationButton
+          icon={<LogoutIcon />}
+          label="Logout"
+          isCollapsed={isCollapsed}
+          isActive={false}
+          onClick={logout}
+        />
+      </Box>
     </Box>
   );
 };

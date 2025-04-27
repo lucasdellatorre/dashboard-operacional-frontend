@@ -1,10 +1,7 @@
 import { Box } from "@mui/material";
 import React from "react";
-import UserProfile from "./UserProfile/UserProfile";
 import NavigationButtons from "./NavigationButtons/NavigationButtons";
-import FooterButtons from "./FooterButtons/FooterButtons";
-import ToggleButton from "./ToggleButton/ToggleButton";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import logoPolicia from "../../../assets/logo-policia.svg";
 
 interface NavigationBarProps {
@@ -17,9 +14,6 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
   onToggle,
 }) => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const isOperationsPage = location.pathname === "/operacoes";
-  const isSuspectsPage = location.pathname === "/alvos";
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -30,7 +24,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
     <>
       <Box
         height="100vh"
-        width={isCollapsed ? "0px" : "20.75rem"}
+        width={isCollapsed ? "3.7rem" : "20.75rem"}
         bgcolor="customBackground.darkGray"
         display="flex"
         flexDirection="column"
@@ -44,7 +38,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
         sx={{
           transition: "width 0.7s ease-in-out",
           "@media (max-width: 1024px)": {
-            width: isCollapsed ? "0px" : "16rem",
+            width: isCollapsed ? "3.7rem" : "16rem",
           },
         }}
       >
@@ -55,7 +49,6 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
           width="20.75rem"
           overflow="auto"
           sx={{
-            opacity: isCollapsed ? 0 : 1,
             transition: "opacity 0.7s ease-in-out, width 0.7s ease-in-out",
             "&::-webkit-scrollbar": {
               width: "0px",
@@ -66,24 +59,25 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
             },
           }}
         >
-          {isOperationsPage || isSuspectsPage ? (
-            <Box
-              component="img"
-              src={logoPolicia}
-              alt="Logo Polícia"
-              width="160px"
-              height="auto"
-              mx="auto"
-              my={2}
-            />
-          ) : (
-            <UserProfile />
-          )}
-          <NavigationButtons />
-          <FooterButtons logout={logout} />
+          <Box
+            component="img"
+            src={logoPolicia}
+            alt="Logo Polícia"
+            width={isCollapsed ? "0px" : "160px"}
+            height="auto"
+            mx="auto"
+            my={isCollapsed ? 0 : 2}
+            sx={{
+              transition: "width 0.7s ease-in-out, margin 0.7s ease-in-out",
+            }}
+          />
+          <NavigationButtons
+            isCollapsed={isCollapsed}
+            onToggle={onToggle}
+            logout={logout}
+          />
         </Box>
       </Box>
-      <ToggleButton isCollapsed={isCollapsed} onToggle={onToggle} />
     </>
   );
 };
