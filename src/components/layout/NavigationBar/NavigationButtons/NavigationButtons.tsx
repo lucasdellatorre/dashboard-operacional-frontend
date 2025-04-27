@@ -10,6 +10,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import NavigationButton from "./NavigationButton/NavigationButton";
 import ToggleButton from "../ToggleButton/ToggleButton";
+import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
 
 interface NavigationButtonsProps {
   isCollapsed: boolean;
@@ -42,6 +43,14 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
           icon={isCollapsed ? <MenuIcon /> : <MenuOpenIcon />}
           isCollapsed={isCollapsed}
           onClick={onToggle}
+        />
+
+        <NavigationButton
+          to="/planilhas"
+          icon={<DriveFolderUploadIcon />}
+          label="Planilhas"
+          isCollapsed={isCollapsed}
+          isActive={isActive("/planilhas")}
         />
 
         <NavigationButton
