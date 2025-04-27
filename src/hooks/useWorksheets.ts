@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { normalizeString } from "../utils/formatUtils";
 import { GenericData } from "../interface/operationSuspectTable/operationSuspectTableInterface";
 
@@ -42,8 +42,11 @@ export const mockWorksheets: WorkSheet[] = [
 ];
 
 export const useWorksheets = ({ searchTerm }: UseOperationsProps) => {
+
+  const [worksheets, setWorksheets] = useState<WorkSheet[]>(mockWorksheets);
+  
   const filteredWorksheets = useMemo(() => {
-    let result = [...mockWorksheets];
+    let result = [...worksheets];
 
     if (searchTerm?.trim()) {
       const normalizedSearch = normalizeString(searchTerm.trim());
@@ -55,7 +58,26 @@ export const useWorksheets = ({ searchTerm }: UseOperationsProps) => {
     }
 
     return result.sort((a, b) => a.worksheet.localeCompare(b.worksheet));
-  }, [searchTerm]);
+  }, [searchTerm, worksheets]);
 
-  return { worksheets: mockWorksheets, filteredWorksheets };
+
+  function addWorksheet(
+    worksheet: string,
+    size: string,
+    insertedBy: string,
+    date: string
+  ) {
+    console.log("addWorksheet", worksheet, size, insertedBy, date);
+    const newWorksheet: WorkSheet = {
+      id: mockWorksheets.length + 1,
+      worksheet,
+      size,
+      insertedBy,
+      operationName: "Operação A",
+      date,
+    };
+    setWorksheets((prevWorksheets) => [...prevWorksheets, newWorksheet]);
+  }
+
+  return {filteredWorksheets, addWorksheet };
 };

@@ -17,8 +17,9 @@ import MultiSelect from "../multiSelect";
 
 const uploadModalSchema = z.object({
   uploadFile: z
-    .instanceof(File, {
-      message: "O upload de arquivo é obrigatório",
+    .instanceof(File, { message: "O upload de arquivo é obrigatório" })
+    .refine((file) => /\.xlsx$/i.test(file.name), {
+      message: "O arquivo deve estar no formato .xlsx",
     }),
   operations: z
     .array(z.string())
@@ -26,21 +27,24 @@ const uploadModalSchema = z.object({
     .nonempty("Lista de operações não pode estar vazia"),
 });
 
+type UploadModalForm = z.infer<typeof uploadModalSchema>;
 
 interface UploadModalProps {
   isOpen: boolean;
+  onUploadSuccess: (file: File) => void;
   onClose: () => void;
   existingFiles: string[];
 }
-type uploadModalSchemaType = z.infer<typeof uploadModalSchema>;
+
 const UploadWorksheetModal: React.FC<UploadModalProps> = ({
   isOpen,
+  onUploadSuccess,
   onClose,
   existingFiles,
 }) => {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const operation = [
+  const operationsList = [
     "Operação A",
     "Operação B",
     "Operação C",
@@ -56,8 +60,10 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
     handleSubmit,
     reset,
     setValue,
+    setError,      
+    clearErrors, 
     formState: { errors },
-  } = useForm<uploadModalSchemaType>({
+  } = useForm<UploadModalForm>({
     mode: "all",
     resolver: zodResolver(uploadModalSchema),
     defaultValues: {
@@ -67,29 +73,45 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
   });
 
   const handleChangeOperations = (selected: string[]) => {
-    setValue("operations", selected as [string, ...string[]]);
+    setValue("operations", selected as [string, ...string[]], {
+      shouldValidate: true,
+    });
   };
 
   const handleFileSelected = (file: File) => {
-    // clear any previous submit error when user picks a new file
+    // clear any previous duplicate-name error
     setSubmitError(null);
-    setValue("uploadFile", file);
+
+    if (!/\.xlsx$/i.test(file.name)) {
+      setError("uploadFile", {
+        type: "manual",
+        message: "O arquivo deve estar no formato .xlsx",
+      });
+      return false;
+    }
+      clearErrors("uploadFile");
+      setValue("uploadFile", file, { shouldValidate: true });
+
+      return true;
   };
 
-  const onSubmit = (data: uploadModalSchemaType) => {
+  const onSubmit = (data: UploadModalForm) => {
     const fileName = data.uploadFile.name;
+
+    if (!/\.xlsx$/i.test(fileName)) {
+      setSubmitError("O arquivo deve estar no formato .xlsx");
+      return;
+    }
+
     if (existingFiles.includes(fileName)) {
       setSubmitError("Já existe um arquivo com esse nome.");
       return;
     }
-
     setSubmitError(null);
-    console.log("Form data:", data);
     reset();
-    onClose();
-  };
+    onUploadSuccess(data.uploadFile);
+  }
   
-
   return (
     <Dialog
       sx={{
@@ -121,20 +143,19 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
       >
         <CloseIcon />
       </IconButton>
+
       <Box
-        alignItems={"center"}
+        alignItems="center"
         display="flex"
-        justifyContent={"center"}
-        marginBottom={"0.8rem"}
-        gap={"0.3rem"}
+        justifyContent="center"
+        marginBottom="0.8rem"
+        gap="0.3rem"
       >
-        <Typography sx={{ fontWeight: "900", fontSize: "1.2rem" }}>
+        <Typography sx={{ fontWeight: 900, fontSize: "1.2rem" }}>
           Upload de planilha
         </Typography>
         <Tooltip
-          title={
-            "A planilha deve estar no formato .xlsx e conter as colunas obrigatórias: Especificações planilhas"
-          }
+          title="A planilha deve estar no formato .xlsx"
           componentsProps={{
             tooltip: {
               sx: {
@@ -153,66 +174,46 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
           </IconButton>
         </Tooltip>
       </Box>
-      <Box
-        display={"flex"}
-        flexDirection="column"
-        gap="1rem"
-        alignItems={"center"}
-      >
-        <Box
-          sx={{ width: "100%" }}
-          display={"flex"}
-          flexDirection="column"
-          gap="0.4rem"
-        >
-          <Typography sx={{ fontWeight: "800", fontSize: "1rem" }}>
+
+      <Box display="flex" flexDirection="column" gap="1rem" alignItems="center">
+        <Box width="100%" display="flex" flexDirection="column" gap="0.4rem">
+          <Typography sx={{ fontWeight: 800, fontSize: "1rem" }}>
             Operações*
           </Typography>
           <Controller
             control={control}
-            name={"operations"}
+            name="operations"
             render={({ field }) => (
               <MultiSelect
                 placeholder="Selecione as operações"
                 height="2.5rem"
-                options={operation}
+                options={operationsList}
                 selectedOptions={field.value}
-                onChange={(selected) => {
-                  handleChangeOperations(selected);
-                }}
+                onChange={handleChangeOperations}
               />
             )}
           />
-
-          <Box sx={{ height: "1.5rem" }}>
+          <Box height="1.5rem">
             {errors.operations && (
               <Typography color="error" variant="caption">
-                {typeof errors.operations === "string"
-                  ? errors.operations
-                  : errors.operations.message || "A operação é obrigatória"}
+                {errors.operations.message}
               </Typography>
             )}
           </Box>
         </Box>
 
-        <Box
-          sx={{ width: "100%" }}
-          display={"flex"}
-          flexDirection="column"
-          gap="0.4rem"
-        >
+        <Box width="100%" display="flex" flexDirection="column" gap="0.4rem">
           <Controller
             control={control}
-            name={"uploadFile"}
-            render={() => <UploadAreaInput onFileSelect={handleFileSelected} />}
+            name="uploadFile"
+            render={() => (
+              <UploadAreaInput onFileSelect={handleFileSelected} />
+            )}
           />
-
-          <Box sx={{ height: "1.5rem" }}>
+          <Box height="1.5rem">
             {errors.uploadFile && (
               <Typography color="error" variant="caption">
-                {typeof errors.uploadFile === "string"
-                  ? errors.uploadFile
-                  : errors.uploadFile.message || "A operação é obrigatória"}
+                {errors.uploadFile.message}
               </Typography>
             )}
           </Box>

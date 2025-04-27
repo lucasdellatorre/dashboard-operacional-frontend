@@ -33,12 +33,11 @@ const Worksheet: React.FC = () => {
     },    
   ];
 
-  const operationsSelected = () => {
-    navigate("/operacoes");
-  };
+  const operationsSelected = () => { navigate("/operacoes"); };
+
   const [openModal, setOpenModal] = useState<boolean>(false);
   const { headerInputValue } = useHeaderInput();
-  const { filteredWorksheets } = useWorksheets({
+  const { filteredWorksheets, addWorksheet } = useWorksheets({
     searchTerm: headerInputValue,
   });
 
@@ -103,6 +102,22 @@ const Worksheet: React.FC = () => {
       <UploadWorksheetModal
         isOpen={openModal}
         onClose={() => setOpenModal(false)}
+        onUploadSuccess={(file) => {
+          setOpenModal(false);
+
+          const cpf = localStorage.getItem("cpf") || "000.000.000-00";
+          addWorksheet(
+            file.name,
+            file.size.toString(),
+            cpf,
+            new Date().toLocaleDateString("pt-BR", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+            })
+          );
+        }}
+
         existingFiles={filteredWorksheets.map((worksheet) => worksheet.worksheet)}
       />
     </Box>
@@ -110,3 +125,4 @@ const Worksheet: React.FC = () => {
 };
 
 export default Worksheet;
+
