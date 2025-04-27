@@ -1,6 +1,6 @@
 import { Box, Button, Typography } from "@mui/material";
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useCallback, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { HeadCell } from "../../interface/table/tableInterface";
 import GenericTable from "../../components/Table/Table";
 import { useWorksheets, WorkSheet } from "../../hooks/useWorksheets";
@@ -9,6 +9,9 @@ import UploadWorksheetModal from "../../components/modal/uploadWorksheetModal";
 
 const Worksheet: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [selectedWorksheets, setSelectedWorksheets] = useState<WorkSheet[]>([]);
+  const [selectedIds, setSelectedIds] = useState<readonly number[]>([]);
 
   const workSheetsHeaderCells: readonly HeadCell<WorkSheet>[] = [
     {
@@ -18,7 +21,7 @@ const Worksheet: React.FC = () => {
     {
       id: "size",
       label: "Tamanho do arquivo",
-    },    
+    },
     {
       id: "insertedBy",
       label: "Adicionado por",
@@ -30,11 +33,25 @@ const Worksheet: React.FC = () => {
     {
       id: "date",
       label: "Data de Inserção",
-    },    
+    },
   ];
 
-  const operationsSelected = () => { navigate("/operacoes"); };
+  const worksheetsSelected = () => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    const worksheetsIds = selectedWorksheets
+      .map((item: WorkSheet) => item.id)
+      .join("-");
+    newSearchParams.set("planilha", worksheetsIds);
+    navigate(`/operacoes?${newSearchParams.toString()}`);
+  };
 
+  const handleSelectionChange = useCallback(
+    (selectedIds: readonly number[], selectedItems: WorkSheet[]) => {
+      setSelectedIds(selectedIds);
+      setSelectedWorksheets(selectedItems);
+    },
+    [setSelectedWorksheets]
+  );
   const [openModal, setOpenModal] = useState<boolean>(false);
   const { headerInputValue } = useHeaderInput();
   const { filteredWorksheets, addWorksheet } = useWorksheets({
@@ -76,14 +93,14 @@ const Worksheet: React.FC = () => {
         headCells={workSheetsHeaderCells}
         title="Planilhas"
         defaultOrderBy="suspectName"
-        onSelectionChange={() => {}}
-        initialSelected={[]}
+        onSelectionChange={handleSelectionChange}
+        initialSelected={selectedIds}
         noDataMessage="Nenhuma planilha encontrada"
         onDelete={() => {}}
       />
       <Box sx={{ width: "100%", display: "flex", justifyContent: "end" }}>
         <Button
-          onClick={operationsSelected}
+          onClick={worksheetsSelected}
           sx={{
             bgcolor: "customButton.black",
             color: "customText.white",
@@ -117,12 +134,12 @@ const Worksheet: React.FC = () => {
             })
           );
         }}
-
-        existingFiles={filteredWorksheets.map((worksheet) => worksheet.worksheet)}
+        existingFiles={filteredWorksheets.map(
+          (worksheet) => worksheet.worksheet
+        )}
       />
     </Box>
   );
 };
 
 export default Worksheet;
-

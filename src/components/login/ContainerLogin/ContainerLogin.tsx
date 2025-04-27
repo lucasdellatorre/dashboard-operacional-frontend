@@ -11,7 +11,7 @@ const ContainerLogin: React.FC = () => {
 
   const salvaCpf = () => {
     localStorage.setItem("cpf", cpf);
-    navigate("/operacoes");
+    navigate("/planilhas");
   };
 
   const formatCPF = (value: string): string => {

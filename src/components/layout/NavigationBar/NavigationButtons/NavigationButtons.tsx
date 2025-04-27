@@ -10,7 +10,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import NavigationButton from "./NavigationButton/NavigationButton";
 import ToggleButton from "../ToggleButton/ToggleButton";
-import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
+import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
 
 interface NavigationButtonsProps {
   isCollapsed: boolean;
@@ -26,6 +26,7 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
   const location = useLocation();
   const isOperationsPage = location.pathname === "/operacoes";
   const isSuspectsPage = location.pathname === "/alvos";
+  const isWorksheetPage = location.pathname === "/planilhas";
 
   const isActive = (path: string): boolean => location.pathname === path;
 
@@ -69,7 +70,7 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
           isActive={isActive("/alvos")}
         />
 
-        {!isOperationsPage && !isSuspectsPage && (
+        {!isOperationsPage && !isSuspectsPage && !isWorksheetPage && (
           <>
             <NavigationButton
               to="/dashboard"
