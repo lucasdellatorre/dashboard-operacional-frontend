@@ -11,6 +11,7 @@ const NavigationButtons: React.FC = () => {
   const location = useLocation();
   const isOperationsPage = location.pathname === "/operacoes";
   const isSuspectsPage = location.pathname === "/alvos";
+  const isWebChart = location.pathname === "/teia";
 
   const isActive = (path: string): boolean => location.pathname === path;
 
@@ -72,7 +73,7 @@ const NavigationButtons: React.FC = () => {
         </Box>
       </Link>
 
-      {!isOperationsPage && !isSuspectsPage && (
+      {!isOperationsPage && !isSuspectsPage && !isWebChart && (
         <>
           <Link
             to="/dashboard"
@@ -104,14 +105,7 @@ const NavigationButtons: React.FC = () => {
               </Typography>
             </Box>
           </Link>
-          <Box
-            onClick={(e) => e.preventDefault()}
-            sx={{
-              textDecoration: "none",
-              color: "white",
-              cursor: "pointer",
-            }}
-          >
+          <Link to="/teia" style={{ textDecoration: "none", color: "white" }}>
             <Box
               display="flex"
               alignItems="center"
@@ -125,7 +119,7 @@ const NavigationButtons: React.FC = () => {
                   : "linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 100%)",
                 transition: "all 0.3s ease",
                 "&:hover": {
-                  background: isActive("/operacoes")
+                  background: isActive("/teia")
                     ? "#9E833B"
                     : "linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%)",
                   transform: "translateX(5px)",
@@ -137,7 +131,7 @@ const NavigationButtons: React.FC = () => {
                 Teia
               </Typography>
             </Box>
-          </Box>
+          </Link>
 
           <Box
             onClick={(e) => e.preventDefault()}
