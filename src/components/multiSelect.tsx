@@ -8,18 +8,22 @@ import {
 } from "@mui/material";
 import React from "react";
 
+type style = "white" | "gray";
+
 interface MultiSelectProps {
   options: string[];
   selectedOptions: string[];
   onChange: (selected: string[]) => void;
   height?: string;
   placeholder: string;
+  style: style;
 }
 
 const MultiSelect: React.FC<MultiSelectProps> = ({
   options,
   selectedOptions,
   onChange,
+  style,
   height = "auto",
   placeholder,
 }) => {
@@ -43,8 +47,12 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
           displayEmpty: true,
           renderValue: (selected) => {
             if ((selected as string[]).length === 0) {
-              return <span style={{ color: "#a2a2a2" }}>{placeholder}</span>;
+              if (style === "white") {
+                return <span style={{ color: "#a2a2a2" }}>{placeholder}</span>;
+              }
+              return <span style={{ color: "grey" }}>{placeholder}</span>;
             }
+
             return (
               <div
                 style={{
@@ -66,7 +74,8 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                     size="small"
                     sx={{
                       flexShrink: 0,
-                      backgroundColor: "#f0f0f0",
+                      backgroundColor:
+                        style === "white" ? "#f0f0f0" : "#ffffff",
                       borderRadius: "16px",
                     }}
                   />
@@ -94,6 +103,8 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
           },
         }}
         sx={{
+          borderRadius: style === "gray" ? "8px" : "0",
+          backgroundColor: style === "white" ? "#fff" : "#e3e3e3",
           width: "100%",
           "& .MuiInputBase-root": {
             width: "100%",
@@ -113,9 +124,12 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
           notched: false,
           sx: {
             height: height,
+
             width: "100%",
             "& .MuiOutlinedInput-notchedOutline": {
-              borderColor: "rgba(0, 0, 0, 0.23)",
+              border: style === "gray" ? "none" : "1px solid",
+              borderColor:
+                style === "gray" ? "transparent" : "rgba(0, 0, 0, 0.23)",
             },
             "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
               borderColor: "rgba(0, 0, 0, 0.23)",

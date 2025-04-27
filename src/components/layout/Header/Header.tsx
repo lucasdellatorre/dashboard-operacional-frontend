@@ -16,7 +16,7 @@ const Header: React.FC<HeaderProps> = ({ inputValue, setInputValue }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
   };
-
+ 
   return (
     <AppBar
       position="static"
