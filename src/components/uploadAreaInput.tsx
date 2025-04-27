@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 
 interface UploadAreaInputProps {
-  onFileSelect: (file: File) => void;
+  onFileSelect: (file: File) => boolean;
 }
 
 const UploadAreaInput: React.FC<UploadAreaInputProps> = ({
@@ -14,9 +14,14 @@ const UploadAreaInput: React.FC<UploadAreaInputProps> = ({
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const selectedFile = e.target.files[0];
-      setFileName(selectedFile.name);
-      console.log(selectedFile);
-      onFileSelect(selectedFile);
+      if (onFileSelect(selectedFile)) {        
+        setFileName(selectedFile.name);
+        console.log(selectedFile);
+      }
+      else {
+        setFileName(null);
+        console.error("Invalid file selected.");
+      }
     }
   };
 

@@ -36,12 +36,12 @@ export const mockSuspects: Targets[] = [
     suspectName: "Rogerinho",
     date: "2028-01-01",
     relevance: "Não relevante",
-    operationName: ["Operação A", "Operação B"],
+    operationName: ["Operação A", "Operação B", "Operação C", "Operação D", "Operação E", "Operação F", "Operação G", "Operação H", "Operação I", "Operação J"],
     type: "Número",
   },
 ];
 
-export const useOperations = ({ searchTerm }: UseSuspectsProps) => {
+export const useSuspects = ({ searchTerm }: UseSuspectsProps) => {
   const filteredSuspects = useMemo(() => {
     let result = [...mockSuspects];
 
@@ -51,7 +51,10 @@ export const useOperations = ({ searchTerm }: UseSuspectsProps) => {
         (suspect) =>
           normalizeString(suspect.suspectName).includes(normalizedSearch) ||
           String(suspect.id).includes(normalizedSearch) ||
-          normalizeString(suspect.type).includes(normalizedSearch)
+          normalizeString(suspect.type).includes(normalizedSearch) ||
+          suspect.operationName.some((operation) =>
+            normalizeString(operation).includes(normalizedSearch)
+          )
       );
     }
 
