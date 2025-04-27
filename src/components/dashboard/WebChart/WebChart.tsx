@@ -33,8 +33,10 @@ const Chart: React.FC<{ data: Data }> = ({ data }) => {
     // Clear previous content
     d3.select(svgRef.current).selectAll("*").remove();
 
-    const width = 928;
-    const height = 600;
+    const svgContainer = svgRef.current.parentElement;
+    const width = svgContainer ? svgContainer.clientWidth : 928;
+    const height = svgContainer ? svgContainer.clientHeight : 600;
+
     const color = d3
       .scaleOrdinal<number, string>()
       .domain([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
@@ -50,44 +52,61 @@ const Chart: React.FC<{ data: Data }> = ({ data }) => {
         d3
           .forceLink<Node, Link>(links)
           .id((d) => d.id)
-          .distance(100) // Distance between nodes
+          .distance(100)
       )
-      .force("charge", d3.forceManyBody().strength(-2000)) // Strength of the repulsion force between nodes
-      .force("center", d3.forceCenter(width / 2, height / 2)) // Center of the simulation
-      .force("collision", d3.forceCollide().radius(40)); // Collision force between nodes
+      .force("charge", d3.forceManyBody().strength(-1000))
+      .force("center", d3.forceCenter(width / 2, height / 2))
+      .force("x", d3.forceX(width / 2).strength(0.1)) // Força para manter nodos no centro X
+      .force("y", d3.forceY(height / 2).strength(0.1)) // Força para manter nodos no centro Y
+      .force("collision", d3.forceCollide().radius(30));
 
     const svg = d3
       .select(svgRef.current)
       .attr("width", width)
       .attr("height", height)
       .attr("viewBox", [0, 0, width, height])
-      .attr("style", "max-width: 100%; height: auto;")
+      .attr("style", "max-width: 100%; height: 100%;")
       .attr("data-testid", "chart-svg");
 
-    const link = svg
+    // Adicionar zoom
+    const g = svg.append("g");
+    svg.call(
+      d3
+        .zoom<SVGSVGElement, unknown>()
+        .extent([
+          [0, 0],
+          [width, height],
+        ])
+        .scaleExtent([0.1, 4])
+        .on("zoom", (event) => {
+          g.attr("transform", event.transform);
+        })
+    );
+
+    const link = g
       .append("g")
       .attr("stroke-opacity", 0.6)
       .selectAll<SVGLineElement, Link>("line")
       .data(links)
       .join("line")
       .attr("stroke-width", (d) => Math.sqrt(d.value) / 2)
-      .attr("stroke", (d) => (d.value > 500 ? "#ff4444" : "#999")); // Color the links that have more than 500 value
+      .attr("stroke", (d) => (d.value > 500 ? "#ff4d4d" : "#999")); // Color the links that have more than 500 value
 
-    const node = svg
+    const node = g
       .append("g")
       .attr("stroke", "#fff")
-      .attr("stroke-width", 2) // Width of the lines contorning the nodes
+      .attr("stroke-width", 2)
       .selectAll<SVGCircleElement, Node>("circle")
       .data(nodes)
       .join("circle")
       .attr("r", 15)
       .attr("fill", (d) => color(d.group))
+      .style("cursor", "pointer")
       .on("dblclick", (_event, d) => {
-        // opens node info with double click
         window.open(`/node/${d.id}`, "_blank");
       });
 
-    const nodeText = svg
+    const nodeText = g
       .append("g")
       .selectAll<SVGTextElement, Node>("text")
       .data(nodes)
@@ -95,7 +114,8 @@ const Chart: React.FC<{ data: Data }> = ({ data }) => {
       .text((d) => d.id)
       .attr("fill", "#fff")
       .attr("text-anchor", "middle")
-      .attr("dy", "-1.5em");
+      .attr("dy", "-2em")
+      .attr("font-size", "14px");  // Aumentando o tamanho da fonte
 
     node.call(
       d3

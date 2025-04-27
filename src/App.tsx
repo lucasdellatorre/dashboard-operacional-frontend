@@ -5,6 +5,7 @@ import Login from "./routes/Login";
 import Users from "./routes/Users";
 import Suspects from "./routes/Suspects";
 import Operation from "./routes/Operations";
+import WebChart from "./routes/WebChart";
 import Layout from "./components/layout/layout";
 import Worksheet from "./routes/Worksheet";
 
@@ -19,6 +20,7 @@ function App() {
         <Route path="/alvos" element={<Suspects />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/usuarios" element={<Users />} />
+        <Route path="/teia" element={<WebChart />} />
       </Route>
     </Routes>
   );

@@ -71,11 +71,11 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
             />
 
             <NavigationButton
+              to="/teia"
               icon={<MediationIcon />}
               label="Teia"
               isCollapsed={isCollapsed}
               isActive={isActive("/teia")}
-              onClick={(e) => e.preventDefault()}
             />
 
             <NavigationButton
