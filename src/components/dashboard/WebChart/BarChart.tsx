@@ -1,6 +1,7 @@
 import React from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from "recharts";
-import { Paper, Typography, Box } from "@mui/material";
+import { Paper, Typography, Box, useTheme } from "@mui/material";
+import { textStyles } from "../../../theme/typography";
 
 export interface BarChartGenericProps {
   contacts: string[];
@@ -10,13 +11,6 @@ export interface BarChartGenericProps {
   tooltipLabel?: string;
   expanded?: boolean;
 }
-
-const barColors = [
-  "#5A4A2F",
-  "#C39B03",
-  "#6E5A3E",
-  "#BCB09A",
-];
 
 function getTickValues(min: number, max: number, count: number) {
   const step = (max - min) / (count - 1);
@@ -57,10 +51,16 @@ const BarChartGeneric: React.FC<BarChartGenericProps> = ({
   tooltipLabel,
   expanded = false,
 }) => {
+  const theme = useTheme();
   const chartData = contacts.map((contact, idx) => ({
     name: contact,
     value: data[idx],
-    fill: barColors[idx % barColors.length],
+    fill: [
+      theme.palette.chart.darkBrown,
+      theme.palette.chart.goldenYellow,
+      theme.palette.chart.oliveBrown,
+      theme.palette.chart.lightBeige,
+    ][idx % 4],
   }));
 
   // Calcular ticks do eixo Y
@@ -77,18 +77,16 @@ const BarChartGeneric: React.FC<BarChartGenericProps> = ({
         p: { xs: 2, sm: 3 },
         borderRadius: "1.5rem",
         boxShadow: "0 0.25rem 1rem rgba(0,0,0,0.1)",
-        backgroundColor: "#fff",
-        fontFamily: "Poppins, sans-serif",
+        backgroundColor: theme.palette.customBackground.primary,
+        fontFamily: theme.typography.fontFamily,
         display: "flex",
         flexDirection: "column",
       }}
     >
       <Typography
         sx={{
-          color: "#8D8D8D",
-          fontWeight: 500,
-          fontSize: "1.1rem",
-          lineHeight: 1.1,
+          color: theme.palette.customText.lightGrey,
+          ...textStyles.titleMedium,
           mb: 0,
           mt: 1,
           ml: 1,
@@ -98,9 +96,8 @@ const BarChartGeneric: React.FC<BarChartGenericProps> = ({
       </Typography>
       <Typography
         sx={{
-          color: "#191919",
-          fontWeight: 700,
-          fontSize: "1.7rem",
+          color: theme.palette.customText.black,
+          ...textStyles.titleLarge,
           mt: -0.5,
           ml: 1,
           mb: 2,
@@ -113,12 +110,12 @@ const BarChartGeneric: React.FC<BarChartGenericProps> = ({
           <BarChart data={chartData} margin={{ top: 5, bottom: 5, left: 5, right: 5 }}>
             <XAxis
               dataKey="name"
-              tick={{ fill: "#8D8D8D", fontWeight: 500, fontSize: "0.9rem" }}
+              tick={{ fill: theme.palette.customText.lightGrey, ...textStyles.bodyMedium }}
               textAnchor="end"
               interval={0}
             />
             <YAxis
-              tick={{ fill: "#8D8D8D", fontWeight: 500, fontSize: "0.9rem" }}
+              tick={{ fill: theme.palette.customText.lightGrey, ...textStyles.bodyMedium }}
               ticks={yTicks}
               domain={[minY, maxY]}
             />
@@ -127,7 +124,7 @@ const BarChartGeneric: React.FC<BarChartGenericProps> = ({
                 <ReferenceLine
                   key={"refline-" + y}
                   y={y}
-                  stroke="#E0E0E0"
+                  stroke={theme.palette.customInput.lightGrey}
                   strokeDasharray="6 4"
                   strokeWidth={1}
                   ifOverflow="extendDomain"
