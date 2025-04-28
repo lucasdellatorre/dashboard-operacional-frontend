@@ -36,15 +36,6 @@ const Worksheet: React.FC = () => {
     },
   ];
 
-  const worksheetsSelected = () => {
-    const newSearchParams = new URLSearchParams(searchParams);
-    const worksheetsIds = selectedWorksheets
-      .map((item: WorkSheet) => item.id)
-      .join("-");
-    newSearchParams.set("planilha", worksheetsIds);
-    navigate(`/operacoes?${newSearchParams.toString()}`);
-  };
-
   const handleSelectionChange = useCallback(
     (selectedIds: readonly number[], selectedItems: WorkSheet[]) => {
       setSelectedIds(selectedIds);
@@ -97,25 +88,9 @@ const Worksheet: React.FC = () => {
         onSelectionChange={handleSelectionChange}
         initialSelected={selectedIds}
         noDataMessage="Nenhuma planilha encontrada"
-        onDelete={() => {}}
+        onDelete={() => { }}
       />
       <Box sx={{ width: "100%", display: "flex", justifyContent: "end" }}>
-        <Button
-          onClick={worksheetsSelected}
-          sx={{
-            bgcolor: "customButton.black",
-            color: "customText.white",
-            fontWeight: 600,
-            textTransform: "none",
-            "&.Mui-disabled": {
-              bgcolor: "customText.grey",
-              color: "customText.lightGrey",
-              cursor: "not-allowed",
-            },
-          }}
-        >
-          Confirmar seleção
-        </Button>
       </Box>
       <UploadWorksheetModal
         isOpen={openModal}
