@@ -114,7 +114,7 @@ const Worksheet: React.FC = () => {
             },
           }}
         >
-          Próximo
+          Confirmar seleção
         </Button>
       </Box>
       <UploadWorksheetModal
