@@ -3,9 +3,13 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Refere
 import { Paper, Typography, Box, useTheme } from "@mui/material";
 import { textStyles } from "../../../theme/typography";
 
+export interface BarChartData {
+  key: string;
+  value: number;
+}
+
 export interface BarChartGenericProps {
-  contacts: string[];
-  data: number[];
+  data: BarChartData[];
   title: string;
   subtitle: string;
   tooltipLabel?: string;
@@ -44,7 +48,6 @@ const CustomTooltip = ({ active, payload, label, tooltipLabel }: any) => {
 };
 
 const BarChartGeneric: React.FC<BarChartGenericProps> = ({
-  contacts,
   data,
   title,
   subtitle,
@@ -52,9 +55,9 @@ const BarChartGeneric: React.FC<BarChartGenericProps> = ({
   expanded = false,
 }) => {
   const theme = useTheme();
-  const chartData = contacts.map((contact, idx) => ({
-    name: contact,
-    value: data[idx],
+  const chartData = data.map((data, idx) => ({
+    name: data.key,
+    value: data.value,
     fill: [
       theme.palette.chart.darkBrown,
       theme.palette.chart.goldenYellow,
@@ -65,7 +68,7 @@ const BarChartGeneric: React.FC<BarChartGenericProps> = ({
 
   // Calcular ticks do eixo Y
   const minY = 0;
-  const maxY = Math.max(...data) * 1.1; // 10% acima do maior valor
+  const maxY = Math.max(...data.map((item) => item.value)) * 1.2; // Aumentar o valor máximo em 20% para dar espaço
   const tickCount = expanded ? 5 : 3;
   const yTicks = getTickValues(minY, maxY, tickCount);
 
@@ -77,7 +80,7 @@ const BarChartGeneric: React.FC<BarChartGenericProps> = ({
         p: { xs: 2, sm: 3 },
         borderRadius: "1.5rem",
         boxShadow: "0 0.25rem 1rem rgba(0,0,0,0.1)",
-        backgroundColor: theme.palette.customBackground.primary,
+        backgroundColor: theme.palette.customBackground.secondary,
         fontFamily: theme.typography.fontFamily,
         display: "flex",
         flexDirection: "column",
@@ -110,16 +113,18 @@ const BarChartGeneric: React.FC<BarChartGenericProps> = ({
           <BarChart data={chartData} margin={{ top: 5, bottom: 5, left: 5, right: 5 }}>
             <XAxis
               dataKey="name"
-              tick={{ fill: theme.palette.customText.lightGrey, ...textStyles.bodyMedium }}
-              textAnchor="end"
+              tick={{ fill: theme.palette.customText.lightGrey, ...textStyles.bodyMedium }} 
+              height={75} 
               interval={0}
+              angle={-45}
+              textAnchor="end"
             />
             <YAxis
               tick={{ fill: theme.palette.customText.lightGrey, ...textStyles.bodyMedium }}
               ticks={yTicks}
               domain={[minY, maxY]}
             />
-            {yTicks.map((y, idx) => (
+            {yTicks.map((y) => (
               y !== 0 && (
                 <ReferenceLine
                   key={"refline-" + y}

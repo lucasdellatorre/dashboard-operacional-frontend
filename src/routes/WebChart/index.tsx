@@ -1,6 +1,23 @@
-import { Box } from "@mui/material";
-import React from "react";
+import { Box, MenuItem, TextField, Typography } from "@mui/material";
+import React, { useState } from "react";
 import WebChart from "../../components/dashboard/WebChart/WebChart";
+import MultiSelect from "../../components/multiSelect";
+
+
+const styles = {
+  menuItem: {
+    padding: "4px 16px",
+    "&:hover": {
+      backgroundColor: "rgba(158, 131, 59, 0.08)",
+    },
+    "&.Mui-selected": {
+      backgroundColor: "rgb(233, 233, 233)",
+    },
+    "&.Mui-selected:hover": {
+      backgroundColor: "hsla(44, 45.60%, 42.50%, 0.08)",
+    },
+  },
+};
 
 const mockData = {
   nodes: [
@@ -91,26 +108,222 @@ const mockData = {
   ],
 };
 
+const options = mockData.nodes.filter(x => x.group === 3).map(node => node.id);
+
 const WebChartRoute: React.FC = () => {
+  const [selectedType, setSelectedType] = useState("Texto");
+  const [selectedGroup, setSelectedGroup] = useState("Ambos");
+
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   return (
     <Box
       width="100%"
+      bgcolor="customBackground.secondary"
       height="100vh"
       display="flex"
       flexDirection="column"
-      bgcolor="#0000"
+      padding={"1rem 0rem 0rem 0rem"}
     >
       <Box
-        width="100%"
-        height="150px"
-        bgcolor="#0000"
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        borderBottom="1px solid #ccc"
-      >
-        <Box fontSize="24px" color="#333">
-          Filtros (futuro)
+        bgcolor={"customBackground.secondary"}
+        width={"100%"}
+        display={"flex"}
+        px={"1rem"}
+        flexDirection={"row"}
+        justifyContent={"left"}
+        flexWrap={"wrap"}
+      > 
+
+        <Box width={"29rem"}>
+          <Typography
+            fontFamily={"Inter, sans-serif"}
+            fontWeight={600}
+            fontSize={"1.25rem"}
+          >
+            Seleção de Alvos
+          </Typography>
+
+          <MultiSelect
+            style="gray"
+            placeholder="Selecione os nomes"
+            height="53px"
+            options={options}
+            selectedOptions={selectedOptions}
+            onChange={(selected) => {
+              setSelectedOptions(selected);
+            }}
+          />
+        </Box>
+        <Box
+          bgcolor={"customBackground.secondary"}
+          width={"100%"}
+          display={"flex"}
+          py={"0.7rem"}
+          flexDirection={"column"}
+        >
+          <Typography variant="caption" fontFamily={"Inter, sans-serif"} fontWeight={600}> Filtrar por: </Typography>
+
+          <Box display={"flex"} flexDirection={"row"} gap={"2rem"} flexWrap={"wrap"}>
+
+            <TextField
+              select
+              variant="filled"
+              label="Grupo"
+              value={selectedGroup}
+              onChange={(e) => setSelectedGroup(e.target.value)}
+              sx={{
+                minWidth: "11rem",
+                "& label.Mui-focused": {
+                  color: "customButton.gold",
+                },
+                "& .MuiFilledInput-underline:after": {
+                  borderBottomColor: "customButton.gold",
+                },
+              }}
+            >
+              <MenuItem
+                value="Grupo"
+                sx={styles.menuItem}
+              >
+                Grupo
+              </MenuItem>
+              <MenuItem
+                sx={styles.menuItem}
+                value="Número"
+              >
+                Número
+              </MenuItem>
+              <MenuItem
+                sx={styles.menuItem}
+                value="Ambos"
+              >
+                Ambos
+              </MenuItem>
+            </TextField>
+
+            <TextField
+              select
+              variant="filled"
+              label="Tipo"
+              defaultValue="Texto"
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+              sx={{
+                minWidth: "11rem",
+                "& label.Mui-focused": {
+                  color: "customButton.gold",
+                },
+                "& .MuiFilledInput-underline:after": {
+                  borderBottomColor: "customButton.gold",
+                },
+              }}
+            >
+              <MenuItem
+                value="Texto"
+                sx={styles.menuItem}
+              >
+                Texto
+              </MenuItem>
+              <MenuItem
+                sx={{
+                  padding: "4px 16px",
+                  "&:hover": {
+                    backgroundColor: "rgba(158, 131, 59, 0.08)",
+                  },
+                  "&.Mui-selected": {
+                    backgroundColor: "transparent",
+                  },
+                  "&.Mui-selected:hover": {
+                    backgroundColor: "hsla(44, 45.60%, 42.50%, 0.08)",
+                  },
+                }}
+                value="Vídeo"
+              >
+                Vídeo
+              </MenuItem>
+              <MenuItem
+                sx={styles.menuItem}
+                value="Todos"
+              >
+                Todos
+              </MenuItem>
+            </TextField>
+
+            <TextField
+              select
+              variant="filled"
+              label="Simetria"
+              sx={{
+                minWidth: "11rem",
+                "& label.Mui-focused": {
+                  color: "customButton.gold",
+                },
+                "& .MuiFilledInput-underline:after": {
+                  borderBottomColor: "customButton.gold",
+                },
+              }}
+            >
+              <MenuItem
+                sx={styles.menuItem}
+                value="Simétricos"
+              >
+                Simétricos
+              </MenuItem>
+              <MenuItem
+                sx={styles.menuItem}
+                value="Assimétricos"
+              >
+                Assimétricos
+              </MenuItem>
+
+              <MenuItem
+                sx={styles.menuItem}
+                value="Ambos"
+              >
+                Ambos
+              </MenuItem>
+            </TextField>
+
+            <TextField
+              id="date-initial"
+              InputLabelProps={{ shrink: true }}
+              label="Data Inicial"
+              type="date"
+              variant="filled"
+              sx={{
+                "& .MuiFilledInput-root:after": {
+                  borderBottomColor: "customButton.gold",
+                },
+                "& .MuiFilledInput-root.Mui-focused:after": {
+                  borderBottomColor: "customButton.gold",
+                },
+                "& .MuiInputLabel-root.Mui-focused": {
+                  color: "customButton.gold",
+                },
+                minWidth: "11rem",
+              }}
+            />
+
+            <TextField
+              id="date-final"
+              InputLabelProps={{ shrink: true }}
+              label="Data Final"
+              type="date"
+              variant="filled"
+              sx={{
+                "& .MuiFilledInput-root:after": {
+                  borderBottomColor: "customButton.gold",
+                },
+                "& .MuiFilledInput-root.Mui-focused:after": {
+                  borderBottomColor: "customButton.gold",
+                },
+                "& .MuiInputLabel-root.Mui-focused": {
+                  color: "customButton.gold",
+                },
+                minWidth: "11rem",
+              }}
+            />
+          </Box>
         </Box>
       </Box>
 
@@ -121,12 +334,11 @@ const WebChartRoute: React.FC = () => {
         alignItems="center"
         justifyContent="center"
         overflow="hidden"
-        p={1}
       >
         <Box
           width="100%"
           height="100%"
-          borderRadius="8px"
+          borderRadius="0px"
           bgcolor="#000"
           boxShadow="0px 0px 20px rgba(0,0,0,0.6)"
           overflow="hidden"

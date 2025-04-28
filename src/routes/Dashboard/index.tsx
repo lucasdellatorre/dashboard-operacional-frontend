@@ -1,6 +1,6 @@
 import { Box, MenuItem, TextField, Typography } from "@mui/material";
-import React, { useState } from "react";
-import BarChartGeneric from "../../components/dashboard/WebChart/BarChart";
+import React, { useMemo, useState } from "react";
+import BarChartGeneric, { BarChartData } from "../../components/dashboard/WebChart/BarChart";
 import { FilterType } from "../../enum/ViewSelectionFilterEnum";
 import ViewSelectionFilter from "../../components/filters/ViewSelection";
 import MultiSelect from "../../components/multiSelect";
@@ -12,7 +12,7 @@ const styles = {
       backgroundColor: "rgba(158, 131, 59, 0.08)",
     },
     "&.Mui-selected": {
-      backgroundColor: "rgb(233, 233, 233)",  
+      backgroundColor: "rgb(233, 233, 233)",
     },
     "&.Mui-selected:hover": {
       backgroundColor: "hsla(44, 45.60%, 42.50%, 0.08)",
@@ -34,33 +34,102 @@ const selectionTypeFilter = [
 ];
 
 //Dados Mockados
-const contacts = [
-  "1",
-  "2",
-  "3",
-  "4",
-  "5",
-  "6",
-  "7",
-  "8",
-  "9",
-  "10",
-  "11",
-  "12",
-  "13",
-  "14",
-  "15",
+
+const mensagensPorContato: BarChartData[] = [
+  { key: "9123456789", value: 50 },
+  { key: "9123456788", value: 37 },
+  { key: "9123456787", value: 40 },
+  { key: "9123456786", value: 425 },
+  { key: "9123456785", value: 80 },
+  { key: "9123456784", value: 385 },
+  { key: "9123456783", value: 90 },
+  { key: "9123456782", value: 275 },
+  { key: "9123456781", value: 490 },
+  { key: "9123456780", value: 310 },
+  { key: "9123456799", value: 245 },
+  { key: "9123456798", value: 380 },
+  { key: "9123456797", value: 295 },
+  { key: "9123456796", value: 410 },
+  { key: "9123456795", value: 330 },
 ];
-const mensagensPorContato = [
-  50, 37, 40, 425, 80, 385, 90, 275, 490, 310, 245, 380, 295, 410, 330,
+
+const tamanhoTotalPorContato: BarChartData[] = [
+  { key: "9123456789", value: 1200 },
+  { key: "9123456788", value: 900 },
+  { key: "9123456787", value: 1100 },
+  { key: "9123456786", value: 8000 },
+  { key: "9123456785", value: 1500 },
+  { key: "9123456784", value: 7000 },
+  { key: "9123456783", value: 1600 },
+  { key: "9123456782", value: 5000 },
+  { key: "9123456781", value: 9000 },
+  { key: "9123456780", value: 6000 },
+  { key: "9123456799", value: 4800 },
+  { key: "9123456798", value: 7500 },
+  { key: "9123456797", value: 5900 },
+  { key: "9123456796", value: 8200 },
+  { key: "9123456795", value: 6600 },
 ];
-const tamanhoTotalPorContato = [
-  1200, 900, 1100, 8000, 1500, 7000, 1600, 5000, 9000, 6000, 4800, 7500, 5900,
-  8200, 6600,
+
+const mensagensPorIP: BarChartData[] = [
+  { key: "IP 1", value: 55 },
+  { key: "IP 2", value: 22 },
+  { key: "IP 3", value: 40 },
+  { key: "IP 4", value: 17 },
+  { key: "IP 5", value: 50 },
+  { key: "IP 6", value: 2 },
+  { key: "IP 7", value: 15 }
 ];
+
+const mensagensPorDia: BarChartData[] = [
+  { key: "Segunda", value: 50 },
+  { key: "Terça", value: 10 },
+  { key: "Quarta", value: 12 },
+  { key: "Quinta", value: 38 },
+  { key: "Sexta", value: 58 },
+  { key: "Sábado", value: 40 },
+  { key: "Domingo", value: 30 },
+]
 
 const options = ["Jorge", "Marcinho", "Rogerinho"];
 
+interface ChartConfig {
+  type: FilterType;
+  data: BarChartData[];
+  title: string;
+  subtitle: string;
+  tooltipLabel: string;
+}
+const chartConfigs: ChartConfig[] = [
+  {
+    type: FilterType.INTERACTIONS,
+    data: mensagensPorContato,
+    title: "Mensagens por Contato",
+    subtitle: "Número de",
+    tooltipLabel: "Total",
+  },
+  {
+    type: FilterType.SIZE,
+    data: tamanhoTotalPorContato,
+    title: "Tamanho da mensagem por contato",
+    subtitle: "Número médio do",
+    tooltipLabel: "Tamanho",
+  },
+  {
+    type: FilterType.IP,
+    data: mensagensPorIP,
+    title: "Mensagens por IP",
+    subtitle: "Número de",
+    tooltipLabel: "Total",
+  },
+  {
+    type: FilterType.DATA,
+    data: mensagensPorDia,
+    title: "Mensagens por Dia",
+    subtitle: "Número de",
+    tooltipLabel: "Dias",
+  },
+];
 
 const Dashboard: React.FC = () => {
   const [selectedFilterType, setSelectedFilterType] = useState<FilterType>(FilterType.UNION);
@@ -72,101 +141,66 @@ const Dashboard: React.FC = () => {
 
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
 
-  function getSelectedChart() {
-    switch (selectedChart) {
-      case FilterType.ALL:
-        return getChartAll();
-      case FilterType.INTERACTIONS:
-        return getChartInteractions();
-      case FilterType.IP:
-        return getChartIP();
-      case FilterType.SIZE:
-        return getChartSize();
-      default:
-        return getChartAll();
-    }
-  }
-
-  function getChartAll() {
-    return (
+  const chartArea = useMemo(() => {
+    const renderChart = (cfg: ChartConfig) => (
       <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          width: "100%",
-          gap: "1rem",
-        }}
+        key={cfg.type}
+        sx={{ cursor: "pointer", width: "48%" }}
+        onClick={() => setSelectedChart(cfg.type)}
       >
-        <Box
-          sx={{ cursor: "pointer", width: "48%" }}
-          onClick={() => setSelectedChart(FilterType.INTERACTIONS)}
-        >
-          {getChartInteractions()}
-        </Box>
-        <Box
-          sx={{ cursor: "pointer", width: "48%" }}
-          onClick={() => setSelectedChart(FilterType.IP)}
-        >
-          {getChartSize()}
-        </Box>
+        <BarChartGeneric
+          data={cfg.data}
+          title={cfg.title}
+          subtitle={cfg.subtitle}
+          tooltipLabel={cfg.tooltipLabel}
+          expanded={selectedChart === cfg.type}
+        />
       </Box>
     );
-  }
 
-  function getChartInteractions() {
-    return (
-      <BarChartGeneric
-        contacts={contacts}
-        data={
-          selectedChart === FilterType.INTERACTIONS
-            ? mensagensPorContato
-            : tamanhoTotalPorContato
-        }
-        title="Mensagens por Contato"
-        subtitle="Número de"
-        tooltipLabel="Total"
-        expanded={selectedChart === FilterType.INTERACTIONS}
-      />
-    );
-  }
+    if (selectedChart === FilterType.ALL) {
+      return (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            width: "100%",
+            gap: "1rem",
+          }}
+        >
+          {chartConfigs.map(renderChart)}
+        </Box>
+      );
+    }
 
-  function getChartIP() {
-    //todo
-    return <div>Gráfico de IP</div>;
-  }
-  function getChartSize() {  
-    return (
-      <BarChartGeneric
-        contacts={contacts}
-        data={tamanhoTotalPorContato}
-        title="Tamanho da mensagem por contato"
-        subtitle="Número médio do"
-        tooltipLabel="Tamanho"
-        expanded={selectedChart === FilterType.SIZE}
-      />
-    )
-  }
+    const cfg = chartConfigs.find(c => c.type === selectedChart);
+    return cfg ? renderChart(cfg) : null;
+  }, [selectedChart]);
 
   return (
     <Box
-      bgcolor={"customBackground.primary"}
+      bgcolor={"customBackground.secondary"}
       width={"100%"}
+      minHeight="100vh"
       display={"flex"}
       flexDirection={"column"}
-      height={"100vh"}
       alignItems={"stretch"}
-      overflow={"hidden"}
       justifyContent={"flex-start"}
+      overflow={"auto"}
+      padding={"1rem 0rem 0rem 0rem"}
     >
       <Box
         sx={{
+          height: "fit-content",
           width: "100%",
           maxWidth: "1200px",
           display: "flex",
           flexDirection: "column",
-          gap: 3,
+          flexWrap: "wrap",
         }}
+        px={"1rem"}
+        py={"0.7rem"}
       >
         <Typography
           fontFamily={"Inter, sans-serif"}
@@ -180,11 +214,9 @@ const Dashboard: React.FC = () => {
         <ViewSelectionFilter
           filters={graficFilters}
           selectedFilter={selectedChart}
-          onChange={(value) => setSelectedChart(value)} 
+          onChange={(value) => setSelectedChart(value)}
         />
       </Box>
-
-      <Box height={"0.07rem"} bgcolor={"divider"} width={"100%"} />
 
       <Box
         bgcolor={"customBackground.secondary"}
@@ -195,6 +227,7 @@ const Dashboard: React.FC = () => {
         flexDirection={"row"}
         justifyContent={"left"}
         gap={"2rem"}
+        flexWrap={"wrap"}
       >
         <Box width={"29rem"}>
           <Typography
@@ -246,7 +279,7 @@ const Dashboard: React.FC = () => {
       >
         <Typography variant="caption" fontFamily={"Inter, sans-serif"} fontWeight={600}> Filtrar por: </Typography>
 
-        <Box display={"flex"} flexDirection={"row"} gap={"2rem"}>
+        <Box display={"flex"} flexDirection={"row"} gap={"2rem"} flexWrap={"wrap"}>
 
           <TextField
             select
@@ -360,7 +393,6 @@ const Dashboard: React.FC = () => {
             </MenuItem>
 
             <MenuItem
-              //use the styles const
               sx={styles.menuItem}
               value="Ambos"
             >
@@ -410,12 +442,14 @@ const Dashboard: React.FC = () => {
         </Box>
       </Box>
       <Box
+        bgcolor={"customBackground.primary"}
         sx={{
           width: "100%",
           padding: "2rem",
+          flexGrow: '1'
         }}
       >
-        {getSelectedChart()}
+        {chartArea}
       </Box>
     </Box>
   );
