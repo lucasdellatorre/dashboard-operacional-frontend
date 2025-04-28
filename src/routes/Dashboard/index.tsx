@@ -145,7 +145,8 @@ const Dashboard: React.FC = () => {
     const renderChart = (cfg: ChartConfig) => (
       <Box
         key={cfg.type}
-        sx={{ cursor: "pointer", width: "48%" }}
+        sx={{ cursor: "pointer" }}
+        width={selectedChart !== FilterType.ALL ? "%" : "48%"}
         onClick={() => setSelectedChart(cfg.type)}
       >
         <BarChartGeneric
@@ -191,30 +192,26 @@ const Dashboard: React.FC = () => {
       padding={"1rem 0rem 0rem 0rem"}
     >
       <Box
-        sx={{
-          height: "fit-content",
-          width: "100%",
-          maxWidth: "1200px",
-          display: "flex",
-          flexDirection: "column",
-          flexWrap: "wrap",
-        }}
+        width={"29rem"}
         px={"1rem"}
-        py={"0.7rem"}
       >
         <Typography
           fontFamily={"Inter, sans-serif"}
           fontWeight={600}
           fontSize={"1.25rem"}
-          padding={1}
         >
-          Seleção de Gráficos
+          Seleção de Alvos
         </Typography>
 
-        <ViewSelectionFilter
-          filters={graficFilters}
-          selectedFilter={selectedChart}
-          onChange={(value) => setSelectedChart(value)}
+        <MultiSelect
+          style="gray"
+          placeholder="Selecione os nomes"
+          height="53px"
+          options={options}
+          selectedOptions={selectedOptions}
+          onChange={(selected) => {
+            setSelectedOptions(selected);
+          }}
         />
       </Box>
 
@@ -228,29 +225,46 @@ const Dashboard: React.FC = () => {
         justifyContent={"left"}
         gap={"2rem"}
         flexWrap={"wrap"}
+        sx={{
+          // justifyContent: "center",
+            alignItems: "center"
+        }}
       >
-        <Box width={"29rem"}>
+        <Box
+          sx={{
+            height: "fit-content",
+            // width: "100%",
+            // maxWidth: "1200px",
+            display: "flex",
+            flexDirection: "column",
+            flexWrap: "wrap",
+            justifyContent: "center",
+          }}
+        >
           <Typography
             fontFamily={"Inter, sans-serif"}
             fontWeight={600}
             fontSize={"1.25rem"}
           >
-            Seleção de Alvos
+            Seleção de Gráficos
           </Typography>
 
-          <MultiSelect
-            style="gray"
-            placeholder="Selecione os nomes"
-            height="53px"
-            options={options}
-            selectedOptions={selectedOptions}
-            onChange={(selected) => {
-              setSelectedOptions(selected);
-            }}
+          <ViewSelectionFilter
+            filters={graficFilters}
+            selectedFilter={selectedChart}
+            onChange={(value) => setSelectedChart(value)}
           />
         </Box>
 
-        <Box>
+
+        <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          height: '100%'
+        }}
+        >
           <Typography
             fontFamily={"Inter, sans-serif"}
             fontWeight={600}
