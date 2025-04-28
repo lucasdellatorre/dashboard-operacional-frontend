@@ -19,6 +19,7 @@ const EnhancedTableHead = <T extends GenericData>({
   numSelected,
   rowCount,
   onRequestSort,
+  singleSelect = false,
 }: EnhancedTableHeadProps<T>): JSX.Element => {
   const createSortHandler =
     (property: keyof T) => (event: React.MouseEvent<unknown>) => {
@@ -29,19 +30,21 @@ const EnhancedTableHead = <T extends GenericData>({
     <TableHead>
       <TableRow>
         <TableCell padding="checkbox" sx={{ bgcolor: "table.darkGrey" }}>
-          <Checkbox
-            sx={{
-              "&.Mui-checked": {
-                color: "customButton.gold",
-              },
-              "&.MuiCheckbox-indeterminate": {
-                color: "customButton.gold",
-              },
-            }}
-            indeterminate={numSelected > 0 && numSelected < rowCount}
-            checked={rowCount > 0 && numSelected === rowCount}
-            onChange={onSelectAllClick}
-          />
+          {!singleSelect && (
+            <Checkbox
+              sx={{
+                "&.Mui-checked": {
+                  color: "customButton.gold",
+                },
+              }}
+              indeterminate={numSelected > 0 && numSelected < rowCount}
+              checked={rowCount > 0 && numSelected === rowCount}
+              onChange={onSelectAllClick}
+              inputProps={{
+                "aria-label": "select all desserts",
+              }}
+            />
+          )}
         </TableCell>
         {headCells.map((headCell) => (
           <TableCell

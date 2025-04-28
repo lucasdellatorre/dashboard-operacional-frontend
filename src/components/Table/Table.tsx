@@ -26,6 +26,7 @@ function GenericTable<T extends GenericData>({
   defaultOrderBy,
   noDataMessage,
   onSelectionChange,
+  singleSelect = false,
   initialSelected = [],
   onDelete,
 }: GenericTableProps<T>) {
@@ -90,6 +91,11 @@ function GenericTable<T extends GenericData>({
 
   const handleClick = React.useCallback(
     (_event: React.MouseEvent<unknown>, id: number) => {
+      if (singleSelect) {
+        setSelected(selected.indexOf(id) !== -1 ? [] : [id]);
+        return;
+      }
+
       const selectedIndex = selected.indexOf(id);
       let newSelected: readonly number[] = [];
 
@@ -107,7 +113,7 @@ function GenericTable<T extends GenericData>({
       }
       setSelected(newSelected);
     },
-    [selected]
+    [selected, singleSelect]
   );
 
   const handleChangePage = React.useCallback(
@@ -165,6 +171,7 @@ function GenericTable<T extends GenericData>({
             size={"medium"}
           >
             <EnhancedTableHead
+              singleSelect={singleSelect}
               headCells={headCells}
               numSelected={selected.length}
               order={order}
@@ -218,7 +225,9 @@ function GenericTable<T extends GenericData>({
                           scope={isFirstCell ? "row" : undefined}
                           id={isFirstCell ? labelId : undefined}
                           sx={{
-                            bgcolor: isSelected(row.id) ? "table.lightGrey" : "table.white",
+                            bgcolor: isSelected(row.id)
+                              ? "table.lightGrey"
+                              : "table.white",
                             maxWidth: "10rem",
                           }}
                         >
@@ -240,7 +249,14 @@ function GenericTable<T extends GenericData>({
                               {headCell.iconAction.icon}
                             </Box>
                           ) : (
-                            <Tooltip title={Array.isArray(value) ? value.join(", ") : String(value)} arrow>
+                            <Tooltip
+                              title={
+                                Array.isArray(value)
+                                  ? value.join(", ")
+                                  : String(value)
+                              }
+                              arrow
+                            >
                               <Box
                                 sx={{
                                   // these three are the magic for ellipsis:
@@ -251,14 +267,15 @@ function GenericTable<T extends GenericData>({
                                   display: "block",
                                 }}
                               >
-                                {Array.isArray(value) ? value.join(", ") : String(value)}
+                                {Array.isArray(value)
+                                  ? value.join(", ")
+                                  : String(value)}
                               </Box>
                             </Tooltip>
                           )}
                         </TableCell>
                       );
                     })}
-
                   </TableRow>
                 );
               })}
@@ -297,7 +314,7 @@ function GenericTable<T extends GenericData>({
           }
         />
       </Paper>
-    </Box >
+    </Box>
   );
 }
 

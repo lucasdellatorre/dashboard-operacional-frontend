@@ -89,6 +89,7 @@ const Worksheet: React.FC = () => {
       </Box>
 
       <GenericTable
+        singleSelect={true}
         rows={filteredWorksheets}
         headCells={workSheetsHeaderCells}
         title="Planilhas"

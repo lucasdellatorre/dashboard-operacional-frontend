@@ -22,6 +22,7 @@ export interface GenericTableProps<T extends GenericData> {
   noDataMessage?: string;
   headCells: readonly HeadCell<T>[];
   title: string;
+  singleSelect: boolean;
   defaultOrderBy: keyof T;
   initialSelected?: readonly number[];
   onSelectionChange?: (
@@ -34,6 +35,7 @@ export interface GenericTableProps<T extends GenericData> {
 export interface EnhancedTableHeadProps<T extends GenericData> {
   headCells: readonly HeadCell<T>[];
   numSelected: number;
+  singleSelect: boolean;
   onRequestSort: (event: React.MouseEvent<unknown>, property: keyof T) => void;
   onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
   order: Order;
