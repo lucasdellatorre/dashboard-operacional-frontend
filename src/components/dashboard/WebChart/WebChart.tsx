@@ -31,7 +31,7 @@ const Chart: React.FC<{ data: Data }> = ({ data }) => {
     if (!svgRef.current) return;
 
     // Clear previous content
-    d3.select(svgRef.current).selectAll("*").remove();
+    d3.select(svgRef.current).selectAll("*").remove();    
 
     const svgContainer = svgRef.current.parentElement;
     const width = svgContainer ? svgContainer.clientWidth : 928;
@@ -65,7 +65,7 @@ const Chart: React.FC<{ data: Data }> = ({ data }) => {
       .attr("width", width)
       .attr("height", height)
       .attr("viewBox", [0, 0, width, height])
-      .attr("style", "max-width: 100%; height: 100%;")
+      .attr("style", "width: 100%; height: 100%; background-color: #181818")
       .attr("data-testid", "chart-svg");
 
     // Adicionar zoom

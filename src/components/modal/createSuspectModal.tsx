@@ -6,62 +6,73 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React from "react";
+import React, { useEffect } from "react";
 import MultiSelect from "../multiSelect";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CloseIcon from "@mui/icons-material/Close";
 import { z } from "zod";
+import { isValidCPF } from "../../utils/validationUtils";
+
+//Mocked Data
+const suspectNumbers = ["(54) 997088840", "(51) 98394938", "(51) 98494937", "(51) 98494936", "(51) 98494935", "(51) 98494934", "(51) 98494933"];
+
+const formatCPF = (value: string): string => {
+  const numericValue = value.replace(/\D/g, "");
+  return numericValue
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+};
 
 const addSuspectModalSchema = z.object({
-  suspectName: z
+  suspectNickname: z
     .string({
-      required_error: "Nome do suspeito é obrigatório",
+      required_error: "Apelido do suspeito é obrigatório",
     })
-    .min(1, "Nome do suspeito não pode estar vazio"),
+    .min(1, "Apelido do suspeito não pode estar vazio"),
 
   suspectNumbers: z
     .array(z.string())
     .min(1, "Deve fornecer pelo menos um número")
     .nonempty("Lista de números não pode estar vazia"),
 
-  suspectOperation: z
-    .array(z.string())
-    .min(1, "Deve fornecer pelo menos uma operação")
-    .nonempty("Lista de operações não pode estar vazia"),
+  suspectCPF: z
+    .string()
+    .optional()
+    .refine((cpf) => {
+      const onlyDigits = cpf?.replace(/\D/g, "") || "";
+      return onlyDigits.length == 11;
+    }, {
+      message: "CPF deve ter 11 dígitos",
+    })
+    .refine((cpf) => {
+      const cleaned = cpf?.replace(/\D/g, "") || "";
+      return !cpf || isValidCPF(cleaned);
+    }, {
+      message: "CPF inválido",
+    }),
+
+  suspectName: z.string().optional(),
+}).refine((data) => {
+  const { suspectNumbers } = data;
+  return suspectNumbers.length > 0;
+
 });
 
 interface CreateSuspectModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
 type addSuspectlSchemaType = z.infer<typeof addSuspectModalSchema>;
-const CreateSuspectModal: React.FC<CreateSuspectModalProps> = ({
-  isOpen,
-  onClose,
-}) => {
-  const operation = [
-    "Operação A",
-    "Operação B",
-    "Operação C",
-    "Operação D",
-    "Operação E",
-    "Operação F",
-    "Operação G",
-    "Operação H",
-  ];
-  const suspectNumbers = ["(54) 997088840", "(51) 98394938", "(51) 98494938"];
-  const handleChangeSuspectOperations = (selected: string[]) => {
-    setValue("suspectOperation", selected as [string, ...string[]]);
-  };
-  const handleChangeSuspectNumber = (selected: string[]) => {
-    setValue("suspectNumbers", selected as [string, ...string[]]);
-  };
+
+const CreateSuspectModal: React.FC<CreateSuspectModalProps> = ({ isOpen, onClose }) => {
+
   const {
     control,
     handleSubmit,
     reset,
-    setValue,
     formState: { errors },
   } = useForm<addSuspectlSchemaType>({
     mode: "all",
@@ -69,9 +80,17 @@ const CreateSuspectModal: React.FC<CreateSuspectModalProps> = ({
     defaultValues: {
       suspectName: "",
       suspectNumbers: [],
-      suspectOperation: [],
     },
   });
+
+  useEffect(() => {
+    if (isOpen) {
+      reset({
+        suspectName: "",
+        suspectNumbers: [],
+      });
+    }
+  }, [isOpen, reset]);
 
   return (
     <Dialog
@@ -125,24 +144,24 @@ const CreateSuspectModal: React.FC<CreateSuspectModalProps> = ({
           flexDirection="column"
           gap="0.3rem"
         >
-          <Typography sx={{ fontWeight: "800", fontSize: "1rem" }}>
-            Apelido do Alvo*
+          <Typography sx={{ fontWeight: "600", fontSize: "1rem" }}>
+            Apelido do Suspeito*
           </Typography>
           <Controller
             control={control}
-            name={"suspectName"}
+            name={"suspectNickname"}
             render={({ field }) => (
               <TextField
                 value={field.value}
                 onChange={field.onChange}
                 onBlur={field.onBlur}
-                placeholder="Digite o apelido do alvo"
+                placeholder="Digite o apelido do suspeito"
                 variant="outlined"
                 InputLabelProps={{ shrink: false }}
                 InputProps={{
                   notched: false,
                   sx: {
-                    height: "2.5rem",
+                    height: "3.5rem",
                     width: "100%",
                     "& .MuiOutlinedInput-notchedOutline": {
                       borderColor: "rgba(0, 0, 0, 0.23)",
@@ -159,13 +178,13 @@ const CreateSuspectModal: React.FC<CreateSuspectModalProps> = ({
               />
             )}
           />
-          <Box sx={{ height: "1.5rem" }}>
-            {errors.suspectName && (
+          <Box>
+            {errors.suspectNickname && (
               <Typography color="error" variant="caption">
-                {typeof errors.suspectName === "string"
-                  ? errors.suspectName
-                  : errors.suspectName.message ||
-                    "Nome do suspeito é obrigatório"}
+                {typeof errors.suspectNickname === "string"
+                  ? errors.suspectNickname
+                  : errors.suspectNickname.message ||
+                  "Apelido do suspeito é obrigatório"}
               </Typography>
             )}
           </Box>
@@ -175,10 +194,52 @@ const CreateSuspectModal: React.FC<CreateSuspectModalProps> = ({
           sx={{ width: "100%" }}
           display={"flex"}
           flexDirection="column"
+          gap="0.3rem"
+        >
+          <Typography sx={{ fontWeight: "600", fontSize: "1rem" }}>
+            Nome do Suspeito
+          </Typography>
+          <Controller
+            control={control}
+            name={"suspectName"}
+            render={({ field }) => (
+              <TextField
+                value={field.value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                placeholder="Digite o nome do suspeito"
+                variant="outlined"
+                InputLabelProps={{ shrink: false }}
+                InputProps={{
+                  notched: false,
+                  sx: {
+                    height: "3.5rem",
+                    width: "100%",
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(0, 0, 0, 0.23)",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(0, 0, 0, 0.23)",
+                      borderWidth: "1px",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(0, 0, 0, 0.23)",
+                    },
+                  },
+                }}
+              />
+            )}
+          />
+        </Box>
+
+        <Box
+          sx={{ width: "100%" }}
+          display={"flex"}
+          flexDirection="column"
           gap="0.4rem"
         >
-          <Typography sx={{ fontWeight: "800", fontSize: "1rem" }}>
-            Números viculados a esse alvo*
+          <Typography sx={{ fontWeight: "600", fontSize: "1rem" }}>
+            Números vinculados a esse alvo*
           </Typography>
           <Controller
             control={control}
@@ -187,22 +248,17 @@ const CreateSuspectModal: React.FC<CreateSuspectModalProps> = ({
               <MultiSelect
                 style="white"
                 placeholder="Selecione os números"
-                height="2.5rem"
+                height="3.5rem"
                 options={suspectNumbers}
                 selectedOptions={field.value}
-                onChange={(selected) => {
-                  handleChangeSuspectNumber(selected);
-                }}
+                onChange={field.onChange}
               />
             )}
           />
-          <Box sx={{ height: "1.5rem" }}>
+          <Box>
             {errors.suspectNumbers && (
               <Typography color="error" variant="caption">
-                {typeof errors.suspectNumbers === "string"
-                  ? errors.suspectNumbers
-                  : errors.suspectNumbers.message ||
-                    "Nome do suspeito é obrigatório"}
+                {errors.suspectNumbers.message}
               </Typography>
             )}
           </Box>
@@ -212,40 +268,60 @@ const CreateSuspectModal: React.FC<CreateSuspectModalProps> = ({
           sx={{ width: "100%" }}
           display={"flex"}
           flexDirection="column"
-          gap="0.4rem"
+          gap="0.3rem"
         >
-          <Typography sx={{ fontWeight: "800", fontSize: "1rem" }}>
-            Operações vinculadas para esse alvo*
+          <Typography
+            sx={{ fontWeight: "600", fontSize: "1rem" }}
+          >
+            CPF do Suspeito
           </Typography>
           <Controller
             control={control}
-            name={"suspectOperation"}
+            name={"suspectCPF"}
             render={({ field }) => (
-              <MultiSelect
-                style="white" 
-                placeholder="Selecione as operações"
-                height="2.5rem"
-                options={operation}
-                selectedOptions={field.value}
-                onChange={(selected) => {
-                  handleChangeSuspectOperations(selected);
+              <TextField
+                inputProps={{ maxLength: 14 }}
+                value={field.value}
+                onChange={(value) => {
+                  const formattedValue = formatCPF(value.target.value);
+                  field.onChange(formattedValue);
+                }
+                }
+                onBlur={field.onBlur}
+                placeholder="Digite o CPF do suspeito"
+                variant="outlined"
+                InputLabelProps={{ shrink: false }}
+                InputProps={{
+                  notched: false,
+                  sx: {
+                    height: "3.5rem",
+                    width: "100%",
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(0, 0, 0, 0.23)",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(0, 0, 0, 0.23)",
+                      borderWidth: "1px",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(0, 0, 0, 0.23)",
+                    },
+                  },
                 }}
               />
             )}
           />
-
-          <Box sx={{ height: "1.5rem" }}>
-            {errors.suspectOperation && (
+          <Box>
+            {errors.suspectCPF && (
               <Typography color="error" variant="caption">
-                {typeof errors.suspectOperation === "string"
-                  ? errors.suspectOperation
-                  : errors.suspectOperation.message ||
-                    "Nome do suspeito é obrigatório"}
+                {errors.suspectCPF.message}
               </Typography>
             )}
           </Box>
         </Box>
+
         <Button
+          type="submit"
           onClick={handleSubmit((data) => {
             console.log(data);
             reset();

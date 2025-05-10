@@ -1,7 +1,6 @@
-import React from "react";
-
 import { FilterType } from "../../enum/ViewSelectionFilterEnum";
 import theme from "../../utils/theme";
+import { Button, Stack } from "@mui/material";
 
 interface Filter {
   label: string;
@@ -14,47 +13,38 @@ interface ViewSelectionProps {
   onChange: (valor: FilterType) => void;
 }
 
-const ViewSelectionFilter: React.FC<ViewSelectionProps> = ({
+
+const ViewSelectionFilter = ({
   filters,
   selectedFilter,
   onChange,
-}) => {
+}: ViewSelectionProps) => {
   return (
-    <div
-      style={{
-        padding: "0.25rem",
-        background: "#E3E3E3",
-        width: "fit-content",
-        borderRadius: "0.31rem",
-      }}
-    >
+    <Stack direction="row" gap={"0.5rem"} flexWrap="wrap">
       {filters.map((filter) => (
-        <button
+        <Button
           key={filter.value}
-          style={{
-            padding: "0.438rem 1.188rem",
-            borderRadius: "0.313rem",
-            transition: "background 0.2s, color 0.2s",
-            background:
-              selectedFilter === filter.value
-                ? theme.palette.customBackground.secondary
-                : "transparent",
-            color:
-              selectedFilter === filter.value
-                ? theme.palette.customText.black
-                : theme.palette.customText.gray,
-            fontFamily: "Inter",
-            fontWeight: selectedFilter === filter.value ? "500" : "400",
-            border: "none",
-            cursor: "pointer",
-          }}
+          variant={selectedFilter === filter.value ? "contained" : "outlined"}
           onClick={() => onChange(filter.value)}
+          sx={{
+            textTransform: "none",
+            fontFamily: "Inter",
+            fontWeight: selectedFilter === filter.value ? 600 : 400,
+            fontSize: "14px",
+            padding: "6px 20px",
+            backgroundColor: selectedFilter === filter.value ? "customButton.gold" : "transparent",
+            color: selectedFilter === filter.value
+              ? "white"
+              : theme.palette.customText.gray,
+            borderColor: "#bababa",
+          }}
         >
           {filter.label}
-        </button>
+        </Button>
       ))}
-    </div>
+    </Stack>
   );
 };
+
 
 export default ViewSelectionFilter;

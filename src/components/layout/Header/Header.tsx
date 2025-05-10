@@ -27,7 +27,7 @@ const Header: React.FC<HeaderProps> = ({ inputValue, setInputValue }) => {
         borderBottom: "1px solid #eaeaea",
         boxShadow: "none",
         borderBottomWidth: "1px",
-        borderBottomColor: "#E3E3E3",
+        borderBottomColor: "customInput.primary",
       }}
     >
       {" "}
