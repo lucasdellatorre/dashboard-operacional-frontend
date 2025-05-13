@@ -1,4 +1,4 @@
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, Typography, CircularProgress, Alert } from "@mui/material";
 import React, { useCallback, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { HeadCell } from "../../interface/table/tableInterface";
@@ -15,24 +15,16 @@ const Worksheet: React.FC = () => {
 
   const workSheetsHeaderCells: readonly HeadCell<WorkSheet>[] = [
     {
-      id: "worksheet",
-      label: "Planilhas",
+      id: "nome",
+      label: "Planilha",
     },
     {
       id: "size",
       label: "Tamanho do arquivo",
     },
     {
-      id: "insertedBy",
-      label: "Adicionado por",
-    },
-    {
-      id: "operationName",
-      label: "Operações",
-    },
-    {
-      id: "date",
-      label: "Data de Inserção",
+      id: "data_upload",
+      label: "Data de Upload",
     },
   ];
 
@@ -45,9 +37,19 @@ const Worksheet: React.FC = () => {
   );
   const [openModal, setOpenModal] = useState<boolean>(false);
   const { headerInputValue } = useHeaderInput();
-  const { filteredWorksheets, addWorksheet } = useWorksheets({
+  const { filteredWorksheets, addWorksheet, isLoading, error } = useWorksheets({
     searchTerm: headerInputValue,
   });
+
+  if (error) {
+    return (
+      <Box p={3}>
+        <Alert severity="error">
+          Erro ao carregar as planilhas: {error.message}
+        </Alert>
+      </Box>
+    );
+  }
 
   return (
     <Box p={3} sx={{ fontFamily: "Inter, sans-serif" }}>
@@ -79,17 +81,23 @@ const Worksheet: React.FC = () => {
         </Button>
       </Box>
 
-      <GenericTable
-        singleSelect={true}
-        rows={filteredWorksheets}
-        headCells={workSheetsHeaderCells}
-        title="Planilhas"
-        defaultOrderBy="suspectName"
-        onSelectionChange={handleSelectionChange}
-        initialSelected={selectedIds}
-        noDataMessage="Nenhuma planilha encontrada"
-        onDelete={() => { }}
-      />
+      {isLoading ? (
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+          <CircularProgress />
+        </Box>
+      ) : (
+        <GenericTable
+          singleSelect={true}
+          rows={filteredWorksheets}
+          headCells={workSheetsHeaderCells}
+          title="Planilhas"
+          defaultOrderBy="nome"
+          onSelectionChange={handleSelectionChange}
+          initialSelected={selectedIds}
+          noDataMessage="Nenhuma planilha encontrada"
+          onDelete={() => {}}
+        />
+      )}
       <Box sx={{ width: "100%", display: "flex", justifyContent: "end" }}>
       </Box>
       <UploadWorksheetModal
@@ -98,20 +106,14 @@ const Worksheet: React.FC = () => {
         onUploadSuccess={(file) => {
           setOpenModal(false);
 
-          const cpf = localStorage.getItem("cpf") || "000.000.000-00";
           addWorksheet(
             file.name,
-            file.size.toString(),
-            cpf,
-            new Date().toLocaleDateString("pt-BR", {
-              year: "numeric",
-              month: "2-digit",
-              day: "2-digit",
-            })
+            file.size,
+            new Date().toISOString().split('T')[0]
           );
         }}
         existingFiles={filteredWorksheets.map(
-          (worksheet) => worksheet.worksheet
+          (worksheet) => worksheet.nome
         )}
       />
     </Box>

@@ -1,50 +1,50 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { normalizeString } from "../utils/formatUtils";
 import { GenericData } from "../interface/operationSuspectTable/operationSuspectTableInterface";
+import { sheetController } from "../controllers/sheetController";
 
 export interface WorkSheet extends GenericData {
   id: number;
-  worksheet: string;
-  size: string;
-  insertedBy: string;
-  date: string;
-  
+  nome: string;
+  size: number;
+  data_upload: string;
+  [key: string]: string | number | string[];
 }
+
 interface UseOperationsProps {
   searchTerm: string;
 }
 
-export const mockWorksheets: WorkSheet[] = [
-  {
-    id: 1,
-    worksheet: "Planilha 1",
-    size: "14MB",
-    insertedBy: "012.345.678-90",
-    operationName: "Operação A",
-    date: "01-10-2023",
-  },
-  {
-    id: 2,
-    worksheet: "Planilha 2",
-    size: "2MB",
-    insertedBy: "234.234.234-23",
-    operationName: "Operação B, Operação C",
-    date: "12-09-2023",
-  },
-  {
-    id: 3,
-    worksheet: "Planilha 3",
-    size: "1MB",
-    insertedBy: "345.345.345-34",
-    operationName: "Operação A, Operação C, Operação D, Operação E, Operação F, Operação G, Operação H",
-    date: "12-05-2024",
-  },
-];
-
 export const useWorksheets = ({ searchTerm }: UseOperationsProps) => {
+  const [worksheets, setWorksheets] = useState<WorkSheet[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
-  const [worksheets, setWorksheets] = useState<WorkSheet[]>(mockWorksheets);
-  
+  useEffect(() => {
+    const fetchWorksheets = async () => {
+      try {
+        setIsLoading(true);
+        const response = await sheetController.getAllSheets();
+        // Transform backend data to match frontend interface
+        const transformedWorksheets = Array.isArray(response.Planilhas)
+          ? response.Planilhas.map((sheet) => ({
+              id: sheet.id,
+              nome: sheet.nome,
+              size: sheet.size,
+              data_upload: sheet.data_upload,
+            }))
+          : [];
+        setWorksheets(transformedWorksheets);
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('Failed to fetch worksheets'));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchWorksheets();
+  }, []);
+
   const filteredWorksheets = useMemo(() => {
     let result = [...worksheets];
 
@@ -52,32 +52,27 @@ export const useWorksheets = ({ searchTerm }: UseOperationsProps) => {
       const normalizedSearch = normalizeString(searchTerm.trim());
       result = result.filter(
         (worksheet) =>
-          normalizeString(worksheet.worksheet).includes(normalizedSearch) ||
+          normalizeString(worksheet.nome).includes(normalizedSearch) ||
           String(worksheet.id).includes(normalizedSearch)
       );
     }
 
-    return result.sort((a, b) => a.worksheet.localeCompare(b.worksheet));
+    return result.sort((a, b) => a.nome.localeCompare(b.nome));
   }, [searchTerm, worksheets]);
 
-
-  function addWorksheet(
-    worksheet: string,
-    size: string,
-    insertedBy: string,
-    date: string
+  async function addWorksheet(
+    nome: string,
+    size: number,
+    data_upload: string
   ) {
-    console.log("addWorksheet", worksheet, size, insertedBy, date);
     const newWorksheet: WorkSheet = {
-      id: mockWorksheets.length + 1,
-      worksheet,
+      id: worksheets.length + 1,
+      nome,
       size,
-      insertedBy,
-      operationName: "Operação A",
-      date,
+      data_upload,
     };
     setWorksheets((prevWorksheets) => [...prevWorksheets, newWorksheet]);
   }
 
-  return {filteredWorksheets, addWorksheet };
+  return { filteredWorksheets, addWorksheet, isLoading, error };
 };

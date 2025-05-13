@@ -6,6 +6,9 @@ const endpoints = {
     sendReport: "/send/resport/charts/",
   },
   USERS: {},
+  SHEETS: {
+    getAll: '/planilha',
+  },
 };
 
 export default endpoints;
