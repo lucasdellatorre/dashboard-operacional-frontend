@@ -8,6 +8,7 @@ import Operation from "./routes/Operations";
 import WebChart from "./routes/WebChart";
 import Layout from "./components/layout/layout";
 import Worksheet from "./routes/Worksheet";
+import SuspectsDetails from "./routes/suspectDetails";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/operacoes" element={<Operation />} />
         <Route path="/alvos" element={<Suspects />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/dashboard/suspectdetails/:id" element={<SuspectsDetails />} />
         <Route path="/usuarios" element={<Users />} />
         <Route path="/teia" element={<WebChart />} />
       </Route>
