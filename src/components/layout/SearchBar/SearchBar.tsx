@@ -17,7 +17,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
   return (
     <Box
       sx={{
-        backgroundColor: "#e3e3e3",
+        backgroundColor: "white",
+        border: "1px solid #E3E3E3",
         borderRadius: 25,
         alignItems: "center",
         display: "flex",
