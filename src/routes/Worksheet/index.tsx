@@ -6,6 +6,7 @@ import GenericTable from "../../components/Table/Table";
 import { useWorksheets, WorkSheet } from "../../hooks/useWorksheets";
 import { useHeaderInput } from "../../hooks/useHeaderInput";
 import UploadWorksheetModal from "../../components/modal/uploadWorksheetModal";
+import { sheetController } from "../../controllers/sheetController";
 
 const Worksheet: React.FC = () => {
   const navigate = useNavigate();
@@ -40,6 +41,27 @@ const Worksheet: React.FC = () => {
   const { filteredWorksheets, addWorksheet, isLoading, error } = useWorksheets({
     searchTerm: headerInputValue,
   });
+
+  const handleUpload = async (file: File, operation: string) => {
+    try {
+      const response = await sheetController.uploadSheet({ 
+        file, 
+        operacaoId: operation 
+      });
+      console.log("response", response);
+      if (response.Message === "success") {
+        setOpenModal(false);
+        // Refresh the worksheets list
+        addWorksheet(
+          file.name,
+          file.size,
+          new Date().toISOString()
+        );
+      }
+    } catch (error) {
+      console.error("Error uploading sheet:", error);
+    }
+  };
 
   if (error) {
     return (
@@ -103,15 +125,7 @@ const Worksheet: React.FC = () => {
       <UploadWorksheetModal
         isOpen={openModal}
         onClose={() => setOpenModal(false)}
-        onUploadSuccess={(file) => {
-          setOpenModal(false);
-
-          addWorksheet(
-            file.name,
-            file.size,
-            new Date().toISOString().split('T')[0]
-          );
-        }}
+        onUploadSuccess={handleUpload}
         existingFiles={filteredWorksheets.map(
           (worksheet) => worksheet.nome
         )}

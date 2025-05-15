@@ -31,7 +31,7 @@ type UploadModalForm = z.infer<typeof uploadModalSchema>;
 
 interface UploadModalProps {
   isOpen: boolean;
-  onUploadSuccess: (file: File) => void;
+  onUploadSuccess: (file: File, operacaoId: string) => void;
   onClose: () => void;
   existingFiles: string[];
 }
@@ -43,7 +43,7 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
   existingFiles,
 }) => {
   const [submitError, setSubmitError] = useState<string | null>(null);
-
+  
   const operationsList = [
     "Operação A",
     "Operação B",
@@ -89,10 +89,10 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
       });
       return false;
     }
-      clearErrors("uploadFile");
-      setValue("uploadFile", file, { shouldValidate: true });
+    clearErrors("uploadFile");
+    setValue("uploadFile", file, { shouldValidate: true });
 
-      return true;
+    return true;
   };
 
   const onSubmit = (data: UploadModalForm) => {
@@ -109,9 +109,9 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
     }
     setSubmitError(null);
     reset();
-    onUploadSuccess(data.uploadFile);
+    onUploadSuccess(data.uploadFile, data.operations[0]);
   }
-  
+
   return (
     <Dialog
       sx={{
@@ -180,19 +180,20 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
           <Typography sx={{ fontWeight: 800, fontSize: "1rem" }}>
             Operações*
           </Typography>
-          <Controller
-            control={control}
-            name="operations"
-            render={({ field }) => (
-              <MultiSelect
-                placeholder="Selecione as operações"
-                height="2.5rem"
-                options={operationsList}
-                selectedOptions={field.value}
-                onChange={handleChangeOperations}
-              />
-            )}
-          />
+            <Controller
+              control={control}
+              name="operations"
+              render={({ field }) => (
+                <MultiSelect
+                  style="white"
+                  placeholder="Selecione as operações"
+                  height="2.5rem"
+                  options={operationsList}
+                  selectedOptions={field.value}
+                  onChange={handleChangeOperations}
+                />
+              )}
+            />
           <Box height="1.5rem">
             {errors.operations && (
               <Typography color="error" variant="caption">

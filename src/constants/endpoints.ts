@@ -7,7 +7,11 @@ const endpoints = {
   },
   USERS: {},
   SHEETS: {
-    getAll: '/planilha',
+    getAll: 'api/planilha',
+    upload: 'api/interceptacao/upload',
+  },
+  OPERATIONS: {
+    getAll: 'api/operacoes',
   },
 };
 
