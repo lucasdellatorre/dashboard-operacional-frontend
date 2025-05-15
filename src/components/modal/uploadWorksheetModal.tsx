@@ -189,7 +189,8 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
                 height="2.5rem"
                 options={operationsList}
                 selectedOptions={field.value}
-                onChange={handleChangeOperations}
+                onChange={handleChangeOperations} 
+                style={"gray"} 
               />
             )}
           />

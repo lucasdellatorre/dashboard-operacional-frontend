@@ -1,6 +1,6 @@
 import { Box, Button, Typography } from "@mui/material";
 import React, { useCallback, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+// import { useNavigate, useSearchParams } from "react-router-dom";
 import { HeadCell } from "../../interface/table/tableInterface";
 import GenericTable from "../../components/Table/Table";
 import { useWorksheets, WorkSheet } from "../../hooks/useWorksheets";
@@ -8,9 +8,9 @@ import { useHeaderInput } from "../../hooks/useHeaderInput";
 import UploadWorksheetModal from "../../components/modal/uploadWorksheetModal";
 
 const Worksheet: React.FC = () => {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const [selectedWorksheets, setSelectedWorksheets] = useState<WorkSheet[]>([]);
+  // const navigate = useNavigate();
+  // const [searchParams] = useSearchParams();
+  const [_, setSelectedWorksheets] = useState<WorkSheet[]>([]);
   const [selectedIds, setSelectedIds] = useState<readonly number[]>([]);
 
   const workSheetsHeaderCells: readonly HeadCell<WorkSheet>[] = [
