@@ -6,7 +6,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React from "react";
+import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CloseIcon from "@mui/icons-material/Close";
@@ -20,21 +20,25 @@ const addOperationModalSchema = z.object({
     .min(1, "Nome da operação não pode estar vazio"),
 });
 
+type AddOperationSchemaType = z.infer<typeof addOperationModalSchema>;
+
 interface CreateOperationModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onCreateOperation: (data: AddOperationSchemaType) => Promise<void>;
 }
-type addOperationSchemaType = z.infer<typeof addOperationModalSchema>;
+
 const CreateOperationModal: React.FC<CreateOperationModalProps> = ({
   isOpen,
   onClose,
+  onCreateOperation,
 }) => {
   const {
     control,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<addOperationSchemaType>({
+  } = useForm<AddOperationSchemaType>({
     mode: "all",
     resolver: zodResolver(addOperationModalSchema),
     defaultValues: {
@@ -42,8 +46,33 @@ const CreateOperationModal: React.FC<CreateOperationModalProps> = ({
     },
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const onSubmit = async (data: AddOperationSchemaType) => {
+    setIsSubmitting(true);
+    setSubmitError(null);
+    try {
+      await onCreateOperation(data);
+      reset();
+      onClose();
+    } catch (err) {
+      console.error("Erro ao criar operação:", err);
+      setSubmitError("Não foi possível criar a operação. Tente novamente.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <Dialog
+      open={isOpen}
+      onClose={() => {
+        setSubmitError(null);
+        onClose();
+      }}
+      fullWidth
+      maxWidth="xs"
       sx={{
         "& .MuiDialog-paper": {
           borderRadius: "10px",
@@ -55,14 +84,13 @@ const CreateOperationModal: React.FC<CreateOperationModalProps> = ({
           margin: 0,
         },
       }}
-      open={isOpen}
-      onClose={onClose}
-      fullWidth
-      maxWidth="xs"
     >
       <IconButton
         aria-label="close"
-        onClick={onClose}
+        onClick={() => {
+          setSubmitError(null);
+          onClose();
+        }}
         sx={(theme) => ({
           position: "absolute",
           right: 8,
@@ -72,39 +100,40 @@ const CreateOperationModal: React.FC<CreateOperationModalProps> = ({
       >
         <CloseIcon />
       </IconButton>
+
       <Box
-        alignItems={"center"}
         display="flex"
         flexDirection="column"
-        marginBottom={"0.8rem"}
+        alignItems="center"
+        mb="0.8rem"
       >
         <Typography sx={{ fontWeight: "900", fontSize: "1.2rem" }}>
           Criação Operação
         </Typography>
       </Box>
+
       <Box
-        display={"flex"}
+        display="flex"
         flexDirection="column"
         gap="1rem"
-        alignItems={"center"}
+        alignItems="center"
       >
         <Box
           sx={{ width: "100%" }}
-          display={"flex"}
+          display="flex"
           flexDirection="column"
           gap="0.3rem"
         >
           <Typography sx={{ fontWeight: "800", fontSize: "1rem" }}>
             Nome da operação*
           </Typography>
+
           <Controller
             control={control}
-            name={"operationName"}
+            name="operationName"
             render={({ field }) => (
               <TextField
-                value={field.value}
-                onChange={field.onChange}
-                onBlur={field.onBlur}
+                {...field}
                 placeholder="Digite o nome da operação"
                 variant="outlined"
                 InputLabelProps={{ shrink: false }}
@@ -128,6 +157,7 @@ const CreateOperationModal: React.FC<CreateOperationModalProps> = ({
               />
             )}
           />
+
           <Box sx={{ height: "1.5rem" }}>
             {errors.operationName && (
               <Typography color="error" variant="caption">
@@ -140,12 +170,15 @@ const CreateOperationModal: React.FC<CreateOperationModalProps> = ({
           </Box>
         </Box>
 
+        {submitError && (
+          <Typography color="error" variant="body2" textAlign="center">
+            {submitError}
+          </Typography>
+        )}
+
         <Button
-          onClick={handleSubmit((data) => {
-            console.log(data);
-            reset();
-            onClose();
-          })}
+          onClick={handleSubmit(onSubmit)}
+          disabled={isSubmitting}
           sx={{
             bgcolor: "customButton.gold",
             color: "customText.white",
@@ -154,7 +187,7 @@ const CreateOperationModal: React.FC<CreateOperationModalProps> = ({
             width: "100%",
           }}
         >
-          Criar operação
+          {isSubmitting ? "Criando..." : "Criar operação"}
         </Button>
       </Box>
     </Dialog>

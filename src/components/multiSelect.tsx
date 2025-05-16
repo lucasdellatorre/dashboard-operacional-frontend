@@ -8,8 +8,6 @@ import {
 } from "@mui/material";
 import React from "react";
 import CloseIcon from "@mui/icons-material/Close";
-import { red } from "@mui/material/colors";
-
 
 type Style = "white" | "gray";
 

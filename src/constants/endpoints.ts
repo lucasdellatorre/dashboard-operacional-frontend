@@ -6,6 +6,12 @@ const endpoints = {
     sendReport: "/send/resport/charts/",
   },
   SUSPECT: {},
+  OPERATION: {
+    // EX: página de operações
+    createOperation: "api/operacao",
+    getAllOperations: "api/operacao",
+    getOperationById: (operationId: string) => `/operation/${operationId}`,
+  }
 };
 
 export default endpoints;

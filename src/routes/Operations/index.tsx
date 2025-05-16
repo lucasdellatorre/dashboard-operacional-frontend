@@ -1,4 +1,4 @@
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, Typography } from "@mui/material";
 import React, { useCallback, useContext, useState } from "react";
 import GenericTable from "../../components/operationSuspectTable/table";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -9,44 +9,44 @@ import { HeadCell } from "../../interface/operationSuspectTable/operationSuspect
 import CreateOperationModal from "../../components/modal/createOperationModal";
 import { AppContext } from "../../context/AppContext";
 
-const Operation: React.FC = () => {
-  const { operations, setOperations } = useContext(AppContext);
+const operationHeaderCells: readonly HeadCell<Operation>[] = [
+  {
+    id: "operationName",
+    label: "Nome da operação",
+  },
+  {
+    id: "operationDate",
+    label: "Data da operação",
+  },
+  {
+    id: "numberOfSuspects",
+    label: "Número de alvos na operação",
+  },
+];
+
+const Operations: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [openModal, setOpenModal] = useState<boolean>(false);
-  const { headerInputValue } = useHeaderInput();
-  const [selectedIds, setSelectedIds] = useState<readonly number[]>([]);
 
-  const operationHeaderCells: readonly HeadCell<Operation>[] = [
-    {
-      id: "operationName",
-      label: "Nome da operação",
-    },
-    {
-      id: "operationDate",
-      label: "Data da operação",
-    },
-    {
-      id: "numberOfSuspects",
-      label: "Número de alvos na operação",
-    },
-  ];
+  const { headerInputValue } = useHeaderInput();
+  const { operations: selectedOperations, setOperations: setSelectedOperations } = useContext(AppContext);
+
+  const [openModal, setOpenModal] = useState<boolean>(false);
+  const [selectedIds, setSelectedIds] = useState<readonly number[]>([]);
 
   const handleSelectionChange = useCallback(
     (selectedIds: readonly number[], selectedItems: Operation[]) => {
       setSelectedIds(selectedIds);
-      setOperations(selectedItems);
+      setSelectedOperations(selectedItems);
     },
-    [setOperations]
+    [setSelectedOperations]
   );
 
-  const { filteredOperations } = useOperations({
-    searchTerm: headerInputValue,
-  });
+  const { filteredOperations, loading, error, createOperation, fetchOperations } = useOperations({ searchTerm: headerInputValue });
 
   const operationsSelected = () => {
     const newSearchParams = new URLSearchParams(searchParams);
-    const operationIds = operations.map((item: Operation) => item.id).join("-");
+    const operationIds = selectedOperations.map((item: Operation) => item.id).join("-");
     newSearchParams.set("operacao", operationIds);
     navigate(`/alvos?${newSearchParams.toString()}`);
   };
@@ -80,16 +80,28 @@ const Operation: React.FC = () => {
         </Button>
       </Box>
 
-      <GenericTable
-        rows={filteredOperations}
-        headCells={operationHeaderCells}
-        title="Operações"
-        defaultOrderBy="operationName"
-        onSelectionChange={handleSelectionChange}
-        initialSelected={selectedIds}
-        noDataMessage="Nenhuma operação encontrada, por favor faça o upload da planilha"
-        onDelete={() => {}}
-      />
+      {loading ? (
+        <Box display="flex" justifyContent="center" alignItems="center" mt={4}>
+          <CircularProgress color="inherit" />
+        </Box>
+      ) : error ? (
+        <Typography color="error" fontWeight={600}>
+          Não foi possível carregar as operações. Tente novamente mais tarde.
+        </Typography>
+      ) : (
+        <GenericTable
+          rows={filteredOperations}
+          headCells={operationHeaderCells}
+          title="Operações"
+          defaultOrderBy="operationName"
+          onSelectionChange={handleSelectionChange}
+          initialSelected={selectedIds}
+          noDataMessage="Nenhuma operação encontrada, por favor faça o upload da planilha"
+          onDelete={() => { }}
+        />
+      )}
+
+      {!loading && (
       <Box sx={{ width: "100%", display: "flex", justifyContent: "end" }}>
         <Button
           disabled={selectedIds.length === 0}
@@ -112,10 +124,20 @@ const Operation: React.FC = () => {
         <CreateOperationModal
           isOpen={openModal}
           onClose={() => setOpenModal(false)}
+          onCreateOperation={async (operationData) => {
+            try {
+              await createOperation(operationData.operationName);
+              setOpenModal(false);
+              fetchOperations();
+            } catch (err) {
+              console.error("Erro ao criar operação:", err);
+            }
+          }}
         />
       </Box>
+      )}
     </Box>
   );
 };
 
-export default Operation;
+export default Operations;

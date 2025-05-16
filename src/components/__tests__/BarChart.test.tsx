@@ -1,87 +1,97 @@
-// import { describe, expect, it } from "vitest";
-// import '@testing-library/jest-dom';
-// import { render, screen } from '@testing-library/react';
-// import { ThemeProvider } from '@mui/material/styles';
-// import theme from '../../utils/theme';
-// import BarChartGeneric from '../dashboard/WebChart/BarChart';
+import { vi } from "vitest";
 
-// // Mock do ResizeObserver
-// class ResizeObserverMock {
-//   observe() {}
-//   unobserve() {}
-//   disconnect() {}
-// }
+vi.mock("recharts", async () => {
+  const actual = await vi.importActual<typeof import("recharts")>("recharts");
 
-// global.ResizeObserver = ResizeObserverMock;
+  return {
+    ...actual,
+    ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+      <div data-testid="mock-responsive">{children}</div>
+    ),
+  };
+});
 
-// const mockData = {
-//   contacts: ['Contato 1', 'Contato 2', 'Contato 3'],
-//   data: [10, 20, 30],
-//   title: 'Título do Gráfico',
-//   subtitle: 'Subtítulo do Gráfico',
-//   tooltipLabel: 'Valor',
-// };
+import React from "react";
+import { render, screen } from "@testing-library/react";
+import { describe, it, expect, beforeAll } from "vitest";
+import { ThemeProvider } from "@mui/material/styles";
+import BarChartGeneric, { BarChartData } from "../dashboard/WebChart/BarChart";
+import theme from "../../utils/theme";
 
-// // Mock do tema para testes
-// const mockTheme = {
-//   ...theme,
-//   palette: {
-//     ...theme.palette,
-//     customBackground: {
-//       ...theme.palette.customBackground,
-//       primary: '#FFFFFF',
-//     },
-//     customText: {
-//       ...theme.palette.customText,
-//       black: '#191919',
-//       lightGrey: '#8D8D8D',
-//     },
-//     chart: {
-//       darkBrown: '#4A4331',
-//       goldenYellow: '#C1A047',
-//       oliveBrown: '#624F1C',
-//       lightBeige: '#D6CFBF',
-//     },
-//   },
-// };
+beforeAll(() => {
+  // Impede erro de gráfico com width/height zero
+  Object.defineProperty(HTMLElement.prototype, "offsetWidth", {
+    configurable: true,
+    value: 500,
+  });
+  Object.defineProperty(HTMLElement.prototype, "offsetHeight", {
+    configurable: true,
+    value: 300,
+  });
 
-// describe('BarChartGeneric', () => {
-//   const renderComponent = (props = mockData) => {
-//     return render(
-//       <ThemeProvider theme={mockTheme}>
-//         <BarChartGeneric {...props} />
-//       </ThemeProvider>
-//     );
-//   };
+  // Necessário para evitar crash com ResizeObserver
+  global.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+});
 
-//   it('deve renderizar o componente corretamente', () => {
-//     renderComponent();
-//     expect(screen.getByText('Título do Gráfico')).toBeInTheDocument();
-//     expect(screen.getByText('Subtítulo do Gráfico')).toBeInTheDocument();
-//   });
+const renderWithTheme = (ui: React.ReactElement) => {
+  return render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
+};
 
-//   it('deve exibir os contatos corretamente', () => {
-//     renderComponent();
-//     // Como o Recharts renderiza os textos em SVG, vamos verificar apenas o título e subtítulo
-//     expect(screen.getByText('Título do Gráfico')).toBeInTheDocument();
-//     expect(screen.getByText('Subtítulo do Gráfico')).toBeInTheDocument();
-//   });
+describe("BarChartGeneric Component", () => {
+  const sampleData: BarChartData[] = [
+    { key: "A", value: 10 },
+    { key: "B", value: 20 },
+    { key: "C", value: 30 },
+  ];
 
-//   it('deve renderizar com tooltipLabel personalizado', () => {
-//     const customProps = {
-//       ...mockData,
-//       tooltipLabel: 'Valor Personalizado',
-//     };
-//     renderComponent(customProps);
-//     expect(screen.getByText('Subtítulo do Gráfico')).toBeInTheDocument();
-//   });
+  it("deve renderizar os títulos corretamente", () => {
+    renderWithTheme(
+      <BarChartGeneric
+        data={sampleData}
+        title="Gráfico de Teste"
+        subtitle="Valores Teste"
+      />
+    );
 
-//   it('deve renderizar em modo expandido', () => {
-//     const expandedProps = {
-//       ...mockData,
-//       expanded: true,
-//     };
-//     renderComponent(expandedProps);
-//     expect(screen.getByText('Título do Gráfico')).toBeInTheDocument();
-//   });
-// }); 
+    expect(screen.getByText("Gráfico de Teste")).toBeInTheDocument();
+    expect(screen.getByText("Valores Teste")).toBeInTheDocument();
+  });
+
+  it("deve renderizar corretamente o container do gráfico", () => {
+    renderWithTheme(
+      <BarChartGeneric data={sampleData} title="Teste" subtitle="Sub" />
+    );
+
+    expect(screen.getByTestId("mock-responsive")).toBeInTheDocument();
+  });
+
+  it("deve expandir corretamente com a prop expanded", () => {
+    renderWithTheme(
+      <BarChartGeneric
+        data={sampleData}
+        title="Expandido"
+        subtitle="Teste"
+        expanded
+      />
+    );
+
+    expect(screen.getByText("Expandido")).toBeInTheDocument();
+  });
+
+  it("deve exibir o tooltip personalizado se ativo", () => {
+    renderWithTheme(
+      <BarChartGeneric
+        data={sampleData}
+        title="Tooltip"
+        subtitle="Simulado"
+        tooltipLabel="Total"
+      />
+    );
+
+    expect(screen.getByText("Tooltip")).toBeInTheDocument();
+  });
+});
