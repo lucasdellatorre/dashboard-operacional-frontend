@@ -6,10 +6,9 @@ import GenericTable from "../../components/Table/Table";
 import { useWorksheets, WorkSheet } from "../../hooks/useWorksheets";
 import { useHeaderInput } from "../../hooks/useHeaderInput";
 import UploadWorksheetModal from "../../components/modal/uploadWorksheetModal";
+import { useOperations } from "../../hooks/useOperations";
 
 const Worksheet: React.FC = () => {
-  // const navigate = useNavigate();
-  // const [searchParams] = useSearchParams();
   const [_, setSelectedWorksheets] = useState<WorkSheet[]>([]);
   const [selectedIds, setSelectedIds] = useState<readonly number[]>([]);
 
@@ -36,18 +35,18 @@ const Worksheet: React.FC = () => {
     },
   ];
 
-  const handleSelectionChange = useCallback(
-    (selectedIds: readonly number[], selectedItems: WorkSheet[]) => {
+  const handleSelectionChange = useCallback((selectedIds: readonly number[], selectedItems: WorkSheet[]) => {
       setSelectedIds(selectedIds);
       setSelectedWorksheets(selectedItems);
     },
     [setSelectedWorksheets]
   );
+
   const [openModal, setOpenModal] = useState<boolean>(false);
   const { headerInputValue } = useHeaderInput();
-  const { filteredWorksheets, addWorksheet } = useWorksheets({
-    searchTerm: headerInputValue,
-  });
+  const { filteredWorksheets, addWorksheet } = useWorksheets({ searchTerm: headerInputValue });
+  const { filteredOperations } = useOperations({ searchTerm: "" });
+
 
   return (
     <Box p={3} sx={{ fontFamily: "Inter, sans-serif" }}>
@@ -94,6 +93,7 @@ const Worksheet: React.FC = () => {
       </Box>
       <UploadWorksheetModal
         isOpen={openModal}
+        operationsList={filteredOperations}
         onClose={() => setOpenModal(false)}
         onUploadSuccess={(file) => {
           setOpenModal(false);

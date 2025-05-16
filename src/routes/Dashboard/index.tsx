@@ -85,6 +85,7 @@ const Dashboard: React.FC = () => {
   const [selectedType, setSelectedType] = useState("Texto");
   const [selectedGroup, setSelectedGroup] = useState("Ambos");
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  const [selectedSymmetry, setSelectedSymmetry] = useState("Ambos");
 
   const chartArea = useMemo(() => {
     const renderChart = (cfg: ChartConfig) => (
@@ -143,7 +144,7 @@ const Dashboard: React.FC = () => {
             <MenuItem value="Todos" sx={menuItemStyles}>Todos</MenuItem>
           </TextField>
 
-          <TextField select label="Simetria" sx={focusedTextFieldStyles}>
+          <TextField select label="Simetria" value={selectedSymmetry} onChange={(e) => setSelectedSymmetry(e.target.value)} sx={focusedTextFieldStyles}>
             <MenuItem value="Simétricos" sx={menuItemStyles}>Simétricos</MenuItem>
             <MenuItem value="Assimétricos" sx={menuItemStyles}>Assimétricos</MenuItem>
             <MenuItem value="Ambos" sx={menuItemStyles}>Ambos</MenuItem>
