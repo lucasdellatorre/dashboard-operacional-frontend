@@ -381,6 +381,9 @@ const SuspectsDetails = () => {
                 "&.Mui-checked": {
                   color: "customButton.gold",
                 },
+                "&.MuiCheckbox-indeterminate": {
+                  color: "customButton.gold",
+                },
               }}
             />
             <Typography

@@ -215,6 +215,9 @@ function GenericTable<T extends GenericData>({
                             "&.Mui-checked": {
                               color: "customButton.gold",
                             },
+                            "&.MuiCheckbox-indeterminate": {
+                              color: "customButton.gold",
+                            },
                           }}
                           checked={isItemSelected}
                         />

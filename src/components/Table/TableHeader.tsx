@@ -36,6 +36,9 @@ const EnhancedTableHead = <T extends GenericData>({
                 "&.Mui-checked": {
                   color: "customButton.gold",
                 },
+                "&.MuiCheckbox-indeterminate": {
+                  color: "customButton.gold",
+                },
               }}
               indeterminate={numSelected > 0 && numSelected < rowCount}
               checked={rowCount > 0 && numSelected === rowCount}
