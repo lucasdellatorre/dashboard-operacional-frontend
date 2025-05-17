@@ -57,6 +57,7 @@ const Worksheet: React.FC = () => {
       >
         <Typography
           variant="h5"
+          data-testid="Histórico de Planilhas"
           color="#000000"
           mb={4}
           fontWeight={700}
@@ -95,6 +96,7 @@ const Worksheet: React.FC = () => {
         isOpen={openModal}
         operationsList={filteredOperations}
         onClose={() => setOpenModal(false)}
+        data-testid="close-modal-button"
         onUploadSuccess={(file) => {
           setOpenModal(false);
 
