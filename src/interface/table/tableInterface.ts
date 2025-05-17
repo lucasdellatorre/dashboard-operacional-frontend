@@ -30,6 +30,9 @@ export interface GenericTableProps<T extends GenericData> {
     selectedItems: T[]
   ) => void;
   onDelete?: (selectedIds: readonly number[], selectedItems: T[]) => void;
+  onAdd?: () => void;
+  addButton?: boolean;
+  allowSelection?: boolean;
 }
 
 export interface EnhancedTableHeadProps<T extends GenericData> {

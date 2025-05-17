@@ -4,16 +4,21 @@ import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FilterListIcon from "@mui/icons-material/FilterList";
+import { Button } from "@mui/material";
 
 interface EnhancedTableToolbarProps {
   numSelected: number;
   title: string;
   onDelete?: () => void;
+  onAdd?: () => void;
+  addButton?: boolean;
 }
 const EnhancedTableToolbar: React.FC<EnhancedTableToolbarProps> = ({
   numSelected,
   title,
   onDelete,
+  addButton = false,
+  onAdd,
 }) => {
   return (
     <Toolbar
@@ -59,6 +64,19 @@ const EnhancedTableToolbar: React.FC<EnhancedTableToolbarProps> = ({
             <FilterListIcon />
           </IconButton>
         </Tooltip>
+      )}
+      {addButton && (
+        <Button
+          onClick={onAdd}
+          sx={{
+            bgcolor: "customButton.gold",
+            color: "customText.white",
+            textTransform: "none",
+            fontWeight: 600,
+          }}
+        >
+          Adicionar
+        </Button>
       )}
     </Toolbar>
   );

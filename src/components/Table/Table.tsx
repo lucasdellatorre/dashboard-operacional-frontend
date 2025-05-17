@@ -29,6 +29,9 @@ function GenericTable<T extends GenericData>({
   singleSelect = false,
   initialSelected = [],
   onDelete,
+  allowSelection = true,
+  onAdd,
+  addButton = false,
 }: GenericTableProps<T>) {
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<keyof T>(defaultOrderBy);
@@ -153,6 +156,8 @@ function GenericTable<T extends GenericData>({
           numSelected={selected.length}
           title={title}
           onDelete={handleDelete}
+          onAdd={onAdd}
+          addButton={addButton}
         />
         <TableContainer
           sx={{
@@ -204,15 +209,18 @@ function GenericTable<T extends GenericData>({
                           : "table.white",
                       }}
                     >
-                      <Checkbox
-                        sx={{
-                          "&.Mui-checked": {
-                            color: "customButton.gold",
-                          },
-                        }}
-                        checked={isItemSelected}
-                      />
+                      {allowSelection && (
+                        <Checkbox
+                          sx={{
+                            "&.Mui-checked": {
+                              color: "customButton.gold",
+                            },
+                          }}
+                          checked={isItemSelected}
+                        />
+                      )}
                     </TableCell>
+
                     {headCells.map((headCell, cellIndex) => {
                       const value = row[headCell.id];
                       const isFirstCell = cellIndex === 5;
@@ -259,11 +267,9 @@ function GenericTable<T extends GenericData>({
                             >
                               <Box
                                 sx={{
-                                  // these three are the magic for ellipsis:
                                   overflow: "hidden",
                                   whiteSpace: "nowrap",
                                   textOverflow: "ellipsis",
-                                  // make sure it actually respects the maxWidth:
                                   display: "block",
                                 }}
                               >
