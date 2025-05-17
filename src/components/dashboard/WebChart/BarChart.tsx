@@ -80,7 +80,7 @@ const BarChartGeneric: React.FC<BarChartGenericProps> = ({
         p: { xs: 2, sm: 3 },
         borderRadius: "1.5rem",
         boxShadow: "0 0.25rem 1rem rgba(0,0,0,0.1)",
-        backgroundColor: theme.palette.customBackground.secondary,
+        backgroundColor: "#F8F8F8",
         fontFamily: theme.typography.fontFamily,
         display: "flex",
         flexDirection: "column",

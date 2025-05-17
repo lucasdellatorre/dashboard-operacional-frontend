@@ -28,7 +28,6 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
         bgcolor="customBackground.darkGray"
         display="flex"
         flexDirection="column"
-        boxShadow="4px 0px 15px rgba(0, 0, 0, 0.05)"
         position="relative"
         top={0}
         left={0}

@@ -14,6 +14,7 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { z } from "zod";
 import UploadAreaInput from "../uploadAreaInput";
 import MultiSelect from "../multiSelect";
+import { Operation } from "../../hooks/useOperations";
 
 const uploadModalSchema = z.object({
   uploadFile: z
@@ -34,6 +35,7 @@ interface UploadModalProps {
   onUploadSuccess: (file: File) => void;
   onClose: () => void;
   existingFiles: string[];
+  operationsList: Operation[];
 }
 
 const UploadWorksheetModal: React.FC<UploadModalProps> = ({
@@ -41,19 +43,10 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
   onUploadSuccess,
   onClose,
   existingFiles,
+  operationsList
 }) => {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const operationsList = [
-    "Operação A",
-    "Operação B",
-    "Operação C",
-    "Operação D",
-    "Operação E",
-    "Operação F",
-    "Operação G",
-    "Operação H",
-  ];
 
   const {
     control,
@@ -187,9 +180,10 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
               <MultiSelect
                 placeholder="Selecione as operações"
                 height="2.5rem"
-                options={operationsList}
+                options={operationsList.map((operation) => (operation.operationName))}
                 selectedOptions={field.value}
-                onChange={handleChangeOperations}
+                onChange={handleChangeOperations} 
+                style={"gray"} 
               />
             )}
           />

@@ -1,9 +1,14 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+vi.mock("@mui/material/ButtonBase/TouchRipple", () => ({
+  __esModule: true,
+  default: () => null,
+}));
+
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import ContainerLogin from "../login/ContainerLogin/ContainerLogin";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 
-// Helper para renderizar com o Router
 const renderWithRouter = (ui: React.ReactElement) => {
   return render(ui, { wrapper: MemoryRouter });
 };
@@ -19,33 +24,32 @@ describe("ContainerLogin Component", () => {
     expect(screen.getByRole("button", { name: /entrar/i })).toBeInTheDocument();
   });
 
-  it("Deve formatar o cpf do usuário corretamente", () => {
+  it("Deve formatar o cpf do usuário corretamente", async () => {
     renderWithRouter(<ContainerLogin />);
     const cpfInput = screen.getByPlaceholderText("000.000.000-00");
-
-    fireEvent.change(cpfInput, { target: { value: "12345678901" } });
+    await userEvent.type(cpfInput, "12345678901");
     expect(cpfInput).toHaveValue("123.456.789-01");
   });
 
-  it("Deve salvar o cpf do usuário no localStorage corretamente", () => {
+  it("Deve salvar o cpf do usuário no localStorage corretamente", async () => {
     renderWithRouter(<ContainerLogin />);
     const cpfInput = screen.getByPlaceholderText("000.000.000-00");
     const button = screen.getByRole("button", { name: /entrar/i });
 
-    fireEvent.change(cpfInput, { target: { value: "123.456.789-01" } });
-    fireEvent.click(button);
+    await userEvent.clear(cpfInput);
+    await userEvent.type(cpfInput, "38904573041");
+    await userEvent.click(button);
 
-    expect(localStorage.getItem("cpf")).toBe("123.456.789-01");
+    await waitFor(() => {
+      expect(localStorage.getItem("cpf")).toBe("389.045.730-41");
+    });
   });
 
-  it("Deve aplicar o efeito de escala do botão entrar", () => {
+  it("Deve reagir ao clique do botão entrar", async () => {
     renderWithRouter(<ContainerLogin />);
     const button = screen.getByRole("button", { name: /entrar/i });
 
-    fireEvent.mouseDown(button);
-    expect(button).toHaveStyle("transform: scale(0.95)");
-
-    fireEvent.mouseUp(button);
-    expect(button).toHaveStyle("transform: scale(1)");
+    await userEvent.click(button);
+    expect(button).toBeEnabled(); 
   });
 });

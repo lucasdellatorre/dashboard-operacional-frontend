@@ -67,7 +67,6 @@ export const useWorksheets = ({ searchTerm }: UseOperationsProps) => {
     insertedBy: string,
     date: string
   ) {
-    console.log("addWorksheet", worksheet, size, insertedBy, date);
     const newWorksheet: WorkSheet = {
       id: mockWorksheets.length + 1,
       worksheet,

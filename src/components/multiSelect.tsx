@@ -1,14 +1,15 @@
 import {
+  Autocomplete,
   Checkbox,
   Chip,
-  ListItemText,
-  MenuItem,
   TextField,
   Box,
+  ListItemText,
 } from "@mui/material";
 import React from "react";
+import CloseIcon from "@mui/icons-material/Close";
 
-type style = "white" | "gray";
+type Style = "white" | "gray";
 
 interface MultiSelectProps {
   options: string[];
@@ -16,7 +17,7 @@ interface MultiSelectProps {
   onChange: (selected: string[]) => void;
   height?: string;
   placeholder: string;
-  style: style;
+  style: Style;
 }
 
 const MultiSelect: React.FC<MultiSelectProps> = ({
@@ -27,139 +28,46 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   height = "auto",
   placeholder,
 }) => {
-  const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    const value = event.target.value as string[];
-    onChange(value);
-  };
-
   return (
     <Box sx={{ width: "100%" }}>
-      <TextField
-        placeholder={placeholder}
-        select
+      <Autocomplete
+        multiple
+        disableCloseOnSelect
+        options={options}
         value={selectedOptions}
-        onChange={handleChange}
-        variant="outlined"
-        fullWidth
-        InputLabelProps={{ shrink: false }}
-        SelectProps={{
-          multiple: true,
-          displayEmpty: true,
-          renderValue: (selected) => {
-            if ((selected as string[]).length === 0) {
-              if (style === "white") {
-                return <span style={{ color: "#a2a2a2" }}>{placeholder}</span>;
+        onChange={(_, value) => onChange(value)}
+        renderTags={(value: readonly string[], getTagProps) =>
+          value.map((option: string, index: number) => (
+            <Chip
+              label={option}
+              {...getTagProps({ index })}
+              size="small"
+              sx={{
+                backgroundColor: style == "white" ? "white" : "#F1F1F1",
+                color: style == "white" ? "black" : "customText.black",
+                fontWeight: 500,
+                fontFamily: "Inter",
+                border: "1px solid #c8c8c8",
+                borderRadius: "10px",
+                flexShrink: 0,
+              }}
+              deleteIcon={
+                <CloseIcon
+                  sx={{
+                    fontSize: 20,
+                    color: "white",
+                    borderRadius: "50%",
+                    padding: "2px",
+                  }}
+                />
               }
-              return <span style={{ color: "grey" }}>{placeholder}</span>;
-            }
-
-            return (
-              <div
-                style={{
-                  display: "flex",
-                  flexWrap: "nowrap",
-                  gap: "5px",
-                  overflowX: "auto",
-                  width: "100%",
-                  padding: "4px 0",
-                  msOverflowStyle: "none",
-                  scrollbarWidth: "none",
-                }}
-                className="hide-scrollbar"
-              >
-                {(selected as string[]).map((value) => (
-                  <Chip
-                    key={value}
-                    label={value}
-                    size="small"
-                    sx={{
-                      flexShrink: 0,
-                      backgroundColor:
-                        style === "white" ? "#f0f0f0" : "#ffffff",
-                      borderRadius: "16px",
-                    }}
-                  />
-                ))}
-              </div>
-            );
-          },
-          MenuProps: {
-            PaperProps: {
-              style: {
-                maxHeight: 150,
-                width: "auto",
-                maxWidth: "100%",
-              },
-            },
-            anchorOrigin: {
-              vertical: "bottom",
-              horizontal: "left",
-            },
-            transformOrigin: {
-              vertical: "top",
-              horizontal: "left",
-            },
-            marginThreshold: 8,
-          },
-        }}
-        sx={{
-          borderRadius: style === "gray" ? "8px" : "0",
-          backgroundColor: style === "white" ? "#fff" : "#e3e3e3",
-          width: "100%",
-          "& .MuiInputBase-root": {
-            width: "100%",
-          },
-          "& .MuiSelect-select": {
-            width: "100%",
-            padding: "8px 14px",
-            display: "flex",
-            alignItems: "center",
-            minHeight: height !== "auto" ? height : "auto",
-            "& .hide-scrollbar::-webkit-scrollbar": {
-              display: "none",
-            },
-          },
-        }}
-        InputProps={{
-          notched: false,
-          sx: {
-            height: height,
-
-            width: "100%",
-            "& .MuiOutlinedInput-notchedOutline": {
-              border: style === "gray" ? "none" : "1px solid",
-              borderColor:
-                style === "gray" ? "transparent" : "rgba(0, 0, 0, 0.23)",
-            },
-            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-              borderColor: "rgba(0, 0, 0, 0.23)",
-              borderWidth: "1px",
-            },
-            "&:hover .MuiOutlinedInput-notchedOutline": {
-              borderColor: "rgba(0, 0, 0, 0.23)",
-            },
-          },
-        }}
-      >
-        {options.map((option) => (
-          <MenuItem
-            key={option}
-            value={option}
-            dense
-            sx={{
-              padding: "4px 16px",
-              "&:hover": {
-                backgroundColor: "rgba(158, 131, 59, 0.08)",
-              },
-              "&.Mui-selected": {
-                backgroundColor: "transparent",
-              },
-              "&.Mui-selected:hover": {
-                backgroundColor: "hsla(44, 45.60%, 42.50%, 0.08)",
-              },
-            }}
-          >
+            />
+          ))
+        }
+        renderOption={(props, option, { selected }) => (
+          <li {...props}>
             <Checkbox
+              checked={selected}
               size="small"
               sx={{
                 padding: "4px 8px 4px 0",
@@ -168,7 +76,6 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                   color: "customButton.gold",
                 },
               }}
-              checked={selectedOptions.indexOf(option) > -1}
             />
             <ListItemText
               primary={option}
@@ -176,9 +83,37 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                 sx: { fontSize: "0.875rem" },
               }}
             />
-          </MenuItem>
-        ))}
-      </TextField>
+          </li>
+        )}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            variant="outlined"
+            placeholder={selectedOptions.length === 0 ? placeholder : ""}
+            fullWidth
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                padding: "8px 14px",
+                minHeight: height,
+                display: "flex",
+                alignItems: "center",
+              },
+              "& .MuiOutlinedInput-notchedOutline": {
+                borderColor: "rgba(0, 0, 0, 0.23)",
+              },
+              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                borderColor: "rgba(0, 0, 0, 0.23)",
+              },
+              "&:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: "rgba(0, 0, 0, 0.23)",
+              },
+              "& .MuiInputBase-input::placeholder": {
+                color: style === "white" ? "#a2a2a2" : "black",
+              },
+            }}
+          />
+        )}
+      />
     </Box>
   );
 };
