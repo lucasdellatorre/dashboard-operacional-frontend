@@ -51,7 +51,7 @@ const Login: React.FC = () => {
           gap: "1rem",
           padding: "1rem",
         }}
-      >
+      > 
         <Box
           component="img"
           alt="logo da policia"
