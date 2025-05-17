@@ -1,5 +1,14 @@
-import { Box, MenuItem, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Collapse,
+  IconButton,
+  MenuItem,
+  TextField,
+  Typography,
+} from "@mui/material";
 import React, { useMemo, useState } from "react";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import BarChartGeneric, {
   BarChartData,
 } from "../../components/dashboard/WebChart/BarChart";
@@ -154,6 +163,12 @@ const Dashboard: React.FC = () => {
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [selectedSymmetry, setSelectedSymmetry] = useState("Ambos");
 
+  const [expanded, setExpanded] = useState(true);
+
+  const toggleExpanded = () => {
+    setExpanded(!expanded);
+  };
+
   const chartArea = useMemo(() => {
     const renderChart = (cfg: ChartConfig) => (
       <Box
@@ -206,53 +221,16 @@ const Dashboard: React.FC = () => {
         display={"flex"}
         flexDirection={"column"}
         justifyContent={"space-between"}
+        borderBottom={expanded ? "1px solid #e0e0e0" : "none"}
       >
-        <Box
-          sx={{
-            width: "fit-content",
-            minWidth: "27rem",
-            px: "1rem",
-            display: "flex",
-            flexDirection: "column",
-            gap: "0.5rem",
-          }}
-        >
-          <Typography
-            fontFamily={"Inter, sans-serif"}
-            fontWeight={600}
-            fontSize={"1.25rem"}
-          >
-            Seleção de Alvos
-          </Typography>
-          <MultiSelect
-            style="gray"
-            placeholder="Selecione os nomes"
-            height="53px"
-            options={options}
-            selectedOptions={selectedOptions}
-            onChange={setSelectedOptions}
-          />
-        </Box>
-
-        <Box
-          width={"100%"}
-          display={"flex"}
-          px={"1rem"}
-          py={"0.7rem"}
-          flexDirection={"row"}
-          justifyContent={"left"}
-          gap={"2.5rem"}
-          flexWrap={"wrap"}
-          flexGrow={1}
-          sx={{ alignItems: "center" }}
-        >
+        <Collapse in={expanded} timeout="auto">
           <Box
             sx={{
-              height: "fit-content",
+              width: "fit-content",
+              minWidth: "27rem",
+              px: "1rem",
               display: "flex",
               flexDirection: "column",
-              flexWrap: "wrap",
-              justifyContent: "center",
               gap: "0.5rem",
             }}
           >
@@ -261,159 +239,205 @@ const Dashboard: React.FC = () => {
               fontWeight={600}
               fontSize={"1.25rem"}
             >
-              Seleção de Gráficos
+              Seleção de Alvos
             </Typography>
-            <ViewSelectionFilter
-              filters={graficFilters}
-              selectedFilter={selectedChart}
-              onChange={setSelectedChart}
+            <MultiSelect
+              style="gray"
+              placeholder="Selecione os nomes"
+              height="53px"
+              options={options}
+              selectedOptions={selectedOptions}
+              onChange={setSelectedOptions}
             />
           </Box>
-          <Box
-            sx={{
-              height: "fit-content",
-              display: "flex",
-              flexDirection: "column",
-              flexWrap: "wrap",
-              justifyContent: "center",
-              gap: "0.5rem",
-            }}
-          >
-            <Typography
-              fontFamily={"Inter, sans-serif"}
-              fontWeight={600}
-              fontSize={"1.25rem"}
-            >
-              Tipo de Seleção
-            </Typography>
-            <ViewSelectionFilter
-              filters={selectionTypeFilter}
-              selectedFilter={selectedFilterType}
-              onChange={setSelectedFilterType}
-            />
-          </Box>
-        </Box>
 
-        <Box
-          width={"100%"}
-          display={"flex"}
-          px={"1rem"}
-          py={"0.7rem"}
-          gap={"0.5rem"}
-          flexDirection={"column"}
-        >
-          <Typography
-            variant="caption"
-            fontFamily={"Inter, sans-serif"}
-            fontWeight={500}
-            fontSize={"14px"}
-          >
-            Filtrar por:
-          </Typography>
           <Box
+            width={"100%"}
             display={"flex"}
+            px={"1rem"}
+            py={"0.7rem"}
             flexDirection={"row"}
-            gap={"2rem"}
+            justifyContent={"left"}
+            gap={"2.5rem"}
             flexWrap={"wrap"}
+            flexGrow={1}
+            sx={{ alignItems: "center" }}
           >
-            <TextField
-              select
-              label="Grupo"
-              value={selectedGroup}
-              onChange={(e) => setSelectedGroup(e.target.value)}
-              sx={{ ...focusedTextFieldStyles, backgroundColor: "transparent" }}
+            <Box
+              sx={{
+                height: "fit-content",
+                display: "flex",
+                flexDirection: "column",
+                flexWrap: "wrap",
+                justifyContent: "center",
+                gap: "0.5rem",
+              }}
             >
-              <MenuItem value="Grupo" sx={menuItemStyles}>
-                Grupo
-              </MenuItem>
-              <MenuItem value="Número" sx={menuItemStyles}>
-                Número
-              </MenuItem>
-              <MenuItem value="Ambos" sx={menuItemStyles}>
-                Ambos
-              </MenuItem>
-            </TextField>
+              <Typography
+                fontFamily={"Inter, sans-serif"}
+                fontWeight={600}
+                fontSize={"1.25rem"}
+              >
+                Seleção de Gráficos
+              </Typography>
+              <ViewSelectionFilter
+                filters={graficFilters}
+                selectedFilter={selectedChart}
+                onChange={setSelectedChart}
+              />
+            </Box>
+            <Box
+              sx={{
+                height: "fit-content",
+                display: "flex",
+                flexDirection: "column",
+                flexWrap: "wrap",
+                justifyContent: "center",
+                gap: "0.5rem",
+              }}
+            >
+              <Typography
+                fontFamily={"Inter, sans-serif"}
+                fontWeight={600}
+                fontSize={"1.25rem"}
+              >
+                Tipo de Seleção
+              </Typography>
+              <ViewSelectionFilter
+                filters={selectionTypeFilter}
+                selectedFilter={selectedFilterType}
+                onChange={setSelectedFilterType}
+              />
+            </Box>
+          </Box>
 
-            <TextField
-              select
-              label="Tipo"
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-              sx={focusedTextFieldStyles}
+          <Box
+            width={"100%"}
+            display={"flex"}
+            px={"1rem"}
+            py={"0.7rem"}
+            gap={"0.5rem"}
+            flexDirection={"column"}
+          >
+            <Typography
+              variant="caption"
+              fontFamily={"Inter, sans-serif"}
+              fontWeight={500}
+              fontSize={"14px"}
             >
-              <MenuItem value="Texto" sx={menuItemStyles}>
-                Texto
-              </MenuItem>
-              <MenuItem
-                value="Vídeo"
+              Filtrar por:
+            </Typography>
+            <Box
+              display={"flex"}
+              flexDirection={"row"}
+              gap={"2rem"}
+              flexWrap={"wrap"}
+            >
+              <TextField
+                select
+                label="Grupo"
+                value={selectedGroup}
+                onChange={(e) => setSelectedGroup(e.target.value)}
                 sx={{
-                  ...menuItemStyles,
-                  "&.Mui-selected": { backgroundColor: "transparent" },
+                  ...focusedTextFieldStyles,
+                  backgroundColor: "transparent",
                 }}
               >
-                Vídeo
-              </MenuItem>
-              <MenuItem value="Todos" sx={menuItemStyles}>
-                Todos
-              </MenuItem>
-            </TextField>
+                <MenuItem value="Grupo" sx={menuItemStyles}>
+                  Grupo
+                </MenuItem>
+                <MenuItem value="Número" sx={menuItemStyles}>
+                  Número
+                </MenuItem>
+                <MenuItem value="Ambos" sx={menuItemStyles}>
+                  Ambos
+                </MenuItem>
+              </TextField>
 
-            <TextField
-              select
-              label="Simetria"
-              value={selectedSymmetry}
-              onChange={(e) => setSelectedSymmetry(e.target.value)}
-              sx={focusedTextFieldStyles}
+              <TextField
+                select
+                label="Tipo"
+                value={selectedType}
+                onChange={(e) => setSelectedType(e.target.value)}
+                sx={focusedTextFieldStyles}
+              >
+                <MenuItem value="Texto" sx={menuItemStyles}>
+                  Texto
+                </MenuItem>
+                <MenuItem
+                  value="Vídeo"
+                  sx={{
+                    ...menuItemStyles,
+                    "&.Mui-selected": { backgroundColor: "transparent" },
+                  }}
+                >
+                  Vídeo
+                </MenuItem>
+                <MenuItem value="Todos" sx={menuItemStyles}>
+                  Todos
+                </MenuItem>
+              </TextField>
+
+              <TextField
+                select
+                label="Simetria"
+                value={selectedSymmetry}
+                onChange={(e) => setSelectedSymmetry(e.target.value)}
+                sx={focusedTextFieldStyles}
+              >
+                <MenuItem value="Simétricos" sx={menuItemStyles}>
+                  Simétricos
+                </MenuItem>
+                <MenuItem value="Assimétricos" sx={menuItemStyles}>
+                  Assimétricos
+                </MenuItem>
+                <MenuItem value="Ambos" sx={menuItemStyles}>
+                  Ambos
+                </MenuItem>
+              </TextField>
+
+              <TextField
+                id="date-initial"
+                InputLabelProps={{ shrink: true }}
+                label="Data Inicial"
+                type="date"
+                sx={focusedTextFieldStyles}
+              />
+              <TextField
+                id="date-final"
+                InputLabelProps={{ shrink: true }}
+                label="Data Final"
+                type="date"
+                sx={focusedTextFieldStyles}
+              />
+            </Box>
+            <Box
+              display={"flex"}
+              flexDirection={"row"}
+              gap={"2rem"}
+              marginTop={"1rem"}
+              flexWrap={"wrap"}
             >
-              <MenuItem value="Simétricos" sx={menuItemStyles}>
-                Simétricos
-              </MenuItem>
-              <MenuItem value="Assimétricos" sx={menuItemStyles}>
-                Assimétricos
-              </MenuItem>
-              <MenuItem value="Ambos" sx={menuItemStyles}>
-                Ambos
-              </MenuItem>
-            </TextField>
-
-            <TextField
-              id="date-initial"
-              InputLabelProps={{ shrink: true }}
-              label="Data Inicial"
-              type="date"
-              sx={focusedTextFieldStyles}
-            />
-            <TextField
-              id="date-final"
-              InputLabelProps={{ shrink: true }}
-              label="Data Final"
-              type="date"
-              sx={focusedTextFieldStyles}
-            />
+              <TextField
+                id="initial-time"
+                InputLabelProps={{ shrink: true }}
+                label="Faixa Horária - Inicio"
+                type="time"
+                sx={focusedTextFieldStyles}
+              />
+              <TextField
+                id="initial-time"
+                InputLabelProps={{ shrink: true }}
+                label="Faixa Horária - Fim"
+                type="time"
+                sx={focusedTextFieldStyles}
+              />
+            </Box>
           </Box>
-          <Box
-            display={"flex"}
-            flexDirection={"row"}
-            gap={"2rem"}
-            marginTop={"1rem"}
-            flexWrap={"wrap"}
-          >
-            <TextField
-              id="initial-time"
-              InputLabelProps={{ shrink: true }}
-              label="Faixa Horária - Inicio"
-              type="time"
-              sx={focusedTextFieldStyles}
-            />
-            <TextField
-              id="initial-time"
-              InputLabelProps={{ shrink: true }}
-              label="Faixa Horária - Fim"
-              type="time"
-              sx={focusedTextFieldStyles}
-            />
-          </Box>
-        </Box>
+        </Collapse>
+        <IconButton onClick={toggleExpanded} size="small" disableRipple>
+          {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+        </IconButton>
       </Box>
 
       <Box
