@@ -41,6 +41,29 @@ const Suspects: React.FC = () => {
       id: "type",
       label: "Tipo",
     },
+    {
+      id: "botton",
+      label: "",
+      iconAction: {
+        icon: <Button 
+        variant="contained"
+        size="small"
+        sx={{
+          bgcolor: "customButton.black",
+          color: "customText.white",
+          textTransform: "none",
+          fontWeight: 600,
+          fontSize: "0.8rem",
+        } 
+        }
+        >
+          Detalhes
+          </Button>,
+        onClick: (id: any) => {
+          navigate(`/dashboard/suspectdetails/${id}`);       
+        },
+      },
+    },
   ];
 
   const handleSelectionChange = useCallback(
