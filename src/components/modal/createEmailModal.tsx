@@ -147,9 +147,11 @@ const EmailModal: React.FC<EmailModalProps> = ({
 
         <Button
           onClick={handleSubmit((data) => {
-            onSubmit(data);
-            reset();
-            onClose();
+            if (onSubmit) {
+              onSubmit(data);
+              reset();
+              onClose();
+            }
           })}
           sx={{
             bgcolor: "customButton.gold",
