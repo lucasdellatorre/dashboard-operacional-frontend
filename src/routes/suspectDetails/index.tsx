@@ -13,6 +13,8 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import GenericTable from "../../components/Table/Table";
 import { GenericData, HeadCell } from "../../interface/table/tableInterface";
+import EmailModal from "../../components/modal/createEmailModal";
+import { useState } from "react";
 
 interface Email extends GenericData {
   email: string;
@@ -89,8 +91,17 @@ const SuspectsDetails = () => {
       label: "Data",
     },
   ];
+
+  const [openEmailModal, setOpenEmailModal] = useState(false);
+
+  function criarEditarEmail() {
+    //TODO: create or edit email integrated with backend
+    setOpenEmailModal(false);
+  }
+
   return (
     <>
+      <EmailModal isOpen={openEmailModal} onClose={() => setOpenEmailModal(false)} onSubmit={criarEditarEmail} />
       <Box
         bgcolor={"customBackground.secondary"}
         sx={{
@@ -466,7 +477,7 @@ const SuspectsDetails = () => {
                   },
                 ]}
                 addButton={true}
-                onAdd={() => {}}
+                onAdd={() => {setOpenEmailModal(true)}}
                 singleSelect={true}
                 headCells={EmailHeaderCells}
                 title=""
