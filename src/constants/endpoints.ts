@@ -15,7 +15,11 @@ const endpoints = {
   WEB: {
     // EX: página do gráfico de teia
     createWeb: "api/teia/message"
-  }
+  },
+  SHEETS: {
+    getAll: 'api/planilha',
+    upload: 'api/interceptacao/upload',
+  },
 };
 
 export default endpoints;
