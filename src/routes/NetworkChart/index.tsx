@@ -179,7 +179,7 @@ const NetworkChartRoute: React.FC = () => {
         </Box>
 
         <Box width="100%" display="flex" py="0.2rem" flexDirection="column" gap="0.25rem">
-          <Typography variant="caption" fontFamily="Inter, sans-serif" fontWeight={600} mb={0.5}>
+          <Typography variant="caption" fontSize={"14px"} fontFamily="Inter, sans-serif" fontWeight={600} mb={0.5}>
             Filtrar por:
           </Typography>
           <Box display="flex" flexDirection="row" flexWrap="wrap" gap="1rem" alignItems="center">
@@ -269,7 +269,7 @@ const NetworkChartRoute: React.FC = () => {
               <Typography variant="body2" fontSize="0.95rem">Noite</Typography>
             </Box>
             <Box display="flex" alignItems="center" gap="0.3rem">
-              <Box width="14px" height="14px" bgcolor="#E57373" borderRadius="50%" />
+              <Box width="14px" height="14px" bgcolor="#D62727" borderRadius="50%" />
               <Typography variant="body2" fontSize="0.95rem">Alvos</Typography>
             </Box>
           </Box>
@@ -293,7 +293,7 @@ const NetworkChartRoute: React.FC = () => {
           justifyContent="center"
           alignItems="center"
         >
-          <WebChart data={filteredData} />
+          <WebChart data={filteredData} isIp />
         </Box>
       </Box>
     </Box>

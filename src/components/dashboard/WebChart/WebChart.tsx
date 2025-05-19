@@ -15,6 +15,10 @@ interface Data {
   nodes: Node[];
 }
 
+interface WebChartInterface {
+  data: Data;
+  isIp?: boolean;
+}
 // example of data:
 // {
 //   links: [
@@ -24,28 +28,30 @@ interface Data {
 //   nodes: [{ id: "Alvo", group: 1 }, { id: "Intercpt 2", group: 2 }]
 // }
 
-const Chart: React.FC<{ data: Data }> = ({ data }) => {
+const Chart: React.FC<WebChartInterface> = ({ data, isIp }) => {
   const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
     if (!svgRef.current) return;
 
     // Clear previous content
-    d3.select(svgRef.current).selectAll("*").remove();    
+    d3.select(svgRef.current).selectAll("*").remove();
 
     const svgContainer = svgRef.current.parentElement;
     const width = svgContainer ? svgContainer.clientWidth : 928;
     const height = svgContainer ? svgContainer.clientHeight : 600;
 
-    const color = d3
-      .scaleOrdinal<number, string>()
-      .domain([1, 2, 3, 4])
-      .range([
-        "#808CBF", // Manhã
-        "#31438C", // Tarde
-        "#08102F", // Noite
-        "#E57373"  // Alvos
-      ]);
+    const color = isIp
+      ? d3.scaleOrdinal<number, string>().domain([1, 2, 3, 4]).range([
+          "#808CBF", // Manhã
+          "#31438C", // Tarde
+          "#08102F", // Noite
+          "#D62727", // Alvos
+        ])
+      : d3
+          .scaleOrdinal<number, string>()
+          .domain([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+          .range(d3.schemeCategory10);
 
     const links = data.links.map((d) => ({ ...d }));
     const nodes = data.nodes.map((d) => ({ ...d }));
@@ -70,7 +76,7 @@ const Chart: React.FC<{ data: Data }> = ({ data }) => {
       .attr("width", width)
       .attr("height", height)
       .attr("viewBox", [0, 0, width, height])
-      .attr("style", "width: 100%; height: 100%; background-color: #181818")
+      .attr("style", "width: 100%; height: 100%; background-color: #1c1c1c")
       .attr("data-testid", "chart-svg");
 
     // Adicionar zoom
@@ -120,7 +126,7 @@ const Chart: React.FC<{ data: Data }> = ({ data }) => {
       .attr("fill", "#fff")
       .attr("text-anchor", "middle")
       .attr("dy", "-2em")
-      .attr("font-size", "14px");  // Aumentando o tamanho da fonte
+      .attr("font-size", "14px"); // Aumentando o tamanho da fonte
 
     node.call(
       d3

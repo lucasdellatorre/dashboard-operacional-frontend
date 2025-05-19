@@ -177,7 +177,7 @@ const WebChartRoute: React.FC = () => {
       </Box>
 
         <Box width="100%" display="flex" py="0.7rem" flexDirection="column" gap="0.5rem">
-          <Typography variant="caption" fontFamily="Inter, sans-serif" fontWeight={600}>
+          <Typography variant="caption" fontSize={"14px"} fontFamily="Inter, sans-serif" fontWeight={600}>
             Filtrar por:
           </Typography>
 
