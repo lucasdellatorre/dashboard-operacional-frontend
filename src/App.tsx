@@ -5,6 +5,7 @@ import Login from "./routes/Login";
 import Users from "./routes/Users";
 import Suspects from "./routes/Suspects";
 import WebChart from "./routes/WebChart";
+import NetworkChart from "./routes/NetworkChart";
 import Layout from "./components/layout/layout";
 import Worksheet from "./routes/Worksheet";
 import Operations from "./routes/Operations";
@@ -21,6 +22,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/usuarios" element={<Users />} />
         <Route path="/teia" element={<WebChart />} />
+        <Route path="/teia-rede" element={<NetworkChart />} />
       </Route>
     </Routes>
   );

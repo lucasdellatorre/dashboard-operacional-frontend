@@ -39,8 +39,13 @@ const Chart: React.FC<{ data: Data }> = ({ data }) => {
 
     const color = d3
       .scaleOrdinal<number, string>()
-      .domain([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-      .range(d3.schemeCategory10);
+      .domain([1, 2, 3, 4])
+      .range([
+        "#808CBF", // Manhã
+        "#31438C", // Tarde
+        "#08102F", // Noite
+        "#E57373"  // Alvos
+      ]);
 
     const links = data.links.map((d) => ({ ...d }));
     const nodes = data.nodes.map((d) => ({ ...d }));
