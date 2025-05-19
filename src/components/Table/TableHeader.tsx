@@ -29,7 +29,7 @@ const EnhancedTableHead = <T extends GenericData>({
   return (
     <TableHead>
       <TableRow>
-        <TableCell padding="checkbox" sx={{ bgcolor: "table.darkGrey" }}>
+        <TableCell padding="checkbox" sx={{ bgcolor: "table.lightGrey" }}>
           {!singleSelect && (
             <Checkbox
               sx={{
@@ -52,7 +52,7 @@ const EnhancedTableHead = <T extends GenericData>({
         {headCells.map((headCell) => (
           <TableCell
             sx={{
-              bgcolor: "table.darkGrey",
+              bgcolor: "table.grey",
               fontWeight: "bold",
               fontSize: "0.925rem",
             }}

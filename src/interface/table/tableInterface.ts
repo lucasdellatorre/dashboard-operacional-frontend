@@ -33,6 +33,7 @@ export interface GenericTableProps<T extends GenericData> {
   onAdd?: () => void;
   addButton?: boolean;
   allowSelection?: boolean;
+  headerCollor?: string;
 }
 
 export interface EnhancedTableHeadProps<T extends GenericData> {
