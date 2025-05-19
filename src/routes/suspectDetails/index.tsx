@@ -11,6 +11,7 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import GenericTable from "../../components/Table/Table";
 import { GenericData, HeadCell } from "../../interface/table/tableInterface";
+import EmailModal from "../../components/modal/createEmailModal";
 import EditableField from "../../components/editableField";
 import { useEffect, useState } from "react";
 import { isValidCPF } from "../../utils/validationUtils";
@@ -91,175 +92,227 @@ const SuspectsDetails = () => {
     { id: "ocorrencias", label: "Ocorrências" },
   ];
 
+  const [openEmailModal, setOpenEmailModal] = useState(false);
+
+  function criarEditarEmail() {
+    //TODO: create or edit email integrated with backend
+    setOpenEmailModal(false);
+  }
+
   return (
-    <Box
-      bgcolor="customBackground.secondary"
-      sx={{
-        pt: "clamp(1rem, 3vh, 3rem)",
-        pb: "clamp(1rem, 2vh, 3rem)",
-        px: "clamp(1rem, 3.5vw, 4rem)",
-        display: "flex",
-        flexDirection: "column",
-        gap: 2,
-        width: "100%",
-        height: "100%",
-      }}
-    >
-      <Typography
+    <>
+      <EmailModal
+        isOpen={openEmailModal}
+        onClose={() => setOpenEmailModal(false)}
+        onSubmit={criarEditarEmail}
+      />
+      <Box
+        bgcolor="customBackground.secondary"
         sx={{
-          mb: 1,
-          fontSize: "1.125rem",
-          fontFamily: "Inter, sans-serif",
-          fontWeight: 700,
+          pt: "clamp(1rem, 3vh, 3rem)",
+          pb: "clamp(1rem, 2vh, 3rem)",
+          px: "clamp(1rem, 3.5vw, 4rem)",
           display: "flex",
-          alignItems: "center",
-          cursor: "pointer",
+          flexDirection: "column",
+          gap: 2,
+          width: "100%",
+          height: "100%",
         }}
-        onClick={() => window.history.back()}
       >
-        <ArrowBackIosIcon sx={{ fontSize: "1.125rem" }} />
-        Voltar
-      </Typography>
-
-      <Typography
-        variant="h5"
-        color="#000000"
-        fontWeight={700}
-        sx={{ fontFamily: "Inter, sans-serif" }}
-      >
-        Informações do Suspeito
-      </Typography>
-
-      {error && (
-        <Typography color="error" fontWeight={600}>
-          {error}
+        <Typography
+          sx={{
+            mb: 1,
+            fontSize: "1.125rem",
+            fontFamily: "Inter, sans-serif",
+            fontWeight: 700,
+            display: "flex",
+            alignItems: "center",
+            cursor: "pointer",
+          }}
+          onClick={() => window.history.back()}
+        >
+          <ArrowBackIosIcon sx={{ fontSize: "1.125rem" }} />
+          Voltar
         </Typography>
-      )}
 
-      {!error && (
-        <>
-          <Box display="flex" flexDirection="row" gap={10} flexWrap="wrap">
-            <Box display="flex" flexDirection="column" maxWidth="30rem" width="25rem">
+        <Typography
+          variant="h5"
+          color="#000000"
+          fontWeight={700}
+          sx={{ fontFamily: "Inter, sans-serif" }}
+        >
+          Informações do Suspeito
+        </Typography>
+
+        {error && (
+          <Typography color="error" fontWeight={600}>
+            {error}
+          </Typography>
+        )}
+
+        {!error && (
+          <>
+            <Box display="flex" flexDirection="row" gap={10} flexWrap="wrap">
+              <Box
+                display="flex"
+                flexDirection="column"
+                maxWidth="30rem"
+                width="25rem"
+              >
+                {loading ? (
+                  <>
+                    <Skeleton height={50} />
+                    <Skeleton height={50} />
+                    <Skeleton height={50} />
+                  </>
+                ) : (
+                  <>
+                    <EditableField
+                      label="Apelido"
+                      value={nickname}
+                      onChange={setNickname}
+                    />
+                    <EditableField
+                      label="Nome"
+                      value={name}
+                      onChange={setName}
+                    />
+                    <EditableField
+                      label="CPF"
+                      value={cpf}
+                      onChange={handleCpfChange}
+                    />
+                    {cpfError && (
+                      <Typography fontSize="0.875rem" color="error">
+                        {cpfError}
+                      </Typography>
+                    )}
+                  </>
+                )}
+              </Box>
+
               {loading ? (
-                <>
-                  <Skeleton height={50} />
-                  <Skeleton height={50} />
-                  <Skeleton height={50} />
-                </>
+                <Skeleton height={160} width="100%" />
               ) : (
-                <>
-                  <EditableField label="Apelido" value={nickname} onChange={setNickname} />
-                  <EditableField label="Nome" value={name} onChange={setName} />
-                  <EditableField label="CPF" value={cpf} onChange={handleCpfChange} />
-                  {cpfError && (
-                    <Typography fontSize="0.875rem" color="error">
-                      {cpfError}
-                    </Typography>
-                  )}
-                </>
+                <EditableMultilineField
+                  label="Anotações"
+                  value={notes}
+                  onChange={setNotes}
+                />
               )}
             </Box>
 
             {loading ? (
-              <Skeleton height={160} width="100%" />
+              <Skeleton height={50} width={250} />
             ) : (
-              <EditableMultilineField
-                label="Anotações"
-                value={notes}
-                onChange={setNotes}
-              />
-            )}
-          </Box>
-
-          {loading ? (
-            <Skeleton height={50} width={250} />
-          ) : (
-            <FormControl fullWidth size="small" sx={{ bgcolor: "white", borderRadius: "0.313rem", maxWidth: "25rem" }}>
-              <InputLabel id="relevante-label" sx={{ fontWeight: 600, fontSize: "0.875rem", color: "text.primary" }}>
-                Relevante
-              </InputLabel>
-              <Select
-                labelId="relevante-label"
-                value={relevante ? "sim" : "nao"}
-                label="Relevante"
-                onChange={(e) => setRelevante(e.target.value === "sim")}
-                sx={{ fontWeight: 500, color: "text.primary", "& .MuiSelect-icon": { color: "customButton.gold" } }}
+              <FormControl
+                fullWidth
+                size="small"
+                sx={{
+                  bgcolor: "white",
+                  borderRadius: "0.313rem",
+                  maxWidth: "25rem",
+                }}
               >
-                <MenuItem value="sim">Sim</MenuItem>
-                <MenuItem value="nao">Não</MenuItem>
-              </Select>
-            </FormControl>
-          )}
+                <InputLabel
+                  id="relevante-label"
+                  sx={{
+                    fontWeight: 600,
+                    fontSize: "0.875rem",
+                    color: "text.primary",
+                  }}
+                >
+                  Relevante
+                </InputLabel>
+                <Select
+                  labelId="relevante-label"
+                  value={relevante ? "sim" : "nao"}
+                  label="Relevante"
+                  onChange={(e) => setRelevante(e.target.value === "sim")}
+                  sx={{
+                    fontWeight: 500,
+                    color: "text.primary",
+                    "& .MuiSelect-icon": { color: "customButton.gold" },
+                  }}
+                >
+                  <MenuItem value="sim">Sim</MenuItem>
+                  <MenuItem value="nao">Não</MenuItem>
+                </Select>
+              </FormControl>
+            )}
 
-          {!loading && suspect && (
-            <Box display="flex" flexDirection="column" gap="0rem">
-              <GenericTable
-                rows={(suspect.ips || []).map((ip, idx) => ({
-                  id: idx,
-                  ip: ip.ip,
-                  ocorrencias: ip.ocorrencias,
-                }))}
-                collapsible
-                addButton={false}
-                onAdd={() => {}}
-                singleSelect
-                headCells={IPsHeaderCells}
-                title="IPs"
-                defaultOrderBy="ocorrencias"
-                onSelectionChange={() => {}}
-                initialSelected={[]}
-                noDataMessage="Nenhum IP encontrado para este suspeito"
-                onDelete={() => {}}
-                allowSelection={false}
-                headerCollor="white"
-              />
+            {!loading && suspect && (
+              <Box display="flex" flexDirection="column" gap="0rem">
+                <GenericTable
+                  rows={(suspect.ips || []).map((ip, idx) => ({
+                    id: idx,
+                    ip: ip.ip,
+                    ocorrencias: ip.ocorrencias,
+                  }))}
+                  collapsible
+                  addButton={false}
+                  onAdd={() => {}}
+                  singleSelect
+                  headCells={IPsHeaderCells}
+                  title="IPs"
+                  defaultOrderBy="ocorrencias"
+                  onSelectionChange={() => {}}
+                  initialSelected={[]}
+                  noDataMessage="Nenhum IP encontrado para este suspeito"
+                  onDelete={() => {}}
+                  allowSelection={false}
+                  headerCollor="white"
+                />
 
-              <GenericTable
-                rows={(suspect.celulares || []).map((c, idx) => ({
-                  id: idx,
-                  phone: c.numero,
-                  insertDate: c.lastUpdateDate,
-                  insertBy: c.lastUpdateCpf,
-                }))}
-                collapsible
-                addButton
-                onAdd={() => {}}
-                singleSelect
-                headCells={PhoneHeaderCells}
-                title="Celulares"
-                defaultOrderBy="insertDate"
-                onSelectionChange={() => {}}
-                initialSelected={[]}
-                noDataMessage="Nenhum celular encontrado para este suspeito"
-                onDelete={() => {}}
-                headerCollor="white"
-              />
+                <GenericTable
+                  rows={(suspect.celulares || []).map((c, idx) => ({
+                    id: idx,
+                    phone: c.numero,
+                    insertDate: c.lastUpdateDate,
+                    insertBy: c.lastUpdateCpf,
+                  }))}
+                  collapsible
+                  addButton
+                  onAdd={() => {}}
+                  singleSelect
+                  headCells={PhoneHeaderCells}
+                  title="Celulares"
+                  defaultOrderBy="insertDate"
+                  onSelectionChange={() => {}}
+                  initialSelected={[]}
+                  noDataMessage="Nenhum celular encontrado para este suspeito"
+                  onDelete={() => {}}
+                  headerCollor="white"
+                />
 
-              <GenericTable
-                rows={(suspect.emails || []).map((e, idx) => ({
-                  id: idx,
-                  email: e.email,
-                  insertDate: e.lastUpdateDate,
-                  insertBy: e.lastUpdateCpf,
-                }))}
-                collapsible
-                addButton
-                onAdd={() => {}}
-                singleSelect
-                headCells={EmailHeaderCells}
-                title="Emails"
-                defaultOrderBy="insertDate"
-                onSelectionChange={() => {}}
-                initialSelected={[]}
-                noDataMessage="Nenhum email encontrado para este suspeito"
-                onDelete={() => {}}
-                headerCollor="white"
-              />
-            </Box>
-          )}
-        </>
-      )}
-    </Box>
+                <GenericTable
+                  rows={(suspect.emails || []).map((e, idx) => ({
+                    id: idx,
+                    email: e.email,
+                    insertDate: e.lastUpdateDate,
+                    insertBy: e.lastUpdateCpf,
+                  }))}
+                  collapsible
+                  addButton
+                  onAdd={() => {
+                    setOpenEmailModal(true);
+                  }}
+                  singleSelect
+                  headCells={EmailHeaderCells}
+                  title="Emails"
+                  defaultOrderBy="insertDate"
+                  onSelectionChange={() => {}}
+                  initialSelected={[]}
+                  noDataMessage="Nenhum email encontrado para este suspeito"
+                  onDelete={() => {}}
+                  headerCollor="white"
+                />
+              </Box>
+            )}
+          </>
+        )}
+      </Box>
+    </>
   );
 };
 
