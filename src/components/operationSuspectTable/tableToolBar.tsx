@@ -47,16 +47,10 @@ const EnhancedTableToolbar: React.FC<EnhancedTableToolbarProps> = ({
           {title}
         </Typography>
       )}
-      {numSelected > 0 ? (
+      {numSelected > 0 && (
         <Tooltip title="Excluir">
           <IconButton onClick={onDelete}>
             <DeleteIcon />
-          </IconButton>
-        </Tooltip>
-      ) : (
-        <Tooltip title="Filtrar lista">
-          <IconButton>
-            <FilterListIcon />
           </IconButton>
         </Tooltip>
       )}

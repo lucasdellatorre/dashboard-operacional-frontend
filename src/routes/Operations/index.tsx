@@ -11,15 +11,15 @@ import { AppContext } from "../../context/AppContext";
 
 const operationHeaderCells: readonly HeadCell<Operation>[] = [
   {
-    id: "operationName",
+    id: "nome",
     label: "Nome da operação",
   },
   {
-    id: "operationDate",
-    label: "Data da operação",
+    id: "data_criacao",
+    label: "Data de criação",
   },
   {
-    id: "numberOfSuspects",
+    id: "qtd_alvos",
     label: "Número de alvos na operação",
   },
 ];

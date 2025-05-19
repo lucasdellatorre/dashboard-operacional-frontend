@@ -1,20 +1,22 @@
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Typography";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  Button,
-  Checkbox,
-  TextField,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Skeleton,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import GenericTable from "../../components/Table/Table";
 import { GenericData, HeadCell } from "../../interface/table/tableInterface";
 import EmailModal from "../../components/modal/createEmailModal";
-import { useState } from "react";
+import EditableField from "../../components/editableField";
+import { useEffect, useState } from "react";
+import { isValidCPF } from "../../utils/validationUtils";
+import EditableMultilineField from "../../components/editableMultilineField";
+import { useSuspectInfo } from "../../hooks/useSuspectInfo";
 
 interface Email extends GenericData {
   email: string;
@@ -27,69 +29,67 @@ interface Phone extends GenericData {
   insertBy: string;
 }
 interface Ips extends GenericData {
-  ips: string;
-  date: string;
+  ip: string;
+  ocorrencias: number;
 }
 
+const formatCPF = (value: string): string => {
+  const numericValue = value.replace(/\D/g, "").slice(0, 11);
+  return numericValue
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+};
+
 const SuspectsDetails = () => {
+  const { suspect, loading, error } = useSuspectInfo(1001);
+
+  const [nickname, setNickname] = useState("");
+  const [name, setName] = useState("");
+  const [cpf, setCpf] = useState("");
+  const [cpfError, setCpfError] = useState("");
+  const [notes, setNotes] = useState("");
+  const [relevante, setRelevante] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (suspect) {
+      setNickname(suspect.apelido);
+      setName(suspect.nome);
+      setCpf(formatCPF(suspect.cpf));
+      setNotes(suspect.anotacoes);
+      setRelevante(suspect.relevante);
+    }
+  }, [suspect]);
+
+  const handleCpfChange = (newValue: string) => {
+    const formatted = formatCPF(newValue);
+    setCpf(formatted);
+    setCpfError(isValidCPF(formatted) ? "" : "CPF inválido");
+  };
+
   const EmailHeaderCells: readonly HeadCell<Email>[] = [
-    {
-      id: "email",
-      label: "Email",
-    },
-    {
-      id: "insertDate",
-      label: "Data de Inserção",
-    },
-    {
-      id: "insertBy",
-      label: "Inserido por",
-    },
+    { id: "email", label: "Email" },
+    { id: "insertDate", label: "Data de Inserção" },
+    { id: "insertBy", label: "Inserido por" },
     {
       id: "edit",
       label: "",
       iconAction: {
         icon: <EditIcon sx={{ fontSize: "1.2rem" }} />,
-        onClick: () => {
-          console.log("editar");
-        },
+        onClick: () => console.log("editar"),
       },
     },
   ];
 
   const PhoneHeaderCells: readonly HeadCell<Phone>[] = [
-    {
-      id: "phone",
-      label: "Celular",
-    },
-    {
-      id: "insertDate",
-      label: "Data de Inserção",
-    },
-    {
-      id: "insertBy",
-      label: "Inserido por",
-    },
-    {
-      id: "edit",
-      label: "",
-      iconAction: {
-        icon: <EditIcon sx={{ fontSize: "1.2rem" }} />,
-        onClick: () => {
-          console.log("editar");
-        },
-      },
-    },
+    { id: "phone", label: "Celular" },
+    { id: "insertDate", label: "Data de Inserção" },
+    { id: "insertBy", label: "Inserido por" },
   ];
+
   const IPsHeaderCells: readonly HeadCell<Ips>[] = [
-    {
-      id: "ips",
-      label: "IPs",
-    },
-    {
-      id: "date",
-      label: "Data",
-    },
+    { id: "ip", label: "IP" },
+    { id: "ocorrencias", label: "Ocorrências" },
   ];
 
   const [openEmailModal, setOpenEmailModal] = useState(false);
@@ -101,16 +101,20 @@ const SuspectsDetails = () => {
 
   return (
     <>
-      <EmailModal isOpen={openEmailModal} onClose={() => setOpenEmailModal(false)} onSubmit={criarEditarEmail} />
+      <EmailModal
+        isOpen={openEmailModal}
+        onClose={() => setOpenEmailModal(false)}
+        onSubmit={criarEditarEmail}
+      />
       <Box
-        bgcolor={"customBackground.secondary"}
+        bgcolor="customBackground.secondary"
         sx={{
           pt: "clamp(1rem, 3vh, 3rem)",
           pb: "clamp(1rem, 2vh, 3rem)",
           px: "clamp(1rem, 3.5vw, 4rem)",
           display: "flex",
-          gap: 2,
           flexDirection: "column",
+          gap: 2,
           width: "100%",
           height: "100%",
         }}
@@ -127,11 +131,7 @@ const SuspectsDetails = () => {
           }}
           onClick={() => window.history.back()}
         >
-          <ArrowBackIosIcon
-            sx={{
-              fontSize: "1.125rem",
-            }}
-          />
+          <ArrowBackIosIcon sx={{ fontSize: "1.125rem" }} />
           Voltar
         </Typography>
 
@@ -141,357 +141,179 @@ const SuspectsDetails = () => {
           fontWeight={700}
           sx={{ fontFamily: "Inter, sans-serif" }}
         >
-          Informações do Alvo
+          Informações do Suspeito
         </Typography>
 
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            gap: 4,
-          }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              maxWidth: "36%",
-              flex: 1,
-              height: "100%",
-            }}
-          >
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                flex: 1,
-              }}
-            >
-              <Typography variant="subtitle2" fontWeight={600}>
-                Apelido
-              </Typography>
-              <Box display={"flex"} flexDirection={"row"}>
-                <TextField
-                  variant="outlined"
-                  placeholder="Zé pequeno"
-                  sx={{
-                    width: "100%",
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: "0.313rem 0 0 0.313rem",
-                      backgroundColor: "white",
-                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "customButton.gold",
-                      },
-                    },
-                    "& .MuiOutlinedInput-input": {
-                      padding: "0.625rem",
-                      fontFamily: "Inter, sans-serif",
-                      fontWeight: 400,
-                    },
-                    "& label.Mui-focused": {
-                      color: "customButton.gold",
-                    },
-                  }}
-                />
-                <Button
-                  variant="outlined"
-                  size="small"
-                  sx={{
-                    bgcolor: "customButton.gold",
-                    borderColor: "transparent",
-                    borderRadius: "0 0.313rem 0.313rem 0",
-                    color: "customText.white",
-                    textTransform: "none",
-                    fontWeight: 400,
-                    minWidth: "45px",
-                  }}
-                >
-                  <EditIcon
-                    sx={{
-                      fontSize: "1rem",
-                      color: "customText.white",
-                    }}
-                    htmlColor="white"
-                  />
-                </Button>
+        {error && (
+          <Typography color="error" fontWeight={600}>
+            {error}
+          </Typography>
+        )}
+
+        {!error && (
+          <>
+            <Box display="flex" flexDirection="row" gap={10} flexWrap="wrap">
+              <Box
+                display="flex"
+                flexDirection="column"
+                maxWidth="30rem"
+                width="25rem"
+              >
+                {loading ? (
+                  <>
+                    <Skeleton height={50} />
+                    <Skeleton height={50} />
+                    <Skeleton height={50} />
+                  </>
+                ) : (
+                  <>
+                    <EditableField
+                      label="Apelido"
+                      value={nickname}
+                      onChange={setNickname}
+                    />
+                    <EditableField
+                      label="Nome"
+                      value={name}
+                      onChange={setName}
+                    />
+                    <EditableField
+                      label="CPF"
+                      value={cpf}
+                      onChange={handleCpfChange}
+                    />
+                    {cpfError && (
+                      <Typography fontSize="0.875rem" color="error">
+                        {cpfError}
+                      </Typography>
+                    )}
+                  </>
+                )}
               </Box>
+
+              {loading ? (
+                <Skeleton height={160} width="100%" />
+              ) : (
+                <EditableMultilineField
+                  label="Anotações"
+                  value={notes}
+                  onChange={setNotes}
+                />
+              )}
             </Box>
 
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                flex: 1,
-              }}
-            >
-              <Typography variant="subtitle2" fontWeight={600}>
-                Nome
-              </Typography>
-              <Box display={"flex"} flexDirection={"row"}>
-                <TextField
-                  variant="outlined"
-                  placeholder="Leonardo"
+            {loading ? (
+              <Skeleton height={50} width={250} />
+            ) : (
+              <FormControl
+                fullWidth
+                size="small"
+                sx={{
+                  bgcolor: "white",
+                  borderRadius: "0.313rem",
+                  maxWidth: "25rem",
+                }}
+              >
+                <InputLabel
+                  id="relevante-label"
                   sx={{
-                    width: "100%",
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: "0.313rem 0 0 0.313rem",
-                      backgroundColor: "white",
-                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "customButton.gold",
-                      },
-                    },
-                    "& .MuiOutlinedInput-input": {
-                      padding: "0.625rem",
-                      fontFamily: "Inter, sans-serif",
-                      fontWeight: 400,
-                    },
-                    "& label.Mui-focused": {
-                      color: "customButton.gold",
-                    },
-                  }}
-                />
-                <Button
-                  variant="outlined"
-                  size="small"
-                  sx={{
-                    bgcolor: "customButton.gold",
-                    borderColor: "transparent",
-                    borderRadius: "0 0.313rem 0.313rem 0",
-                    color: "customText.white",
-                    textTransform: "none",
-                    fontWeight: 400,
-                    minWidth: "45px",
+                    fontWeight: 600,
+                    fontSize: "0.875rem",
+                    color: "text.primary",
                   }}
                 >
-                  <EditIcon
-                    sx={{
-                      fontSize: "1rem",
-                      color: "customText.white",
-                    }}
-                    htmlColor="white"
-                  />
-                </Button>
-              </Box>
-            </Box>
-
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                flex: 1,
-              }}
-            >
-              <Typography variant="subtitle2" margin={0} fontWeight={600}>
-                CPF
-              </Typography>
-              <Box display={"flex"} flexDirection={"row"}>
-                <TextField
-                  placeholder="000.000.000-00"
-                  variant="outlined"
+                  Relevante
+                </InputLabel>
+                <Select
+                  labelId="relevante-label"
+                  value={relevante ? "sim" : "nao"}
+                  label="Relevante"
+                  onChange={(e) => setRelevante(e.target.value === "sim")}
                   sx={{
-                    width: "100%",
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: "0.313rem 0 0 0.313rem",
-                      backgroundColor: "white",
-                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "customButton.gold",
-                      },
-                    },
-                    "& .MuiOutlinedInput-input": {
-                      padding: "0.625rem",
-                      fontFamily: "Inter, sans-serif",
-                      fontWeight: 400,
-                    },
-                    "& label.Mui-focused": {
-                      color: "customButton.gold",
-                    },
-                  }}
-                />
-                <Button
-                  variant="outlined"
-                  size="small"
-                  sx={{
-                    bgcolor: "customButton.gold",
-                    borderColor: "transparent",
-                    borderRadius: "0 0.313rem 0.313rem 0",
-                    color: "customText.white",
-                    textTransform: "none",
-                    fontWeight: 400,
-                    minWidth: "45px",
+                    fontWeight: 500,
+                    color: "text.primary",
+                    "& .MuiSelect-icon": { color: "customButton.gold" },
                   }}
                 >
-                  <EditIcon
-                    sx={{
-                      fontSize: "1rem",
-                      color: "customText.white",
-                    }}
-                    htmlColor="white"
-                  />
-                </Button>
-              </Box>
-            </Box>
-          </Box>
+                  <MenuItem value="sim">Sim</MenuItem>
+                  <MenuItem value="nao">Não</MenuItem>
+                </Select>
+              </FormControl>
+            )}
 
-          <Box
-            sx={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              height: "100%",
-            }}
-          >
-            <Typography variant="subtitle2" fontWeight={600}>
-              Anotações
-            </Typography>
-            <TextField
-              id="outlined-multiline-static"
-              multiline
-              rows={8}
-              sx={{
-                width: "100%",
-                height: "13.625rem",
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "1rem",
-                  backgroundColor: "white",
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "customButton.gold",
-                  },
-                },
-                "& .MuiOutlinedInput-input": {
-                  fontFamily: "Inter, sans-serif",
-                  fontWeight: 400,
-                },
-                "& label.Mui-focused": {
-                  color: "customButton.gold",
-                },
-              }}
-            />
-          </Box>
-        </Box>
-        <Box
-          width={"100%"}
-          align="center"
-          alignItems={"center"}
-          display={"flex"}
-          justifyContent={"flex-start"}
-        >
-          <Box
-            width={"10rem"}
-            height={"80%"}
-            alignItems={"center"}
-            display={"flex"}
-            sx={{
-              border: "1px solid",
-              borderRadius: "0.5rem",
-              bgcolor: "customButton.white",
-              borderColor: "customButton.gray",
-            }}
-          >
-            <Checkbox
-              sx={{
-                "&.Mui-checked": {
-                  color: "customButton.gold",
-                },
-                "&.MuiCheckbox-indeterminate": {
-                  color: "customButton.gold",
-                },
-              }}
-            />
-            <Typography
-              color="customText.gold"
-              fontFamily={"Inter, sans-serif"}
-              fontWeight={600}
-            >
-              Relevante
-            </Typography>
-          </Box>
-        </Box>
-        <Box display="flex" flexDirection={"column"} gap="1rem">
-          <Accordion>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography component="span">IPs</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              {" "}
-              <GenericTable
-                rows={[
-                  {
-                    ips: "192.168.1.1",
-                    date: "2024-01-01",
-                    id: 0,
-                  },
-                ]}
-                addButton={false}
-                onAdd={() => {}}
-                singleSelect={true}
-                headCells={IPsHeaderCells}
-                title=""
-                defaultOrderBy="date"
-                onSelectionChange={() => {}}
-                initialSelected={[]}
-                noDataMessage="Nenhum IP encontrado para este suspeito"
-                onDelete={() => {}}
-                allowSelection={false}
-              />
-            </AccordionDetails>
-          </Accordion>
-          <Accordion>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography component="span">Celulars</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <GenericTable
-                rows={[
-                  {
-                    phone: "(54) 99999-9999",
-                    insertDate: "2024-01-01",
-                    insertBy: "Policial 1",
-                    id: 0,
-                  },
-                ]}
-                addButton={true}
-                onAdd={() => {}}
-                singleSelect={true}
-                headCells={PhoneHeaderCells}
-                title=""
-                defaultOrderBy="insertDate"
-                onSelectionChange={() => {}}
-                initialSelected={[]}
-                noDataMessage="Nenhum celular encontrado para este suspeito"
-                onDelete={() => {}}
-              />
-            </AccordionDetails>
-          </Accordion>
-          <Accordion>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography component="span">Emails</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <GenericTable
-                rows={[
-                  {
-                    email: "test@gmail.com",
-                    insertDate: "2024-01-01",
-                    insertBy: "Policial 1",
-                    id: 0,
-                  },
-                ]}
-                addButton={true}
-                onAdd={() => {setOpenEmailModal(true)}}
-                singleSelect={true}
-                headCells={EmailHeaderCells}
-                title=""
-                defaultOrderBy="insertDate"
-                onSelectionChange={() => {}}
-                initialSelected={[]}
-                noDataMessage="Nenhum email encontrado para este suspeito"
-                onDelete={() => {}}
-              />
-            </AccordionDetails>
-          </Accordion>
-        </Box>
+            {!loading && suspect && (
+              <Box display="flex" flexDirection="column" gap="0rem">
+                <GenericTable
+                  rows={(suspect.ips || []).map((ip, idx) => ({
+                    id: idx,
+                    ip: ip.ip,
+                    ocorrencias: ip.ocorrencias,
+                  }))}
+                  collapsible
+                  addButton={false}
+                  onAdd={() => {}}
+                  singleSelect
+                  headCells={IPsHeaderCells}
+                  title="IPs"
+                  defaultOrderBy="ocorrencias"
+                  onSelectionChange={() => {}}
+                  initialSelected={[]}
+                  noDataMessage="Nenhum IP encontrado para este suspeito"
+                  onDelete={() => {}}
+                  allowSelection={false}
+                  headerCollor="white"
+                />
+
+                <GenericTable
+                  rows={(suspect.celulares || []).map((c, idx) => ({
+                    id: idx,
+                    phone: c.numero,
+                    insertDate: c.lastUpdateDate,
+                    insertBy: c.lastUpdateCpf,
+                  }))}
+                  collapsible
+                  addButton
+                  onAdd={() => {}}
+                  singleSelect
+                  headCells={PhoneHeaderCells}
+                  title="Celulares"
+                  defaultOrderBy="insertDate"
+                  onSelectionChange={() => {}}
+                  initialSelected={[]}
+                  noDataMessage="Nenhum celular encontrado para este suspeito"
+                  onDelete={() => {}}
+                  headerCollor="white"
+                />
+
+                <GenericTable
+                  rows={(suspect.emails || []).map((e, idx) => ({
+                    id: idx,
+                    email: e.email,
+                    insertDate: e.lastUpdateDate,
+                    insertBy: e.lastUpdateCpf,
+                  }))}
+                  collapsible
+                  addButton
+                  onAdd={() => {
+                    setOpenEmailModal(true);
+                  }}
+                  singleSelect
+                  headCells={EmailHeaderCells}
+                  title="Emails"
+                  defaultOrderBy="insertDate"
+                  onSelectionChange={() => {}}
+                  initialSelected={[]}
+                  noDataMessage="Nenhum email encontrado para este suspeito"
+                  onDelete={() => {}}
+                  headerCollor="white"
+                />
+              </Box>
+            )}
+          </>
+        )}
       </Box>
     </>
   );
 };
+
 export default SuspectsDetails;
