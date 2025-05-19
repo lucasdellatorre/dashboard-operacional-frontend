@@ -11,6 +11,8 @@ import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import NavigationButton from "./NavigationButton/NavigationButton";
 import ToggleButton from "../ToggleButton/ToggleButton";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
+import { useContext } from "react";
+import { AppContext } from "../../../../context/AppContext";
 
 interface NavigationButtonsProps {
   isCollapsed: boolean;
@@ -29,6 +31,8 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
   const isWorksheetPage = location.pathname === "/planilhas";
 
   const isActive = (path: string): boolean => location.pathname === path;
+  const { targets } = useContext(AppContext);
+  const hasTargets = targets.length > 0;
 
   return (
     <Box
@@ -70,7 +74,7 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
           isActive={isActive("/alvos")}
         />
 
-        {!isOperationsPage && !isSuspectsPage && !isWorksheetPage && (
+        {hasTargets && (
           <>
             <NavigationButton
               to="/dashboard"

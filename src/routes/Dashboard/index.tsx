@@ -45,12 +45,6 @@ const graficFilters = [
   { value: FilterType.DATA, label: "Data" },
 ];
 
-const selectionTypeFilter = [
-  { value: FilterType.UNION, label: "União" },
-  { value: FilterType.INCOMMON, label: "Em Comum" },
-  { value: FilterType.BETWEENTARGETS, label: "Entre Alvos" },
-];
-
 const mensagensPorContato: BarChartData[] = [
   { key: "9123456789", value: 50 },
   { key: "9123456788", value: 37 },
@@ -130,16 +124,16 @@ const chartConfigs: ChartConfig[] = [
     tooltipLabel: "Total",
   },
   {
-    type: FilterType.TIME,
-    data: mensagensPorHorario,
-    title: "Mensagens por Horário",
+    type: FilterType.IP,
+    data: mensagensPorIP,
+    title: "Mensagens por IP",
     subtitle: "Número de",
     tooltipLabel: "Total",
   },
   {
-    type: FilterType.IP,
-    data: mensagensPorIP,
-    title: "Mensagens por IP",
+    type: FilterType.TIME,
+    data: mensagensPorHorario,
+    title: "Mensagens por Horário",
     subtitle: "Número de",
     tooltipLabel: "Total",
   },
@@ -285,31 +279,6 @@ const Dashboard: React.FC = () => {
                 }
               />
             </Box>
-            <Box
-              sx={{
-                height: "fit-content",
-                display: "flex",
-                flexDirection: "column",
-                flexWrap: "wrap",
-                justifyContent: "center",
-                gap: "0.5rem",
-              }}
-            >
-              <Typography
-                fontFamily={"Inter, sans-serif"}
-                fontWeight={600}
-                fontSize={"1.25rem"}
-              >
-                Tipo de Seleção
-              </Typography>
-              <ViewSelectionFilter
-                filters={selectionTypeFilter}
-                selectedFilter={filters.filterType?.toString() || ""}
-                onChange={(val) =>
-                  setFilters({ ...filters, filterType: val })
-                }
-              />
-            </Box>
           </Box>
 
           <Box
@@ -384,26 +353,6 @@ const Dashboard: React.FC = () => {
               </TextField>
 
               <TextField
-                select
-                label="Simetria"
-                value={filters.symmetry}
-                onChange={(e) =>
-                  setFilters({ ...filters, symmetry: e.target.value })
-                }
-                sx={focusedTextFieldStyles}
-              >
-                <MenuItem value="Simétricos" sx={menuItemStyles}>
-                  Simétricos
-                </MenuItem>
-                <MenuItem value="Assimétricos" sx={menuItemStyles}>
-                  Assimétricos
-                </MenuItem>
-                <MenuItem value="Ambos" sx={menuItemStyles}>
-                  Ambos
-                </MenuItem>
-              </TextField>
-
-              <TextField
                 id="date-initial"
                 InputLabelProps={{ shrink: true }}
                 label="Data Inicial"
@@ -417,14 +366,6 @@ const Dashboard: React.FC = () => {
                 type="date"
                 sx={focusedTextFieldStyles}
               />
-            </Box>
-            <Box
-              display={"flex"}
-              flexDirection={"row"}
-              gap={"2rem"}
-              marginTop={"1rem"}
-              flexWrap={"wrap"}
-            >
               <TextField
                 id="initial-time"
                 InputLabelProps={{ shrink: true }}
