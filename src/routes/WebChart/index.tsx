@@ -1,8 +1,9 @@
 import { Box, MenuItem, TextField, Typography } from "@mui/material";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useContext } from "react";
 import WebChart from "../../components/dashboard/WebChart/WebChart";
 import MultiSelect from "../../components/multiSelect";
 import dayjs from "dayjs";
+import { AppContext } from "../../context/AppContext";
 
 const menuItemStyles = {
   padding: "4px 16px",
@@ -98,10 +99,7 @@ const mockData = {
 const options = mockData.nodes.filter(x => x.group === 3).map(node => node.id);
 
 const WebChartRoute: React.FC = () => {
-  const [selectedType, setSelectedType] = useState("Texto");
-  const [selectedGroup, setSelectedGroup] = useState("Ambos");
-  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
-  const [selectedSimmetry, setSelectedSimmetry] = useState("Ambos");
+  const { webChartFilters, setWebChartFilters } = useContext(AppContext);
   const [dateInitial, setDateInitial] = useState("");
   const [dateFinal, setDateFinal] = useState("");
 
@@ -120,21 +118,21 @@ const WebChartRoute: React.FC = () => {
     }
 
     // Filtro por alvos selecionados
-    if (selectedOptions.length > 0) {
+    if (webChartFilters.options.length > 0) {
       links = links.filter((link) =>
-        selectedOptions.includes(link.source) || selectedOptions.includes(link.target)
+        webChartFilters.options.includes(link.source) || webChartFilters.options.includes(link.target)
       );
     }
 
     // Filtro por Grupo
-    if (selectedGroup !== "Ambos") {
-      if (selectedGroup === "Grupo") {
+    if (webChartFilters.group !== "Ambos") {
+      if (webChartFilters.group === "Grupo") {
         links = links.filter((link) => {
           const sourceNode = mockData.nodes.find(n => n.id === link.source);
           const targetNode = mockData.nodes.find(n => n.id === link.target);
           return (sourceNode?.group === 4 || targetNode?.group === 4);
         });
-      } else if (selectedGroup === "Número") {
+      } else if (webChartFilters.group === "Número") {
         links = links.filter((link) => {
           const sourceNode = mockData.nodes.find(n => n.id === link.source);
           const targetNode = mockData.nodes.find(n => n.id === link.target);
@@ -144,14 +142,14 @@ const WebChartRoute: React.FC = () => {
     }
 
     // Filtro de Simetria
-    if (selectedSimmetry !== "Ambos") {
+    if (webChartFilters.symmetry !== "Ambos") {
       links = links.filter((link) => {
         const sourceNode = mockData.nodes.find(n => n.id === link.source);
         const targetNode = mockData.nodes.find(n => n.id === link.target);
         if (!sourceNode || !targetNode) return false;
-        if (selectedSimmetry === "Simétricos") {
+        if (webChartFilters.symmetry === "Simétricos") {
           return sourceNode.group === targetNode.group;
-        } else if (selectedSimmetry === "Assimétricos") {
+        } else if (webChartFilters.symmetry === "Assimétricos") {
           return sourceNode.group !== targetNode.group;
         }
         return true;
@@ -166,14 +164,14 @@ const WebChartRoute: React.FC = () => {
     const nodes = mockData.nodes.filter(n => nodeIds.has(n.id));
 
     return { nodes, links };
-  }, [selectedOptions, selectedGroup, selectedType, selectedSimmetry, dateInitial, dateFinal]);
+  }, [webChartFilters, dateInitial, dateFinal]);
 
   return (
     <Box width="100%" bgcolor="#F8F8F8" height="100vh" display="flex" flexDirection="column" padding="1rem 0 0 0">
       <Box display="flex" flexDirection="column" gap="1rem" px="1rem">
       <Box sx={{ width: "fit-content", minWidth: "25rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
         <Typography fontFamily={"Inter, sans-serif"} fontWeight={600} fontSize={"1.25rem"}>Seleção de Alvos</Typography>
-        <MultiSelect style="gray" placeholder="Selecione os nomes" height="53px" options={options} selectedOptions={selectedOptions} onChange={setSelectedOptions} />
+        <MultiSelect style="gray" placeholder="Selecione os nomes" height="53px" options={options} selectedOptions={webChartFilters.options} onChange={(opts) => setWebChartFilters({ ...webChartFilters, options: opts })} />
       </Box>
 
         <Box width="100%" display="flex" py="0.7rem" flexDirection="column" gap="0.5rem">
@@ -185,8 +183,8 @@ const WebChartRoute: React.FC = () => {
             <TextField
               select
               label="Grupo"
-              value={selectedGroup}
-              onChange={(e) => setSelectedGroup(e.target.value)}
+              value={webChartFilters.group}
+              onChange={(e) => setWebChartFilters({ ...webChartFilters, group: e.target.value })}
               sx={{ ...focusedTextFieldStyles, backgroundColor: "transparent" }}
             >
               {["Grupo", "Número", "Ambos"].map((value) => (
@@ -199,8 +197,8 @@ const WebChartRoute: React.FC = () => {
             <TextField
               select
               label="Tipo"
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
+              value={webChartFilters.type}
+              onChange={(e) => setWebChartFilters({ ...webChartFilters, type: e.target.value })}
               sx={focusedTextFieldStyles}
             >
               <MenuItem value="Texto" sx={menuItemStyles}>Texto</MenuItem>
@@ -213,8 +211,8 @@ const WebChartRoute: React.FC = () => {
             <TextField
               select
               label="Simetria"
-              value={selectedSimmetry}
-              onChange={(e) => setSelectedSimmetry(e.target.value)}
+              value={webChartFilters.symmetry}
+              onChange={(e) => setWebChartFilters({ ...webChartFilters, symmetry: e.target.value })}
               sx={{ ...focusedTextFieldStyles, minWidth: "8rem" }}
             >
               {["Simétricos", "Assimétricos", "Ambos"].map((value) => (

@@ -6,7 +6,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useMemo, useState } from "react";
+import React, { useContext, useMemo, useState } from "react";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import BarChartGeneric, {
@@ -15,6 +15,7 @@ import BarChartGeneric, {
 import { FilterType } from "../../enum/ViewSelectionFilterEnum";
 import ViewSelectionFilter from "../../components/filters/ViewSelection";
 import MultiSelect from "../../components/multiSelect";
+import { AppContext } from "../../context/AppContext";
 
 const menuItemStyles = {
   padding: "4px 16px",
@@ -152,16 +153,10 @@ const chartConfigs: ChartConfig[] = [
 ];
 
 const Dashboard: React.FC = () => {
-  const [selectedFilterType, setSelectedFilterType] = useState<FilterType>(
-    FilterType.UNION
-  );
-  const [selectedChart, setSelectedChart] = useState<FilterType>(
-    FilterType.ALL
-  );
-  const [selectedType, setSelectedType] = useState("Texto");
-  const [selectedGroup, setSelectedGroup] = useState("Ambos");
-  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
-  const [selectedSymmetry, setSelectedSymmetry] = useState("Ambos");
+  const {
+    dashboardFilters: filters,
+    setDashboardFilters: setFilters,
+  } = useContext(AppContext);
 
   const [expanded, setExpanded] = useState(true);
 
@@ -174,19 +169,19 @@ const Dashboard: React.FC = () => {
       <Box
         key={cfg.type}
         sx={{ cursor: "pointer" }}
-        width={selectedChart !== FilterType.ALL ? "100%" : "48%"}
-        onClick={() => setSelectedChart(cfg.type)}
+        width={filters.chart !== FilterType.ALL ? "100%" : "48%"}
+        onClick={() => setFilters({ ...filters, chart: cfg.type })}
       >
         <BarChartGeneric
           data={cfg.data}
           title={cfg.title}
           subtitle={cfg.subtitle}
           tooltipLabel={cfg.tooltipLabel}
-          expanded={selectedChart === cfg.type}
+          expanded={filters.chart === cfg.type}
         />
       </Box>
     );
-    if (selectedChart === FilterType.ALL) {
+    if (filters.chart === FilterType.ALL) {
       return (
         <Box
           sx={{
@@ -201,9 +196,9 @@ const Dashboard: React.FC = () => {
         </Box>
       );
     }
-    const cfg = chartConfigs.find((c) => c.type === selectedChart);
+    const cfg = chartConfigs.find((c) => c.type === filters.chart);
     return cfg ? renderChart(cfg) : null;
-  }, [selectedChart]);
+  }, [filters.chart]);
 
   return (
     <Box
@@ -246,8 +241,10 @@ const Dashboard: React.FC = () => {
               placeholder="Selecione os nomes"
               height="53px"
               options={options}
-              selectedOptions={selectedOptions}
-              onChange={setSelectedOptions}
+              selectedOptions={filters.options}
+              onChange={(opts) =>
+                setFilters({ ...filters, options: opts })
+              }
             />
           </Box>
 
@@ -282,8 +279,10 @@ const Dashboard: React.FC = () => {
               </Typography>
               <ViewSelectionFilter
                 filters={graficFilters}
-                selectedFilter={selectedChart}
-                onChange={setSelectedChart}
+                selectedFilter={filters.chart?.toString() || ""}
+                onChange={(val) =>
+                  setFilters({ ...filters, chart: val })
+                }
               />
             </Box>
             <Box
@@ -305,8 +304,10 @@ const Dashboard: React.FC = () => {
               </Typography>
               <ViewSelectionFilter
                 filters={selectionTypeFilter}
-                selectedFilter={selectedFilterType}
-                onChange={setSelectedFilterType}
+                selectedFilter={filters.filterType?.toString() || ""}
+                onChange={(val) =>
+                  setFilters({ ...filters, filterType: val })
+                }
               />
             </Box>
           </Box>
@@ -336,8 +337,10 @@ const Dashboard: React.FC = () => {
               <TextField
                 select
                 label="Grupo"
-                value={selectedGroup}
-                onChange={(e) => setSelectedGroup(e.target.value)}
+                value={filters.group}
+                onChange={(e) =>
+                  setFilters({ ...filters, group: e.target.value })
+                }
                 sx={{
                   ...focusedTextFieldStyles,
                   backgroundColor: "transparent",
@@ -357,8 +360,10 @@ const Dashboard: React.FC = () => {
               <TextField
                 select
                 label="Tipo"
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
+                value={filters.type}
+                onChange={(e) =>
+                  setFilters({ ...filters, type: e.target.value })
+                }
                 sx={focusedTextFieldStyles}
               >
                 <MenuItem value="Texto" sx={menuItemStyles}>
@@ -381,8 +386,10 @@ const Dashboard: React.FC = () => {
               <TextField
                 select
                 label="Simetria"
-                value={selectedSymmetry}
-                onChange={(e) => setSelectedSymmetry(e.target.value)}
+                value={filters.symmetry}
+                onChange={(e) =>
+                  setFilters({ ...filters, symmetry: e.target.value })
+                }
                 sx={focusedTextFieldStyles}
               >
                 <MenuItem value="Simétricos" sx={menuItemStyles}>

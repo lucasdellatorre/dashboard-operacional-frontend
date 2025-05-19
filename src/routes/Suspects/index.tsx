@@ -1,19 +1,19 @@
 import { Box, Button, Typography } from "@mui/material";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useContext, useState } from "react";
 import GenericTable from "../../components/Table/Table";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useHeaderInput } from "../../hooks/useHeaderInput";
 import { HeadCell } from "../../interface/table/tableInterface";
 import { Targets, useSuspects } from "../../hooks/useSuspects";
 import CreateSuspectModal from "../../components/modal/createSuspectModal";
+import { AppContext } from "../../context/AppContext";
 
 const Suspects: React.FC = () => {
   const navigate = useNavigate();
   const [openModal, setOpenModal] = useState<boolean>(false);
   const [searchParams] = useSearchParams();
   const { headerInputValue } = useHeaderInput();
-  const [selectedOperations, setSelectedOperations] = useState<Targets[]>([]);
-  const [selectedIds, setSelectedIds] = useState<readonly number[]>([]);
+  const { targets, setTargets } = useContext(AppContext);
   const operationId = searchParams.get("operacao");
 
   const suspectsHeaderCells: readonly HeadCell<Targets>[] = [
@@ -68,11 +68,10 @@ const Suspects: React.FC = () => {
   ];
 
   const handleSelectionChange = useCallback(
-    (selectedIds: readonly number[], selectedItems: Targets[]) => {
-      setSelectedIds(selectedIds);
-      setSelectedOperations(selectedItems);
+    (_selectedIds: readonly number[], selectedItems: Targets[]) => {
+      setTargets(selectedItems);
     },
-    [setSelectedOperations]
+    [setTargets]
   );
 
   const { filteredSuspects } = useSuspects({
@@ -81,7 +80,7 @@ const Suspects: React.FC = () => {
 
   const operationsSelected = () => {
     const newSearchParams = new URLSearchParams(searchParams);
-    const operationIds = selectedOperations
+    const operationIds = targets
       .map((item: Targets) => item.id)
       .join("-");
     newSearchParams.set("operacao", operationId ?? "");
@@ -126,14 +125,14 @@ const Suspects: React.FC = () => {
         defaultOrderBy="suspectName"
         singleSelect={false}
         onSelectionChange={handleSelectionChange}
-        initialSelected={selectedIds}
+        initialSelected={targets.map((t) => t.id)}
         noDataMessage="Nenhum alvo encontrado"
         onDelete={() => {}}
       />
 
       <Box sx={{ width: "100%", display: "flex", justifyContent: "end" }}>
         <Button
-          disabled={selectedIds.length === 0}
+          disabled={targets.length === 0}
           onClick={operationsSelected}
           sx={{
             bgcolor: "customButton.black",

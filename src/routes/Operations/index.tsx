@@ -29,7 +29,7 @@ const Operations: React.FC = () => {
   const [searchParams] = useSearchParams();
 
   const { headerInputValue } = useHeaderInput();
-  const { operations: selectedOperations, setOperations: setSelectedOperations } = useContext(AppContext);
+  const { operations, setOperations } = useContext(AppContext);
 
   const [openModal, setOpenModal] = useState<boolean>(false);
   const [selectedIds, setSelectedIds] = useState<readonly number[]>([]);
@@ -37,16 +37,16 @@ const Operations: React.FC = () => {
   const handleSelectionChange = useCallback(
     (selectedIds: readonly number[], selectedItems: Operation[]) => {
       setSelectedIds(selectedIds);
-      setSelectedOperations(selectedItems);
+      setOperations(selectedItems);
     },
-    [setSelectedOperations]
+    [setOperations]
   );
 
   const { filteredOperations, loading, error, createOperation, fetchOperations } = useOperations({ searchTerm: headerInputValue });
 
   const operationsSelected = () => {
     const newSearchParams = new URLSearchParams(searchParams);
-    const operationIds = selectedOperations.map((item: Operation) => item.id).join("-");
+    const operationIds = operations.map((item: Operation) => item.id).join("-");
     newSearchParams.set("operacao", operationIds);
     navigate(`/alvos?${newSearchParams.toString()}`);
   };
