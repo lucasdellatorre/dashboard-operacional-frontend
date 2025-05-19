@@ -11,7 +11,11 @@ const endpoints = {
     createOperation: "api/operacao",
     getAllOperations: "api/operacao",
     getOperationById: (operationId: string) => `/operation/${operationId}`,
-  }
+  },
+  SHEETS: {
+    getAll: 'api/planilha',
+    upload: 'api/interceptacao/upload',
+  },
 };
 
 export default endpoints;
