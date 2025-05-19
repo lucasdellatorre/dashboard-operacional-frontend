@@ -180,7 +180,7 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
               <MultiSelect
                 placeholder="Selecione as operações"
                 height="2.5rem"
-                options={operationsList.map((operation) => (operation.operationName))}
+                options={operationsList.map((operation) => (operation.nome))}
                 selectedOptions={field.value}
                 onChange={handleChangeOperations} 
                 style={"gray"} 

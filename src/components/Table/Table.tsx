@@ -1,21 +1,24 @@
 import * as React from "react";
-import Box from "@mui/material/Box";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TablePagination from "@mui/material/TablePagination";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
-import Checkbox from "@mui/material/Checkbox";
-import { Tooltip } from "@mui/material";
+import {
+  Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TablePagination,
+  TableRow,
+  Paper,
+  Checkbox,
+  Collapse,
+  Tooltip,
+} from "@mui/material";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   GenericData,
   GenericTableProps,
   Order,
 } from "../../interface/table/tableInterface";
 import { getComparator, getSelectedItems } from "../../utils/tableUtils";
-import { useCallback, useEffect, useMemo, useState } from "react";
 import EnhancedTableToolbar from "./TableToolBar";
 import EnhancedTableHead from "./TableHeader";
 
@@ -32,12 +35,21 @@ function GenericTable<T extends GenericData>({
   allowSelection = true,
   onAdd,
   addButton = false,
-}: GenericTableProps<T>) {
+  collapsible = false,
+  headerCollor
+}: GenericTableProps<T> & { collapsible?: boolean }) {
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<keyof T>(defaultOrderBy);
   const [selected, setSelected] = useState<readonly number[]>(initialSelected);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(5);
+  const [collapsed, setCollapsed] = useState(true);
+
+  const handleToggleCollapse = () => {
+    if (collapsible) {
+      setCollapsed((prev) => !prev);
+    }
+  };
 
   useEffect(() => {
     if (
@@ -63,12 +75,11 @@ function GenericTable<T extends GenericData>({
     if (onDelete && selected.length > 0) {
       const selectedItems = getSelectedItems(rows, selected);
       onDelete(selected, selectedItems);
-
       setSelected([]);
     }
   }, [onDelete, selected, rows]);
 
-  const handleRequestSort = React.useCallback(
+  const handleRequestSort = useCallback(
     (_event: React.MouseEvent<unknown>, property: keyof T) => {
       const isAsc = orderBy === property && order === "asc";
       setOrder(isAsc ? "desc" : "asc");
@@ -77,7 +88,7 @@ function GenericTable<T extends GenericData>({
     [order, orderBy]
   );
 
-  const handleSelectAllClick = React.useCallback(
+  const handleSelectAllClick = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       if (event.target.checked) {
         const newSelected = rows.map((n) => n.id);
@@ -85,17 +96,17 @@ function GenericTable<T extends GenericData>({
           .map((item) => Number(item))
           .filter((item) => !isNaN(item));
         setSelected(onlyValidNumbers);
-        return;
+      } else {
+        setSelected([]);
       }
-      setSelected([]);
     },
     [rows]
   );
 
-  const handleClick = React.useCallback(
+  const handleClick = useCallback(
     (_event: React.MouseEvent<unknown>, id: number) => {
       if (singleSelect) {
-        setSelected(selected.indexOf(id) !== -1 ? [] : [id]);
+        setSelected(selected.includes(id) ? [] : [id]);
         return;
       }
 
@@ -103,30 +114,24 @@ function GenericTable<T extends GenericData>({
       let newSelected: readonly number[] = [];
 
       if (selectedIndex === -1) {
-        newSelected = newSelected.concat(selected, id);
-      } else if (selectedIndex === 0) {
-        newSelected = newSelected.concat(selected.slice(1));
-      } else if (selectedIndex === selected.length - 1) {
-        newSelected = newSelected.concat(selected.slice(0, -1));
-      } else if (selectedIndex > 0) {
-        newSelected = newSelected.concat(
-          selected.slice(0, selectedIndex),
-          selected.slice(selectedIndex + 1)
-        );
+        newSelected = [...selected, id];
+      } else {
+        newSelected = selected.filter((item) => item !== id);
       }
+
       setSelected(newSelected);
     },
     [selected, singleSelect]
   );
 
-  const handleChangePage = React.useCallback(
+  const handleChangePage = useCallback(
     (_event: unknown, newPage: number) => {
       setPage(newPage);
     },
     []
   );
 
-  const handleChangeRowsPerPage = React.useCallback(
+  const handleChangeRowsPerPage = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       setRowsPerPage(parseInt(event.target.value, 10));
       setPage(0);
@@ -149,6 +154,151 @@ function GenericTable<T extends GenericData>({
     (id: number) => selected.indexOf(id) !== -1,
     [selected]
   );
+
+  const tableContent = () => (
+    <>
+      <TableContainer sx={{ maxHeight: "100%", overflow: "auto" }}>
+        <Table
+          sx={{ minWidth: 750, tableLayout: "auto", width: "100%" }}
+          aria-labelledby="tableTitle"
+          size="medium"
+        >
+          <EnhancedTableHead
+            singleSelect={singleSelect}
+            headCells={headCells}
+            numSelected={selected.length}
+            order={order}
+            orderBy={String(orderBy)}
+            onSelectAllClick={handleSelectAllClick}
+            onRequestSort={handleRequestSort}
+            rowCount={rows.length}
+          />
+          <TableBody>
+            {visibleRows.map((row, index) => {
+              const isItemSelected = isSelected(row.id);
+              const labelId = `enhanced-table-checkbox-${index}`;
+
+              return (
+                <TableRow
+                  hover
+                  onClick={(event) => handleClick(event, row.id)}
+                  role="checkbox"
+                  aria-checked={isItemSelected}
+                  tabIndex={-1}
+                  key={row.id}
+                  selected={isItemSelected}
+                  sx={{ cursor: "pointer" }}
+                >
+                  <TableCell
+                    padding="checkbox"
+                    sx={{
+                      bgcolor: isItemSelected ? "table.lightGrey" : "table.white",
+                    }}
+                  >
+                    {allowSelection && (
+                      <Checkbox
+                        sx={{
+                          "&.Mui-checked": { color: "customButton.gold" },
+                          "&.MuiCheckbox-indeterminate": { color: "customButton.gold" },
+                        }}
+                        checked={isItemSelected}
+                      />
+                    )}
+                  </TableCell>
+
+                  {headCells.map((headCell, cellIndex) => {
+                    const value = row[headCell.id];
+                    const isFirstCell = cellIndex === 5;
+
+                    return (
+                      <TableCell
+                        key={String(headCell.id)}
+                        align="center"
+                        padding="normal"
+                        component="td"
+                        scope={isFirstCell ? "row" : undefined}
+                        id={isFirstCell ? labelId : undefined}
+                        sx={{
+                          bgcolor: isItemSelected ? "table.lightGrey" : "table.white",
+                          maxWidth: "10rem",
+                        }}
+                      >
+                        {headCell.iconAction ? (
+                          <Box
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              headCell.iconAction?.onClick(row.id, row);
+                            }}
+                            sx={{
+                              cursor: "pointer",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            {headCell.iconAction.icon}
+                          </Box>
+                        ) : (
+                          <Tooltip
+                            title={
+                              Array.isArray(value)
+                                ? value.join(", ")
+                                : String(value)
+                            }
+                            arrow
+                          >
+                            <Box
+                              sx={{
+                                overflow: "hidden",
+                                whiteSpace: "nowrap",
+                                textOverflow: "ellipsis",
+                                display: "block",
+                              }}
+                            >
+                              {Array.isArray(value)
+                                ? value.join(", ")
+                                : String(value)}
+                            </Box>
+                          </Tooltip>
+                        )}
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              );
+            })}
+            {rows.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={headCells.length + 1} align="center">
+                  {noDataMessage}
+                </TableCell>
+              </TableRow>
+            )}
+            {emptyRows > 0 && (
+              <TableRow style={{ height: 53 * emptyRows }}>
+                <TableCell colSpan={headCells.length + 1} />
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25]}
+        component="div"
+        count={rows.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+        labelRowsPerPage="Linhas por página:"
+        labelDisplayedRows={({ from, to, count }) =>
+          `${from}-${to} de ${count}`
+        }
+      />
+    </>
+  );
+
   return (
     <Box sx={{ width: "100%" }}>
       <Paper sx={{ width: "100%", mb: 2 }}>
@@ -158,170 +308,16 @@ function GenericTable<T extends GenericData>({
           onDelete={handleDelete}
           onAdd={onAdd}
           addButton={addButton}
+          collapsible={collapsible}
+          collapsed={collapsed}
+          onToggleCollapse={handleToggleCollapse}
+          headerCollor={headerCollor}
         />
-        <TableContainer
-          sx={{
-            height: "calc(100vh - 400px)",
-            maxHeight: "100%",
-            overflow: "auto",
-          }}
-        >
-          <Table
-            sx={{
-              minWidth: 750,
-              tableLayout: "auto",
-              width: "100%",
-            }}
-            aria-labelledby="tableTitle"
-            size={"medium"}
-          >
-            <EnhancedTableHead
-              singleSelect={singleSelect}
-              headCells={headCells}
-              numSelected={selected.length}
-              order={order}
-              orderBy={String(orderBy)}
-              onSelectAllClick={handleSelectAllClick}
-              onRequestSort={handleRequestSort}
-              rowCount={rows.length}
-            />
-            <TableBody>
-              {visibleRows.map((row, index) => {
-                const isItemSelected = isSelected(row.id);
-                const labelId = `enhanced-table-checkbox-${index}`;
-
-                return (
-                  <TableRow
-                    hover
-                    onClick={(event) => handleClick(event, row.id)}
-                    role="checkbox"
-                    aria-checked={isItemSelected}
-                    tabIndex={-1}
-                    key={row.id}
-                    selected={isItemSelected}
-                    sx={{ cursor: "pointer" }}
-                  >
-                    <TableCell
-                      padding="checkbox"
-                      sx={{
-                        bgcolor: isSelected(row.id)
-                          ? "table.lightGrey"
-                          : "table.white",
-                      }}
-                    >
-                      {allowSelection && (
-                        <Checkbox
-                          sx={{
-                            "&.Mui-checked": {
-                              color: "customButton.gold",
-                            },
-                            "&.MuiCheckbox-indeterminate": {
-                              color: "customButton.gold",
-                            },
-                          }}
-                          checked={isItemSelected}
-                        />
-                      )}
-                    </TableCell>
-
-                    {headCells.map((headCell, cellIndex) => {
-                      const value = row[headCell.id];
-                      const isFirstCell = cellIndex === 5;
-                      return (
-                        <TableCell
-                          key={String(headCell.id)}
-                          align="center"
-                          padding="normal"
-                          component="td"
-                          scope={isFirstCell ? "row" : undefined}
-                          id={isFirstCell ? labelId : undefined}
-                          sx={{
-                            bgcolor: isSelected(row.id)
-                              ? "table.lightGrey"
-                              : "table.white",
-                            maxWidth: "10rem",
-                          }}
-                        >
-                          {headCell.iconAction ? (
-                            <Box
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (headCell.iconAction) {
-                                  headCell.iconAction.onClick(row.id, row);
-                                }
-                              }}
-                              sx={{
-                                cursor: "pointer",
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                              }}
-                            >
-                              {headCell.iconAction.icon}
-                            </Box>
-                          ) : (
-                            <Tooltip
-                              title={
-                                Array.isArray(value)
-                                  ? value.join(", ")
-                                  : String(value)
-                              }
-                              arrow
-                            >
-                              <Box
-                                sx={{
-                                  overflow: "hidden",
-                                  whiteSpace: "nowrap",
-                                  textOverflow: "ellipsis",
-                                  display: "block",
-                                }}
-                              >
-                                {Array.isArray(value)
-                                  ? value.join(", ")
-                                  : String(value)}
-                              </Box>
-                            </Tooltip>
-                          )}
-                        </TableCell>
-                      );
-                    })}
-                  </TableRow>
-                );
-              })}
-              {rows.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={headCells.length + 1} align="center">
-                    {noDataMessage}
-                  </TableCell>
-                </TableRow>
-              )}
-              {emptyRows > 0 && (
-                <TableRow
-                  style={{
-                    height: 53 * emptyRows,
-                  }}
-                >
-                  <Box style={{ height: "50rem" }}>
-                    <TableCell colSpan={headCells.length + 1} />
-                  </Box>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={rows.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          labelRowsPerPage="Linhas por página:"
-          labelDisplayedRows={({ from, to, count }) =>
-            `${from}-${to} de ${count}`
-          }
-        />
+        {collapsible ? (
+          <Collapse in={!collapsed}>{tableContent()}</Collapse>
+        ) : (
+          tableContent()
+        )}
       </Paper>
     </Box>
   );
