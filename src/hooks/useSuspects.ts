@@ -1,6 +1,32 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { normalizeString } from "../utils/formatUtils";
+import { api } from "../server/service";
 import { GenericData } from "../interface/operationSuspectTable/operationSuspectTableInterface";
+
+export interface SuspectOperation {
+  id: number;
+  nome: string;
+}
+
+export interface Suspect {
+  id: number;
+  apelido: string;
+  relevante: boolean;
+  operacoes: SuspectOperation[];
+  numeros: string[];
+  data_criacao: string;
+}
+
+export interface Numbers {
+  id: number;
+  numero: string;
+  operacoes: SuspectOperation[];
+}
+
+export interface SuspectList {
+  suspeitos: Suspect[];
+  numeros: Numbers[];
+}
 
 export interface Targets extends GenericData {
   suspectName: string;
@@ -10,59 +36,87 @@ export interface Targets extends GenericData {
   operationName: string[];
   type: string;
 }
+
 interface UseSuspectsProps {
   searchTerm: string;
+  operationIds: number[];
 }
 
-export const mockSuspects: Targets[] = [
-  {
-    id: 28933,
-    suspectName: "Jorge",
-    number: "51 99999-9999",
-    date: "2024-01-01",
-    relevance: "Relevante",
-    operationName: ["Operação A", "Operação B"],
-    type: "Alvo",
-  },
-  {
-    id: 38466,
-    suspectName: "Marcinho",
-    number: "51 99999-9999",
-    date: "2025-01-01",
-    relevance: "Não relevante",
-    operationName: ["Operação A", "Operação B"],
-    type: "Alvo",
-  },
-  {
-    id: 39374,
-    suspectName: "Rogerinho",
-    number: "51 99999-9999",
-    date: "2028-01-01",
-    relevance: "Não relevante",
-    operationName: ["Operação A", "Operação B", "Operação C", "Operação D", "Operação E", "Operação F", "Operação G", "Operação H", "Operação I", "Operação J"],
-    type: "Número",
-  },
-];
+export const useSuspects = ({ searchTerm, operationIds }: UseSuspectsProps) => {
+  const [data, setData] = useState<{ suspectTargets: Targets[]; numberTargets: Targets[] }>({
+    suspectTargets: [],
+    numberTargets: [],
+  });
 
-export const useSuspects = ({ searchTerm }: UseSuspectsProps) => {
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+
+    const url = `/api/numeros/operacao/${operationIds.join(",")}`;
+    console.log("fetching: " + url);
+
+    api.get<SuspectList>(url)
+      .then((response) => {
+        const { suspeitos, numeros } = response.data;
+
+        const suspectTargets: Targets[] = suspeitos.map((suspect) => ({
+          id: suspect.id,
+          suspectName: suspect.apelido,
+          number: suspect.numeros.join(", "),
+          relevance: suspect.relevante ? "Relevante" : "Não relevante",
+          date: suspect.data_criacao,
+          operationName: suspect.operacoes.map((op) => op.nome),
+          type: "Alvo",
+        }));
+
+
+
+        const numberTargets: Targets[] = numeros.map((numero) => ({
+          id: numero.id,
+          suspectName: "—",
+          number: numero.numero,
+          relevance: "—",
+          date: "—",
+          operationName: numero.operacoes.map((op) => op.nome),
+          type: "Número",
+        }));
+
+        setData({ suspectTargets, numberTargets });
+      })
+      .catch((err) => {
+        console.error("Erro ao carregar alvos:", err);
+        setError("Não foi possível carregar os alvos.");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [operationIds]);
+
   const filteredSuspects = useMemo(() => {
-    let result = [...mockSuspects];
+    const all = [...data.suspectTargets, ...data.numberTargets];
 
     if (searchTerm?.trim()) {
       const normalizedSearch = normalizeString(searchTerm.trim());
-      result = result.filter(
-        (suspect) =>
-          normalizeString(suspect.suspectName).includes(normalizedSearch) ||
-          String(suspect.id).includes(normalizedSearch) ||
-          normalizeString(suspect.type).includes(normalizedSearch) ||
-          suspect.operationName.some((operation) =>
-            normalizeString(operation).includes(normalizedSearch)
-          )
+      return all.filter(
+        (s) =>
+          normalizeString(s.suspectName).includes(normalizedSearch) ||
+          String(s.id).includes(normalizedSearch) ||
+          normalizeString(s.type).includes(normalizedSearch) ||
+          s.operationName.some((op) => normalizeString(op).includes(normalizedSearch))
       );
     }
 
-    return result.sort((a, b) => a.suspectName.localeCompare(b.suspectName));
-  }, [searchTerm]);
+    return all;
+  }, [searchTerm, data]);
 
-  return { operations: mockSuspects, filteredSuspects };
+  return {
+    suspectTargets: data.suspectTargets,
+    numberTargets: data.numberTargets,
+    filteredSuspects,
+    loading,
+    error,
+  };
 };
