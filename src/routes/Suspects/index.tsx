@@ -1,81 +1,61 @@
 import { Box, Button, Typography, CircularProgress } from "@mui/material";
 import React, { useCallback, useContext, useMemo, useState } from "react";
 import GenericTable from "../../components/Table/Table";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useHeaderInput } from "../../hooks/useHeaderInput";
 import { HeadCell } from "../../interface/table/tableInterface";
-import { Targets, useSuspects } from "../../hooks/useSuspects";
+import { useSuspects, Suspect, Numbers } from "../../hooks/useSuspects";
 import CreateSuspectModal from "../../components/modal/createSuspectModal";
 import { AppContext } from "../../context/AppContext";
 
 const Suspects: React.FC = () => {
   const navigate = useNavigate();
   const [openModal, setOpenModal] = useState(false);
-  const [searchParams] = useSearchParams();
   const { headerInputValue } = useHeaderInput();
-  const { targets, setTargets } = useContext(AppContext);
+  const { suspects: selectedSuspectsContext, numbers: selectedNumbersContext, setSuspects, setNumbers, operations } = useContext(AppContext);
 
-  const operationIdParam = searchParams.get("operacao");
-  const operationIds = useMemo(
-    () => operationIdParam?.split(",").map(Number).filter(Boolean) ?? [],
-    [operationIdParam]
-  );
+  const [selectedSuspects, setSelectedSuspects] = useState<Suspect[]>(selectedSuspectsContext);
+  const [selectedNumbers, setSelectedNumbers] = useState<Numbers[]>(selectedNumbersContext);
 
-  const { suspectTargets, numberTargets, loading, error } = useSuspects({
+  const operationIds = useMemo(() => operations.map((op) => op.id), [operations]);
+
+  const { suspects, numbers, loading, error } = useSuspects({
     searchTerm: headerInputValue,
     operationIds,
   });
 
-  const suspectHeadCells: readonly HeadCell<Targets>[] = [
-    { id: "suspectName", label: "Nome/Apelido" },
-    { id: "number", label: "Número" },
-    { id: "date", label: "Data de inserção" },
-    { id: "relevance", label: "Relevância" },
-    { id: "operationName", label: "Operações" },
-    {
-      id: "botton",
-      label: "",
-      iconAction: {
-        icon: (
-          <Button
-            variant="contained"
-            size="small"
-            sx={{
-              bgcolor: "customButton.black",
-              color: "customText.white",
-              textTransform: "none",
-              fontWeight: 600,
-              fontSize: "0.8rem",
-            }}
-          >
-            Detalhes
-          </Button>
-        ),
-        onClick: (id: number) => {
-          navigate(`/dashboard/detalhesSuspeito/${id}`);
-        },
-      },
-    },
-  ];
+const suspectHeadCells: readonly HeadCell<Suspect>[] = [
+  { id: "apelido", label: "Nome/Apelido" },
+  { id: "numeros", label: "Número" },
+  { id: "data_criacao", label: "Data de inserção" },
+  { id: "relevante", label: "Relevância" },
+  { id: "operacoes", label: "Operações" },
+];
 
-  const numberHeadCells: readonly HeadCell<Targets>[] = [
-    { id: "number", label: "Número" },
-    { id: "operationName", label: "Operações" },
-  ];
+const numberHeadCells: readonly HeadCell<Numbers>[] = [
+  { id: "numero", label: "Número" },
+  { id: "operacoes", label: "Operações" },
+];
 
-  const handleSelectionChange = useCallback(
-    (_: readonly number[], selectedItems: Targets[]) => {
-      setTargets(selectedItems);
+
+  const handleSuspectsSelection = useCallback(
+    (_: readonly number[], selectedItems: Suspect[]) => {
+      setSelectedSuspects(selectedItems);
     },
-    [setTargets]
+    []
   );
 
-  const operationsSelected = () => {
-    const newSearchParams = new URLSearchParams(searchParams);
-    const targetIds = targets.map((item) => item.id).join("-");
-    newSearchParams.set("operacao", operationIdParam ?? "");
-    newSearchParams.set("alvo", targetIds);
-    navigate(`/dashboard?${newSearchParams.toString()}`);
+  const handleNumbersSelection = useCallback(
+    (_: readonly number[], selectedItems: Numbers[]) => {
+      setSelectedNumbers(selectedItems);
+    },
+    []
+  );
+
+  const onConfirm = () => {
+    setSuspects(selectedSuspects);
+    setNumbers(selectedNumbers);
+    navigate("/dashboard");
   };
 
   return (
@@ -109,35 +89,37 @@ const Suspects: React.FC = () => {
       ) : (
         <>
           <GenericTable
-            rows={suspectTargets}
+            rows={suspects}
             headCells={suspectHeadCells}
             collapsible
+            defaultCollapsed={false}
             title="Suspeitos"
-            defaultOrderBy="suspectName"
+            defaultOrderBy="apelido"
             singleSelect={false}
-            onSelectionChange={handleSelectionChange}
-            initialSelected={targets.map((t) => t.id)}
+            onSelectionChange={handleSuspectsSelection}
+            initialSelected={selectedSuspectsContext.map((s) => s.id)}
             noDataMessage="Nenhum suspeito encontrado"
-            onDelete={() => {}}
+            onDelete={() => { }}
           />
 
           <GenericTable
-            rows={numberTargets}
+            rows={numbers}
             headCells={numberHeadCells}
             collapsible
+            defaultCollapsed={false}
             title="Números Interceptados"
-            defaultOrderBy="number"
+            defaultOrderBy="numero"
             singleSelect={false}
-            onSelectionChange={handleSelectionChange}
-            initialSelected={targets.map((t) => t.id)}
+            onSelectionChange={handleNumbersSelection}
+            initialSelected={selectedNumbersContext.map((n) => n.id)}
             noDataMessage="Nenhum número encontrado"
-            onDelete={() => {}}
+            onDelete={() => { }}
           />
 
           <Box sx={{ width: "100%", display: "flex", justifyContent: "end" }}>
             <Button
-              disabled={targets.length === 0}
-              onClick={operationsSelected}
+              disabled={selectedSuspects.length === 0 && selectedNumbers.length === 0}
+              onClick={onConfirm}
               sx={{
                 bgcolor: "customButton.black",
                 color: "customText.white",

@@ -1,14 +1,14 @@
 import { useMemo, useState, useEffect } from "react";
 import { normalizeString } from "../utils/formatUtils";
 import { api } from "../server/service";
-import { GenericData } from "../interface/operationSuspectTable/operationSuspectTableInterface";
+import { GenericData } from "../interface/table/tableInterface";
 
 export interface SuspectOperation {
   id: number;
   nome: string;
 }
 
-export interface Suspect {
+export interface SuspectDTO {
   id: number;
   apelido: string;
   relevante: boolean;
@@ -17,24 +17,29 @@ export interface Suspect {
   data_criacao: string;
 }
 
-export interface Numbers {
+export interface NumbersDTO {
   id: number;
   numero: string;
   operacoes: SuspectOperation[];
 }
 
-export interface SuspectList {
-  suspeitos: Suspect[];
-  numeros: Numbers[];
+// DTOs usados na tabela (formatados como string)
+export interface Suspect extends GenericData {
+  apelido: string;
+  relevante: string;
+  numeros: string;
+  operacoes: string;
+  data_criacao: string;
 }
 
-export interface Targets extends GenericData {
-  suspectName: string;
-  number: string;
-  relevance: string;
-  date: string;
-  operationName: string[];
-  type: string;
+export interface Numbers extends GenericData {
+  numero: string;
+  operacoes: string;
+}
+
+interface SuspectList {
+  suspeitos: SuspectDTO[];
+  numeros: NumbersDTO[];
 }
 
 interface UseSuspectsProps {
@@ -43,79 +48,74 @@ interface UseSuspectsProps {
 }
 
 export const useSuspects = ({ searchTerm, operationIds }: UseSuspectsProps) => {
-  const [data, setData] = useState<{ suspectTargets: Targets[]; numberTargets: Targets[] }>({
-    suspectTargets: [],
-    numberTargets: [],
-  });
-
-  const [loading, setLoading] = useState<boolean>(false);
+  const [data, setData] = useState<SuspectList>({ suspeitos: [], numeros: [] });
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Requisição de dados da API
   useEffect(() => {
     setLoading(true);
     setError(null);
 
     const url = `/api/numeros/operacao/${operationIds.join(",")}`;
-    console.log("fetching: " + url);
+    console.log("fetching:", url);
 
-    api.get<SuspectList>(url)
-      .then((response) => {
-        const { suspeitos, numeros } = response.data;
-
-        const suspectTargets: Targets[] = suspeitos.map((suspect) => ({
-          id: suspect.id,
-          suspectName: suspect.apelido,
-          number: suspect.numeros.join(", "),
-          relevance: suspect.relevante ? "Relevante" : "Não relevante",
-          date: suspect.data_criacao,
-          operationName: suspect.operacoes.map((op) => op.nome),
-          type: "Alvo",
-        }));
-
-
-
-        const numberTargets: Targets[] = numeros.map((numero) => ({
-          id: numero.id,
-          suspectName: "—",
-          number: numero.numero,
-          relevance: "—",
-          date: "—",
-          operationName: numero.operacoes.map((op) => op.nome),
-          type: "Número",
-        }));
-
-        setData({ suspectTargets, numberTargets });
-      })
+    api
+      .get<SuspectList>(url)
+      .then(({ data }) => setData(data))
       .catch((err) => {
         console.error("Erro ao carregar alvos:", err);
         setError("Não foi possível carregar os alvos.");
       })
-      .finally(() => {
-        setLoading(false);
-      });
+      .finally(() => setLoading(false));
   }, [operationIds]);
 
-  const filteredSuspects = useMemo(() => {
-    const all = [...data.suspectTargets, ...data.numberTargets];
+  // Filtro e transformação para exibição na tabela
+  const suspects: Suspect[] = useMemo(() => {
+    const search = normalizeString(searchTerm.trim());
 
-    if (searchTerm?.trim()) {
-      const normalizedSearch = normalizeString(searchTerm.trim());
-      return all.filter(
-        (s) =>
-          normalizeString(s.suspectName).includes(normalizedSearch) ||
-          String(s.id).includes(normalizedSearch) ||
-          normalizeString(s.type).includes(normalizedSearch) ||
-          s.operationName.some((op) => normalizeString(op).includes(normalizedSearch))
-      );
-    }
+    return data.suspeitos
+      .filter((s) => {
+        const ops = s.operacoes.map((op) => normalizeString(op.nome));
+        return (
+          normalizeString(s.apelido).includes(search) ||
+          s.numeros.some((n) => normalizeString(n).includes(search)) ||
+          String(s.id).includes(search) ||
+          ops.some((op) => op.includes(search))
+        );
+      })
+      .map((s) => ({
+        id: s.id,
+        apelido: s.apelido,
+        relevante: s.relevante ? "Sim" : "Não",
+        numeros: s.numeros.join(", "),
+        operacoes: s.operacoes.map((op) => op.nome).join(", "),
+        data_criacao: s.data_criacao,
+      }));
+  }, [searchTerm, data.suspeitos]);
 
-    return all;
-  }, [searchTerm, data]);
+  const numbers: Numbers[] = useMemo(() => {
+    const search = normalizeString(searchTerm.trim());
+
+    return data.numeros
+      .filter((n) => {
+        const ops = n.operacoes.map((op) => normalizeString(op.nome));
+        return (
+          normalizeString(n.numero).includes(search) ||
+          String(n.id).includes(search) ||
+          ops.some((op) => op.includes(search))
+        );
+      })
+      .map((n) => ({
+        id: n.id,
+        numero: n.numero,
+        operacoes: n.operacoes.map((op) => op.nome).join(", "),
+      }));
+  }, [searchTerm, data.numeros]);
 
   return {
-    suspectTargets: data.suspectTargets,
-    numberTargets: data.numberTargets,
-    filteredSuspects,
+    suspects,
+    numbers,
     loading,
     error,
   };

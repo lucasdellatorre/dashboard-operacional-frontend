@@ -34,6 +34,8 @@ export interface GenericTableProps<T extends GenericData> {
   addButton?: boolean;
   allowSelection?: boolean;
   headerCollor?: string;
+  collapsible?: boolean;
+  defaultCollapsed?: boolean;
 }
 
 export interface EnhancedTableHeadProps<T extends GenericData> {

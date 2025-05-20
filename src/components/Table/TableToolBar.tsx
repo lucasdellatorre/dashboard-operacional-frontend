@@ -46,30 +46,19 @@ const EnhancedTableToolbar: React.FC<EnhancedTableToolbarProps> = ({
             { bgcolor: "table.grey" },
       ]}
     >
-      {numSelected > 0 ? (
-        <Typography
-          sx={{ flex: "1 1 100%" }}
-          color="inherit"
-          variant="subtitle1"
-          component="div"
-        >
-          {numSelected} selecionado(s)
+      <Box
+        sx={{ flex: "1 1 100%", display: "flex", alignItems: "center", cursor: collapsible ? "pointer" : "default" }}
+        onClick={collapsible ? onToggleCollapse : undefined}
+      >
+        {collapsible && (
+          <IconButton size="small">
+            {collapsed ? <ExpandMoreIcon /> : <ExpandLessIcon />}
+          </IconButton>
+        )}
+        <Typography variant="h6" id="tableTitle" component="div">
+          {numSelected > 0 ? `${numSelected} selecionado(s)` : title}
         </Typography>
-      ) : (
-        <Box
-          sx={{ flex: "1 1 100%", display: "flex", alignItems: "center", cursor: collapsible ? "pointer" : "default" }}
-          onClick={collapsible ? onToggleCollapse : undefined}
-        >
-          {collapsible && (
-            <IconButton size="small">
-              {collapsed ? <ExpandMoreIcon /> : <ExpandLessIcon />}
-            </IconButton>
-          )}
-          <Typography variant="h6" id="tableTitle" component="div">
-            {title}
-          </Typography>
-        </Box>
-      )}
+      </Box>
       {numSelected > 0 && (
         <Tooltip title="Excluir">
           <IconButton onClick={onDelete}>
