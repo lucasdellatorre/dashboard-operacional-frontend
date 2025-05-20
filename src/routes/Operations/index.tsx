@@ -20,17 +20,25 @@ const Operations: React.FC = () => {
   const [searchParams] = useSearchParams();
 
   const { headerInputValue } = useHeaderInput();
-  const { operations, setOperations } = useContext(AppContext);
+  const {
+    operations,
+    setOperations,
+    setSuspects,
+    setNumbers,
+  } = useContext(AppContext);
 
   const [openModal, setOpenModal] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<readonly number[]>([]);
+
+  // IDs e objetos selecionados localmente (antes do confirmar)
+  const [selectedIds, setSelectedIds] = useState<readonly number[]>(operations.map(op => op.id));
+  const [selectedItems, setSelectedItems] = useState<Operation[]>(operations);
 
   const handleSelectionChange = useCallback(
-    (selectedIds: readonly number[], selectedItems: Operation[]) => {
-      setSelectedIds(selectedIds);
-      setOperations(selectedItems);
+    (ids: readonly number[], items: Operation[]) => {
+      setSelectedIds(ids);
+      setSelectedItems(items);
     },
-    [setOperations]
+    []
   );
 
   const {
@@ -42,8 +50,12 @@ const Operations: React.FC = () => {
   } = useOperations({ searchTerm: headerInputValue });
 
   const operationsSelected = () => {
+    setOperations(selectedItems);
+    setSuspects([]); // limpa alvos ao confirmar
+    setNumbers([]);
+
     const newSearchParams = new URLSearchParams(searchParams);
-    const operationIds = operations.map((item: Operation) => item.id).join("-");
+    const operationIds = selectedItems.map((item: Operation) => item.id).join("-");
     newSearchParams.set("operacao", operationIds);
     navigate(`/alvos?${newSearchParams.toString()}`);
   };
@@ -81,7 +93,7 @@ const Operations: React.FC = () => {
           rows={filteredOperations}
           headCells={operationHeaderCells}
           title="Operações"
-          defaultOrderBy="nome" // corrigido para corresponder ao HeadCell real
+          defaultOrderBy="nome"
           onSelectionChange={handleSelectionChange}
           initialSelected={selectedIds}
           noDataMessage="Nenhuma operação encontrada, por favor faça o upload da planilha"
@@ -127,5 +139,6 @@ const Operations: React.FC = () => {
     </Box>
   );
 };
+
 
 export default Operations;

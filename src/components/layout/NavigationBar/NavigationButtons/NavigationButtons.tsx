@@ -26,13 +26,10 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
   logout,
 }) => {
   const location = useLocation();
-  const isOperationsPage = location.pathname === "/operacoes";
-  const isSuspectsPage = location.pathname === "/alvos";
-  const isWorksheetPage = location.pathname === "/planilhas";
-
   const isActive = (path: string): boolean => location.pathname === path;
-  const { targets } = useContext(AppContext);
-  const hasTargets = targets.length > 0;
+
+  const { suspects, numbers } = useContext(AppContext);
+  const hasTargets = suspects.length > 0 || numbers.length > 0;
 
   return (
     <Box

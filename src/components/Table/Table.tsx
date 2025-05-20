@@ -36,14 +36,15 @@ function GenericTable<T extends GenericData>({
   onAdd,
   addButton = false,
   collapsible = false,
+  defaultCollapsed = true,
   headerCollor
-}: GenericTableProps<T> & { collapsible?: boolean }) {
+}: GenericTableProps<T>) {
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<keyof T>(defaultOrderBy);
   const [selected, setSelected] = useState<readonly number[]>(initialSelected);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(5);
-  const [collapsed, setCollapsed] = useState(true);
+  const [collapsed, setCollapsed] = useState(defaultCollapsed);
 
   const handleToggleCollapse = () => {
     if (collapsible) {
