@@ -1,5 +1,5 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: "http://localhost:8000",
+  baseURL: "https://dashboard-operacional-backend-4b392a9c5ff4.herokuapp.com/api",
 });
