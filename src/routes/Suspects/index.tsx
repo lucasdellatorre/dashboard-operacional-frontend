@@ -30,6 +30,30 @@ const suspectHeadCells: readonly HeadCell<Suspect>[] = [
   { id: "data_criacao", label: "Data de inserção" },
   { id: "relevante", label: "Relevância" },
   { id: "operacoes", label: "Operações" },
+  {
+      id: "botton",
+      label: "",
+      iconAction: {
+        icon: (
+          <Button
+            variant="contained"
+            size="small"
+            sx={{
+              bgcolor: "customButton.black",
+              color: "customText.white",
+              textTransform: "none",
+              fontWeight: 600,
+              fontSize: "0.8rem",
+            }}
+          >
+            Detalhes
+          </Button>
+        ),
+        onClick: (id: number) => {
+          navigate(`/dashboard/detalhesSuspeito/${id}`);
+        },
+      },
+    },
 ];
 
 const numberHeadCells: readonly HeadCell<Numbers>[] = [

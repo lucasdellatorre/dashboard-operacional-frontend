@@ -1,5 +1,4 @@
 import { Box } from "@mui/material";
-import TableChartIcon from "@mui/icons-material/TableChart";
 import MediationIcon from "@mui/icons-material/Mediation";
 import TargetIcon from "@mui/icons-material/AdsClickOutlined";
 import AssessmentIcon from "@mui/icons-material/Assessment";
@@ -87,14 +86,6 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
               label="Teia"
               isCollapsed={isCollapsed}
               isActive={isActive("/teia")}
-            />
-
-            <NavigationButton
-              icon={<TableChartIcon />}
-              label="Tabelas"
-              isCollapsed={isCollapsed}
-              isActive={isActive("/tabelas")}
-              onClick={(e) => e.preventDefault()}
             />
           </>
         )}
