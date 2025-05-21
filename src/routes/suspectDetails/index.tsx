@@ -42,7 +42,7 @@ const formatCPF = (value: string): string => {
 };
 
 const SuspectsDetails = () => {
-  const { suspect, loading, error } = useSuspectInfo(1001);
+  const { suspect, loading, error } = useSuspectInfo(Number(window.location.pathname.split("/").pop()));
 
   const [nickname, setNickname] = useState("");
   const [name, setName] = useState("");
