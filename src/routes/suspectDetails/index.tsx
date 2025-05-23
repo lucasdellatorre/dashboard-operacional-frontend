@@ -17,6 +17,7 @@ import { useEffect, useState } from "react";
 import { isValidCPF } from "../../utils/validationUtils";
 import EditableMultilineField from "../../components/editableMultilineField";
 import { useSuspectInfo } from "../../hooks/useSuspectInfo";
+import TelephoneModal from "../../components/modal/createTelephoneModal";
 
 interface Email extends GenericData {
   email: string;
@@ -42,7 +43,9 @@ const formatCPF = (value: string): string => {
 };
 
 const SuspectsDetails = () => {
-  const { suspect, loading, error } = useSuspectInfo(Number(window.location.pathname.split("/").pop()));
+  const { suspect, loading, error } = useSuspectInfo(
+    Number(window.location.pathname.split("/").pop())
+  );
 
   const [nickname, setNickname] = useState("");
   const [name, setName] = useState("");
@@ -91,9 +94,13 @@ const SuspectsDetails = () => {
     { id: "ip", label: "IP" },
     { id: "ocorrencias", label: "Ocorrências" },
   ];
-
+  const [openTelephoneModal, setOpenTelephoneModal] = useState(false);
   const [openEmailModal, setOpenEmailModal] = useState(false);
 
+  function criarEditarTelephone() {
+    //TODO: create or edit email integrated with backend
+    setOpenEmailModal(false);
+  }
   function criarEditarEmail() {
     //TODO: create or edit email integrated with backend
     setOpenEmailModal(false);
@@ -101,6 +108,11 @@ const SuspectsDetails = () => {
 
   return (
     <>
+      <TelephoneModal
+        isOpen={openTelephoneModal}
+        onClose={() => setOpenTelephoneModal(false)}
+        onSubmit={criarEditarTelephone}
+      />
       <EmailModal
         isOpen={openEmailModal}
         onClose={() => setOpenEmailModal(false)}
@@ -273,7 +285,9 @@ const SuspectsDetails = () => {
                   }))}
                   collapsible
                   addButton
-                  onAdd={() => {}}
+                  onAdd={() => {
+                    setOpenTelephoneModal(true);
+                  }}
                   singleSelect
                   headCells={PhoneHeaderCells}
                   title="Celulares"
