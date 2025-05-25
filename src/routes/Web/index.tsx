@@ -98,7 +98,7 @@ const mockData = {
 
 const options = mockData.nodes.filter(x => x.group === 3).map(node => node.id);
 
-const WebChartRoute: React.FC = () => {
+const WebRoute: React.FC = () => {
   const { webChartFilters, setWebChartFilters } = useContext(AppContext);
   const [dateInitial, setDateInitial] = useState("");
   const [dateFinal, setDateFinal] = useState("");
@@ -269,4 +269,4 @@ const WebChartRoute: React.FC = () => {
   );
 };
 
-export default WebChartRoute;
+export default WebRoute;

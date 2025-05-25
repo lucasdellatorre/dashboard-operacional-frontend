@@ -92,7 +92,7 @@ const mockData = {
 
 const options = mockData.nodes.filter(x => x.group === 1).map(node => node.id);
 
-const NetworkChartRoute: React.FC = () => {
+const NetworkWebRoute: React.FC = () => {
   const [selectedType, setSelectedType] = useState("IP");
   const [selectedGroup, setSelectedGroup] = useState("Ambos");
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
@@ -300,4 +300,4 @@ const NetworkChartRoute: React.FC = () => {
   );
 };
 
-export default NetworkChartRoute; 
+export default NetworkWebRoute; 
