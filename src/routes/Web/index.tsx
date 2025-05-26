@@ -1,9 +1,10 @@
 import { Box, MenuItem, TextField, Typography } from "@mui/material";
-import React, { useState, useMemo, useContext } from "react";
+import React, { useState, useMemo, useContext, useEffect } from "react";
 import WebChart from "../../components/dashboard/WebChart/WebChart";
 import MultiSelect from "../../components/multiSelect";
-import dayjs from "dayjs";
 import { AppContext } from "../../context/AppContext";
+import { createWeb } from "../../controllers/webController";
+import { WebLink, WebNode } from "../../interface/web/webInterface";
 
 const menuItemStyles = {
   padding: "4px 16px",
@@ -15,137 +16,118 @@ const menuItemStyles = {
 const focusedTextFieldStyles = {
   minWidth: "11rem",
   "& label.Mui-focused": { color: "customButton.gold" },
-  "& .MuiFilledInput-underline:after": { borderBottomColor: "customButton.gold" },
+  "& .MuiFilledInput-underline:after": {
+    borderBottomColor: "customButton.gold",
+  },
   "& .MuiFilledInput-root:after": { borderBottomColor: "customButton.gold" },
-  "& .MuiFilledInput-root.Mui-focused:after": { borderBottomColor: "customButton.gold" },
+  "& .MuiFilledInput-root.Mui-focused:after": {
+    borderBottomColor: "customButton.gold",
+  },
   "& .MuiInputLabel-root.Mui-focused": { color: "customButton.gold" },
 };
-
-const mockData = {
-  nodes: [
-    { id: "Alvo 1", group: 3 },
-    { id: "Alvo 2", group: 3 },
-    { id: "Alvo 3", group: 3 },
-    { id: "Alvo 4", group: 3 },
-
-    { id: "Marinho", group: 7 },
-    { id: "(11) 91234-5678", group: 7 },
-    { id: "(21) 99876-5432", group: 7 },
-    { id: "(21) 98765-1234", group: 7 },
-    { id: "(31) 97654-3210", group: 7 },
-    { id: "(31) 96543-2109", group: 7 },
-    { id: "Fernandinho", group: 7 },
-    { id: "(41) 94321-0987", group: 7 },
-    { id: "(51) 93210-9876", group: 7 },
-    { id: "(51) 92109-8765", group: 7 },
-    { id: "(61) 91098-7654", group: 7 },
-    { id: "(61) 90987-6543", group: 7 },
-    { id: "Pablo", group: 7 },
-    { id: "(71) 98765-4321", group: 7 },
-    { id: "(81) 97654-3210", group: 7 },
-    { id: "(81) 96543-2109", group: 7 },
-    { id: "(85) 95432-1098", group: 7 },
-    { id: "(85) 94321-0987", group: 7 },
-    { id: "(91) 93210-9876", group: 7 },
-    { id: "(91) 92109-8765", group: 7 },
-    { id: "(47) 91098-7654", group: 7 },
-    { id: "(47) 90987-6543", group: 7 },
-    { id: "(27) 99876-5432", group: 7 },
-    { id: "(27) 98765-4321", group: 7 },
-    { id: "(19) 97654-3210", group: 7 },
-    { id: "(19) 96543-2109", group: 7 },
-    { id: "(67) 95432-1098", group: 7 },
-    { id: "(67) 94321-0987", group: 7 },
-    { id: "(83) 93210-9876", group: 7 },
-    { id: "(83) 92109-8765", group: 7 },
-  ],
-  links: [
-    // Adicionando datas fictícias para cada link
-    { source: "Alvo 1", target: "Marinho", value: 342, date: "2024-06-01" },
-    { source: "Alvo 1", target: "(11) 91234-5678", value: 128, date: "2024-06-02" },
-    { source: "Alvo 1", target: "(21) 99876-5432", value: 64, date: "2024-06-03" },
-    { source: "Alvo 1", target: "(21) 98765-1234", value: 237, date: "2024-06-04" },
-    { source: "Alvo 1", target: "(31) 97654-3210", value: 70, date: "2024-06-05" },
-    { source: "Alvo 1", target: "(31) 96543-2109", value: 156, date: "2024-06-06" },
-    { source: "Alvo 1", target: "Fernandinho", value: 572, date: "2024-06-01" },
-    { source: "Alvo 1", target: "(41) 94321-0987", value: 321, date: "2024-06-02" },
-    { source: "Alvo 2", target: "(51) 93210-9876", value: 454, date: "2024-06-03" },
-    { source: "Alvo 2", target: "(51) 92109-8765", value: 189, date: "2024-06-04" },
-    { source: "Alvo 2", target: "(61) 91098-7654", value: 18, date: "2024-06-05" },
-    { source: "Alvo 2", target: "(61) 90987-6543", value: 567, date: "2024-06-06" },
-    { source: "Alvo 2", target: "Pablo", value: 278, date: "2024-06-01" },
-    { source: "Alvo 2", target: "(71) 98765-4321", value: 543, date: "2024-06-02" },
-    { source: "Alvo 2", target: "(81) 97654-3210", value: 109, date: "2024-06-03" },
-    { source: "Alvo 2", target: "(81) 96543-2109", value: 12, date: "2024-06-04" },
-    { source: "Alvo 3", target: "(85) 95432-1098", value: 398, date: "2024-06-05" },
-    { source: "Alvo 3", target: "(85) 94321-0987", value: 521, date: "2024-06-06" },
-    { source: "Alvo 3", target: "(91) 93210-9876", value: 145, date: "2024-06-01" },
-    { source: "Alvo 3", target: "(91) 92109-8765", value: 50, date: "2024-06-02" },
-    { source: "Alvo 3", target: "(47) 91098-7654", value: 234, date: "2024-06-03" },
-    { source: "Alvo 3", target: "(47) 90987-6543", value: 56, date: "2024-06-04" },
-    { source: "Alvo 3", target: "(27) 99876-5432", value: 312, date: "2024-06-05" },
-    { source: "Alvo 3", target: "(27) 98765-4321", value: 589, date: "2024-06-06" },
-    { source: "Alvo 1", target: "(61) 90987-6543", value: 523, date: "2024-06-01" },
-    { source: "Alvo 2", target: "(21) 98765-1234", value: 554, date: "2024-06-02" },
-    { source: "Alvo 3", target: "(41) 94321-0987", value: 512, date: "2024-06-03" },
-    { source: "Alvo 4", target: "(81) 96543-2109", value: 535, date: "2024-06-04" },
-    { source: "Alvo 1", target: "(91) 92109-8765", value: 478, date: "2024-06-05" },
-    { source: "Alvo 2", target: "(27) 98765-4321", value: 589, date: "2024-06-06" },
-    { source: "Alvo 3", target: "(47) 90987-6543", value: 543, date: "2024-06-01" },
-    { source: "Alvo 4", target: "Marinho", value: 576, date: "2024-06-02" },
-  ],
-};
-
-const options = mockData.nodes.filter(x => x.group === 3).map(node => node.id);
 
 const WebRoute: React.FC = () => {
   const { webChartFilters, setWebChartFilters } = useContext(AppContext);
   const [dateInitial, setDateInitial] = useState("");
   const [dateFinal, setDateFinal] = useState("");
 
+  const [nodes, setNodes] = useState<WebNode[]>([]);
+  const [links, setLinks] = useState<WebLink[]>([]);
+
+  async function handleWebChart() {
+    await createWeb({
+      operationId: [1],
+      targetId: [1586],
+      suspectId: [],
+    }).then((response) => {
+      const newNodes = [...response.nodes];
+
+      // Map through links and create missing target nodes
+      response.links.forEach((link) => {
+        const targetExists = newNodes.some((node) => node.id === link.target);
+        if (!targetExists) {
+          newNodes.push({
+            id: link.target,
+            group: 7, // Using group 7 as it seems to be the group for interceptations based on mockData
+          });
+        }
+      });
+
+      setNodes(newNodes);
+      setLinks(response.links);
+    });
+  }
+
+  console.log("nodes");
+  console.log(nodes);
+  console.log("links");
+  console.log(links);
+  useEffect(() => {
+    handleWebChart();
+  }, []);
+
   // Filtragem dos nós e links
+  // TODO: Remover mockData, usar nodes e links do handleWebChart, adicionar datas
+  const mockData = {
+    nodes: [{ id: "Alvo 1", group: 3 }],
+    links: [
+      { source: "Alvo 1", target: "Marinho", value: 342, date: "2024-06-01" },
+    ],
+  };
+  const options = mockData.nodes
+    .filter((x) => x.group === 3)
+    .map((node) => node.id);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const filteredData = useMemo(() => {
-    let links = mockData.links;
+    let filteredLinks = mockData.links;
 
     // Filtro por datas
-    if (dateInitial || dateFinal) {
-      links = links.filter((link) => {
-        const linkDate = dayjs(link.date);
-        const afterInitial = dateInitial ? (linkDate.isAfter(dayjs(dateInitial)) || linkDate.isSame(dayjs(dateInitial))) : true;
-        const beforeFinal = dateFinal ? (linkDate.isBefore(dayjs(dateFinal)) || linkDate.isSame(dayjs(dateFinal))) : true;
-        return afterInitial && beforeFinal;
-      });
-    }
+    // if (dateInitial || dateFinal) {
+    //   filteredLinks = filteredLinks.filter((link) => {
+    //     const linkDate = dayjs(link.date);
+    //     const afterInitial = dateInitial
+    //       ? linkDate.isAfter(dayjs(dateInitial)) ||
+    //         linkDate.isSame(dayjs(dateInitial))
+    //       : true;
+    //     const beforeFinal = dateFinal
+    //       ? linkDate.isBefore(dayjs(dateFinal)) ||
+    //         linkDate.isSame(dayjs(dateFinal))
+    //       : true;
+    //     return afterInitial && beforeFinal;
+    //   });
+    // }
 
     // Filtro por alvos selecionados
     if (webChartFilters.options.length > 0) {
-      links = links.filter((link) =>
-        webChartFilters.options.includes(link.source) || webChartFilters.options.includes(link.target)
+      filteredLinks = filteredLinks.filter(
+        (link) =>
+          webChartFilters.options.includes(link.source) ||
+          webChartFilters.options.includes(link.target)
       );
     }
 
     // Filtro por Grupo
     if (webChartFilters.group !== "Ambos") {
       if (webChartFilters.group === "Grupo") {
-        links = links.filter((link) => {
-          const sourceNode = mockData.nodes.find(n => n.id === link.source);
-          const targetNode = mockData.nodes.find(n => n.id === link.target);
-          return (sourceNode?.group === 4 || targetNode?.group === 4);
+        filteredLinks = filteredLinks.filter((link) => {
+          const sourceNode = mockData.nodes.find((n) => n.id === link.source);
+          const targetNode = mockData.nodes.find((n) => n.id === link.target);
+          return sourceNode?.group === 4 || targetNode?.group === 4;
         });
       } else if (webChartFilters.group === "Número") {
-        links = links.filter((link) => {
-          const sourceNode = mockData.nodes.find(n => n.id === link.source);
-          const targetNode = mockData.nodes.find(n => n.id === link.target);
-          return (sourceNode?.group !== 4 && targetNode?.group !== 4);
+        filteredLinks = filteredLinks.filter((link) => {
+          const sourceNode = mockData.nodes.find((n) => n.id === link.source);
+          const targetNode = mockData.nodes.find((n) => n.id === link.target);
+          return sourceNode?.group !== 4 && targetNode?.group !== 4;
         });
       }
     }
 
     // Filtro de Simetria
     if (webChartFilters.symmetry !== "Ambos") {
-      links = links.filter((link) => {
-        const sourceNode = mockData.nodes.find(n => n.id === link.source);
-        const targetNode = mockData.nodes.find(n => n.id === link.target);
+      filteredLinks = filteredLinks.filter((link) => {
+        const sourceNode = mockData.nodes.find((n) => n.id === link.source);
+        const targetNode = mockData.nodes.find((n) => n.id === link.target);
         if (!sourceNode || !targetNode) return false;
         if (webChartFilters.symmetry === "Simétricos") {
           return sourceNode.group === targetNode.group;
@@ -160,22 +142,62 @@ const WebRoute: React.FC = () => {
     // Aqui não há campo real, então não filtra nada
 
     // Agora, só exibe nós que participam de algum link visível
-    const nodeIds = new Set(links.flatMap(l => [l.source, l.target]));
-    const nodes = mockData.nodes.filter(n => nodeIds.has(n.id));
+    const nodeIds = new Set(filteredLinks.flatMap((l) => [l.source, l.target]));
+    const filteredNodes = nodes.filter((n) => nodeIds.has(n.id));
 
-    return { nodes, links };
+    return { nodes: filteredNodes, links: filteredLinks };
   }, [webChartFilters, dateInitial, dateFinal]);
 
   return (
-    <Box width="100%" bgcolor="#F8F8F8" height="100vh" display="flex" flexDirection="column" padding="1rem 0 0 0">
+    <Box
+      width="100%"
+      bgcolor="#F8F8F8"
+      height="100vh"
+      display="flex"
+      flexDirection="column"
+      padding="1rem 0 0 0"
+    >
       <Box display="flex" flexDirection="column" gap="1rem" px="1rem">
-      <Box sx={{ width: "fit-content", minWidth: "25rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-        <Typography fontFamily={"Inter, sans-serif"} fontWeight={600} fontSize={"1.25rem"}>Seleção de Alvos</Typography>
-        <MultiSelect style="gray" placeholder="Selecione os nomes" height="53px" options={options} selectedOptions={webChartFilters.options} onChange={(opts) => setWebChartFilters({ ...webChartFilters, options: opts })} />
-      </Box>
+        <Box
+          sx={{
+            width: "fit-content",
+            minWidth: "25rem",
+            display: "flex",
+            flexDirection: "column",
+            gap: "0.5rem",
+          }}
+        >
+          <Typography
+            fontFamily={"Inter, sans-serif"}
+            fontWeight={600}
+            fontSize={"1.25rem"}
+          >
+            Seleção de Alvos
+          </Typography>
+          <MultiSelect
+            style="gray"
+            placeholder="Selecione os nomes"
+            height="53px"
+            options={options}
+            selectedOptions={webChartFilters.options}
+            onChange={(opts) =>
+              setWebChartFilters({ ...webChartFilters, options: opts })
+            }
+          />
+        </Box>
 
-        <Box width="100%" display="flex" py="0.7rem" flexDirection="column" gap="0.5rem">
-          <Typography variant="caption" fontSize={"14px"} fontFamily="Inter, sans-serif" fontWeight={600}>
+        <Box
+          width="100%"
+          display="flex"
+          flexDirection="column"
+          gap="0.5rem"
+        >
+          <Typography
+            variant="caption"
+            fontSize={"14px"}
+            fontFamily="Inter, sans-serif"
+            fontWeight={600}
+          >
             Filtrar por:
           </Typography>
 
@@ -184,7 +206,12 @@ const WebRoute: React.FC = () => {
               select
               label="Grupo"
               value={webChartFilters.group}
-              onChange={(e) => setWebChartFilters({ ...webChartFilters, group: e.target.value })}
+              onChange={(e) =>
+                setWebChartFilters({
+                  ...webChartFilters,
+                  group: e.target.value,
+                })
+              }
               sx={{ ...focusedTextFieldStyles, backgroundColor: "transparent" }}
             >
               {["Grupo", "Número", "Ambos"].map((value) => (
@@ -198,21 +225,38 @@ const WebRoute: React.FC = () => {
               select
               label="Tipo"
               value={webChartFilters.type}
-              onChange={(e) => setWebChartFilters({ ...webChartFilters, type: e.target.value })}
+              onChange={(e) =>
+                setWebChartFilters({ ...webChartFilters, type: e.target.value })
+              }
               sx={focusedTextFieldStyles}
             >
-              <MenuItem value="Texto" sx={menuItemStyles}>Texto</MenuItem>
-              <MenuItem value="Vídeo" sx={{ ...menuItemStyles, "&.Mui-selected": { backgroundColor: "transparent" } }}>
+              <MenuItem value="Texto" sx={menuItemStyles}>
+                Texto
+              </MenuItem>
+              <MenuItem
+                value="Vídeo"
+                sx={{
+                  ...menuItemStyles,
+                  "&.Mui-selected": { backgroundColor: "transparent" },
+                }}
+              >
                 Vídeo
               </MenuItem>
-              <MenuItem value="Todos" sx={menuItemStyles}>Todos</MenuItem>
+              <MenuItem value="Todos" sx={menuItemStyles}>
+                Todos
+              </MenuItem>
             </TextField>
 
             <TextField
               select
               label="Simetria"
               value={webChartFilters.symmetry}
-              onChange={(e) => setWebChartFilters({ ...webChartFilters, symmetry: e.target.value })}
+              onChange={(e) =>
+                setWebChartFilters({
+                  ...webChartFilters,
+                  symmetry: e.target.value,
+                })
+              }
               sx={{ ...focusedTextFieldStyles, minWidth: "8rem" }}
             >
               {["Simétricos", "Assimétricos", "Ambos"].map((value) => (
@@ -228,7 +272,7 @@ const WebRoute: React.FC = () => {
               label="Data Inicial"
               type="date"
               value={dateInitial}
-              onChange={e => setDateInitial(e.target.value)}
+              onChange={(e) => setDateInitial(e.target.value)}
               sx={{ ...focusedTextFieldStyles, minWidth: "8rem" }}
             />
 
@@ -238,16 +282,66 @@ const WebRoute: React.FC = () => {
               label="Data Final"
               type="date"
               value={dateFinal}
-              onChange={e => setDateFinal(e.target.value)}
+              onChange={(e) => setDateFinal(e.target.value)}
               sx={{ ...focusedTextFieldStyles, minWidth: "8rem" }}
             />
+          </Box>
+        </Box>
+
+        {/* Legenda dos Turnos */}
+        <Box
+          display="flex"
+          gap="1rem"
+          alignItems="center"
+          mt="0.2rem"
+          mb="0.8rem"
+        >
+          <Typography
+            variant="subtitle2"
+            fontFamily="Inter, sans-serif"
+            fontWeight={600}
+            fontSize="0.95rem"
+          >
+            Legenda de Turnos:
+          </Typography>
+          <Box display="flex" alignItems="center" gap="0.3rem">
+            <Box
+              width="14px"
+              height="14px"
+              bgcolor="#D62727"
+              borderRadius="50%"
+            />
+            <Typography variant="body2" fontSize="0.95rem">
+              Alvos
+            </Typography>
+          </Box>
+          <Box display="flex" alignItems="center" gap="0.3rem">
+            <Box
+              width="14px"
+              height="14px"
+              bgcolor="#FFA000"
+              borderRadius="50%"
+            />
+            <Typography variant="body2" fontSize="0.95rem">
+              Suspeitos
+            </Typography>
+          </Box>
+          <Box display="flex" alignItems="center" gap="0.3rem">
+            <Box
+              width="14px"
+              height="14px"
+              bgcolor="#757575"
+              borderRadius="50%"
+            />
+            <Typography variant="body2" fontSize="0.95rem">
+              Interceptações
+            </Typography>
           </Box>
         </Box>
       </Box>
 
       <Box
         flex={1}
-        bgcolor="#D3D3D3"
         display="flex"
         alignItems="center"
         justifyContent="center"
@@ -262,7 +356,7 @@ const WebRoute: React.FC = () => {
           justifyContent="center"
           alignItems="center"
         >
-          <WebChart data={filteredData} />
+          <WebChart data={{ nodes: nodes, links: links }} />
         </Box>
       </Box>
     </Box>

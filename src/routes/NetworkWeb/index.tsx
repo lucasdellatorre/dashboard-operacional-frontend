@@ -293,7 +293,7 @@ const NetworkWebRoute: React.FC = () => {
           justifyContent="center"
           alignItems="center"
         >
-          <WebChart data={filteredData} isIp />
+          <WebChart data={filteredData} />
         </Box>
       </Box>
     </Box>

@@ -19,6 +19,7 @@ interface WebChartInterface {
   data: Data;
   isIp?: boolean;
 }
+
 // example of data:
 // {
 //   links: [
@@ -28,7 +29,7 @@ interface WebChartInterface {
 //   nodes: [{ id: "Alvo", group: 1 }, { id: "Intercpt 2", group: 2 }]
 // }
 
-const Chart: React.FC<WebChartInterface> = ({ data, isIp }) => {
+const Chart: React.FC<WebChartInterface> = ({ data }) => {
   const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
@@ -41,20 +42,32 @@ const Chart: React.FC<WebChartInterface> = ({ data, isIp }) => {
     const width = svgContainer ? svgContainer.clientWidth : 928;
     const height = svgContainer ? svgContainer.clientHeight : 600;
 
-    const color = isIp
-      ? d3.scaleOrdinal<number, string>().domain([1, 2, 3, 4]).range([
-          "#808CBF", // Manhã
-          "#31438C", // Tarde
-          "#08102F", // Noite
-          "#D62727", // Alvos
-        ])
-      : d3
-          .scaleOrdinal<number, string>()
-          .domain([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-          .range(d3.schemeCategory10);
+    const color = d3
+      .scaleOrdinal<number, string>()
+      .domain([1, 2, 3, 4, 5, 6, 7])
+      .range([
+        "#FFB74D", // 6h-12h
+        "#4A90E2", // 12h-18h
+        "#1A237E", // 18h-00h
+        "#0D0221", // 00h-6h
+        "#D62727", // Targets
+        "#757575", // Intercepts
+        "#FFA000", // Suspects
+      ]);
 
     const links = data.links.map((d) => ({ ...d }));
     const nodes = data.nodes.map((d) => ({ ...d }));
+
+    // Sort links by value to identify top 5 and next 10
+    const sortedLinks = [...links].sort(
+      (a, b) => (b.value || 0) - (a.value || 0)
+    );
+    const top5Values = new Set(
+      sortedLinks.slice(0, 5).map((link) => link.value)
+    );
+    const next10Values = new Set(
+      sortedLinks.slice(5, 15).map((link) => link.value)
+    );
 
     const simulation = d3
       .forceSimulation<Node>(nodes)
@@ -65,7 +78,7 @@ const Chart: React.FC<WebChartInterface> = ({ data, isIp }) => {
           .id((d) => d.id)
           .distance(100)
       )
-      .force("charge", d3.forceManyBody().strength(-1000))
+      .force("charge", d3.forceManyBody().strength(-2000))
       .force("center", d3.forceCenter(width / 2, height / 2))
       .force("x", d3.forceX(width / 2).strength(0.1)) // Força para manter nodos no centro X
       .force("y", d3.forceY(height / 2).strength(0.1)) // Força para manter nodos no centro Y
@@ -101,7 +114,11 @@ const Chart: React.FC<WebChartInterface> = ({ data, isIp }) => {
       .data(links)
       .join("line")
       .attr("stroke-width", (d) => Math.sqrt(d.value) / 2)
-      .attr("stroke", (d) => (d.value > 500 ? "#ff4d4d" : "#999")); // Color the links that have more than 500 value
+      .attr("stroke", (d) => {
+        if (top5Values.has(d.value)) return "#ff4d4d"; // Red for top 5
+        if (next10Values.has(d.value)) return "#FFA000"; // Yellow for next 10
+        return "#999"; // Default gray for the rest
+      });
 
     const node = g
       .append("g")
