@@ -27,7 +27,8 @@ const focusedTextFieldStyles = {
 };
 
 const WebRoute: React.FC = () => {
-  const { webChartFilters, setWebChartFilters } = useContext(AppContext);
+  const { operations, suspects, numbers, webChartFilters, setWebChartFilters } =
+    useContext(AppContext);
   const [dateInitial, setDateInitial] = useState("");
   const [dateFinal, setDateFinal] = useState("");
 
@@ -36,9 +37,9 @@ const WebRoute: React.FC = () => {
 
   async function handleWebChart() {
     await createWeb({
-      operationId: [1],
-      targetId: [1586],
-      suspectId: [],
+      operationId: operations.map((op) => op.id),
+      targetId: numbers.map((num) => num.id),
+      suspectId: suspects.map((suspect) => suspect.id),
     }).then((response) => {
       const newNodes = [...response.nodes];
 
@@ -48,7 +49,7 @@ const WebRoute: React.FC = () => {
         if (!targetExists) {
           newNodes.push({
             id: link.target,
-            group: 7, // Using group 7 as it seems to be the group for interceptations based on mockData
+            group: 6,
           });
         }
       });
@@ -58,10 +59,6 @@ const WebRoute: React.FC = () => {
     });
   }
 
-  console.log("nodes");
-  console.log(nodes);
-  console.log("links");
-  console.log(links);
   useEffect(() => {
     handleWebChart();
   }, []);
@@ -186,12 +183,7 @@ const WebRoute: React.FC = () => {
           />
         </Box>
 
-        <Box
-          width="100%"
-          display="flex"
-          flexDirection="column"
-          gap="0.5rem"
-        >
+        <Box width="100%" display="flex" flexDirection="column" gap="0.5rem">
           <Typography
             variant="caption"
             fontSize={"14px"}

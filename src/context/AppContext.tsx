@@ -18,7 +18,7 @@ interface AppContextType {
   suspects: Suspect[];
   setSuspects: (suspects: Suspect[]) => void;
 
-  numbers: Numbers[];
+  numbers: Numbers[]; // targets
   setNumbers: (numbers: Numbers[]) => void;
 
   worksheets: WorkSheet[];
