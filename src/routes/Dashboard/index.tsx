@@ -19,9 +19,22 @@ import { AppContext } from "../../context/AppContext";
 
 const menuItemStyles = {
   padding: "4px 16px",
-  "&:hover": { backgroundColor: "transparent" },
-  "&.Mui-selected": { backgroundColor: "hsla(44, 45.60%, 42.50%, 0.08)" },
-  "&.Mui-selected:hover": { backgroundColor: "hsla(44, 45.60%, 42.50%, 0.08)" },
+  "&:hover": {
+    backgroundColor: "transparent !important",
+    color: "inherit !important",
+  },
+  "&.Mui-selected": {
+    backgroundColor: "hsla(44, 45.60%, 42.50%, 0.08) !important",
+    color: "inherit !important",
+  },
+  "&.Mui-selected:hover": {
+    backgroundColor: "hsla(44, 45.60%, 42.50%, 0.08) !important",
+    color: "inherit !important",
+  },
+  "&.Mui-selected, &.Mui-selected:focus, &.Mui-selected:active": {
+    backgroundColor: "hsla(44, 45.60%, 42.50%, 0.08) !important",
+    color: "inherit !important",
+  },
 };
 
 const focusedTextFieldStyles = {
@@ -35,6 +48,18 @@ const focusedTextFieldStyles = {
   "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
     borderColor: "customButton.lightGray",
     borderWidth: "1px",
+  },
+
+  "& .MuiOutlinedInput-root": {
+    "&:hover fieldset": {
+      borderColor: "customButton.lightGray",
+    },
+    "&.Mui-focused fieldset": {
+      borderColor: "customButton.lightGray",
+    },
+    "& input": {
+      outline: "none",
+    },
   },
 };
 

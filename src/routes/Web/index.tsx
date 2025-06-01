@@ -8,22 +8,48 @@ import { WebLink, WebNode } from "../../interface/web/webInterface";
 
 const menuItemStyles = {
   padding: "4px 16px",
-  "&:hover": { backgroundColor: "rgba(158, 131, 59, 0.08)" },
-  "&.Mui-selected": { backgroundColor: "rgb(233, 233, 233)" },
-  "&.Mui-selected:hover": { backgroundColor: "hsla(44, 45.60%, 42.50%, 0.08)" },
+  "&:hover": {
+    backgroundColor: "transparent !important",
+    color: "inherit !important",
+  },
+  "&.Mui-selected": {
+    backgroundColor: "hsla(44, 45.60%, 42.50%, 0.08) !important",
+    color: "inherit !important",
+  },
+  "&.Mui-selected:hover": {
+    backgroundColor: "hsla(44, 45.60%, 42.50%, 0.08) !important",
+    color: "inherit !important",
+  },
+  "&.Mui-selected, &.Mui-selected:focus, &.Mui-selected:active": {
+    backgroundColor: "hsla(44, 45.60%, 42.50%, 0.08) !important",
+    color: "inherit !important",
+  },
 };
 
 const focusedTextFieldStyles = {
   minWidth: "11rem",
-  "& label.Mui-focused": { color: "customButton.gold" },
-  "& .MuiFilledInput-underline:after": {
-    borderBottomColor: "customButton.gold",
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: "customButton.lightGray",
   },
-  "& .MuiFilledInput-root:after": { borderBottomColor: "customButton.gold" },
-  "& .MuiFilledInput-root.Mui-focused:after": {
-    borderBottomColor: "customButton.gold",
+  "& label.Mui-focused": {
+    color: "inherit",
   },
-  "& .MuiInputLabel-root.Mui-focused": { color: "customButton.gold" },
+  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: "customButton.lightGray",
+    borderWidth: "1px",
+  },
+
+  "& .MuiOutlinedInput-root": {
+    "&:hover fieldset": {
+      borderColor: "customButton.lightGray",
+    },
+    "&.Mui-focused fieldset": {
+      borderColor: "customButton.lightGray",
+    },
+    "& input": {
+      outline: "none",
+    },
+  },
 };
 
 const WebRoute: React.FC = () => {
@@ -229,7 +255,6 @@ const WebRoute: React.FC = () => {
                 value="Vídeo"
                 sx={{
                   ...menuItemStyles,
-                  "&.Mui-selected": { backgroundColor: "transparent" },
                 }}
               >
                 Vídeo

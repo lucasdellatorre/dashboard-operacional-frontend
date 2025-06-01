@@ -31,7 +31,11 @@ interface AppContextType {
   setWebChartFilters: (chartFilters: ChartFilters) => void;
 }
 
-export const ApplicationProvider = ({ children }: { children: React.ReactNode }) => {
+export const ApplicationProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const [cpf, setCpf] = useState<string>("");
   const [operations, setOperations] = useState<Operation[]>([]);
   const [suspects, setSuspects] = useState<Suspect[]>([]);
@@ -51,6 +55,7 @@ export const ApplicationProvider = ({ children }: { children: React.ReactNode })
     type: "Texto",
     group: "Ambos",
     options: [] as string[],
+    symmetry: "Ambos",
   });
 
   return (
