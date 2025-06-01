@@ -2,7 +2,6 @@ import "./App.css";
 import { Navigate, Route, Routes } from "react-router-dom";
 import Dashboard from "./routes/Dashboard";
 import Login from "./routes/Login";
-import Users from "./routes/Users";
 import Suspects from "./routes/Suspects";
 import WebChart from "./routes/Web";
 import NetworkChart from "./routes/NetworkWeb";
@@ -21,7 +20,6 @@ function App() {
         <Route path="/operacoes" element={<Operations />} />
         <Route path="/alvos" element={<Suspects />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/usuarios" element={<Users />} />
         <Route
           path="/dashboard/detalhesSuspeito/:id"
           element={<SuspectsDetails />}
