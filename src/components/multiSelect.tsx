@@ -65,7 +65,13 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
           ))
         }
         renderOption={(props, option, { selected }) => (
-          <li {...props}>
+          <li
+            {...props}
+            style={{
+              ...props.style,
+              backgroundColor: "transparent",
+            }}
+          >
             <Checkbox
               checked={selected}
               size="small"
@@ -97,15 +103,16 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                 minHeight: height,
                 display: "flex",
                 alignItems: "center",
-              },
-              "& .MuiOutlinedInput-notchedOutline": {
-                borderColor: "rgba(0, 0, 0, 0.23)",
-              },
-              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: "rgba(0, 0, 0, 0.23)",
-              },
-              "&:hover .MuiOutlinedInput-notchedOutline": {
-                borderColor: "rgba(0, 0, 0, 0.23)",
+                "& fieldset": {
+                  borderColor: "rgba(0, 0, 0, 0.23)",
+                },
+                "&:hover fieldset": {
+                  borderColor: "customButton.lightGray",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "customButton.lightGray",
+                  borderWidth: "1px",
+                },
               },
               "& .MuiInputBase-input::placeholder": {
                 color: style === "white" ? "#a2a2a2" : "black",

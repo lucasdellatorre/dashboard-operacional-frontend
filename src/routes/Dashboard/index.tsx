@@ -19,22 +19,23 @@ import { AppContext } from "../../context/AppContext";
 
 const menuItemStyles = {
   padding: "4px 16px",
-  "&:hover": { backgroundColor: "rgba(158, 131, 59, 0.08)" },
-  "&.Mui-selected": { backgroundColor: "rgb(233, 233, 233)" },
+  "&:hover": { backgroundColor: "transparent" },
+  "&.Mui-selected": { backgroundColor: "hsla(44, 45.60%, 42.50%, 0.08)" },
   "&.Mui-selected:hover": { backgroundColor: "hsla(44, 45.60%, 42.50%, 0.08)" },
 };
 
 const focusedTextFieldStyles = {
   minWidth: "11rem",
-  "& label.Mui-focused": { color: "customButton.gold" },
-  "& .MuiFilledInput-underline:after": {
-    borderBottomColor: "customButton.gold",
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: "customButton.lightGray",
   },
-  "& .MuiFilledInput-root:after": { borderBottomColor: "customButton.gold" },
-  "& .MuiFilledInput-root.Mui-focused:after": {
-    borderBottomColor: "customButton.gold",
+  "& label.Mui-focused": {
+    color: "inherit",
   },
-  "& .MuiInputLabel-root.Mui-focused": { color: "customButton.gold" },
+  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: "customButton.lightGray",
+    borderWidth: "1px",
+  },
 };
 
 const graficFilters = [
@@ -147,10 +148,8 @@ const chartConfigs: ChartConfig[] = [
 ];
 
 const Dashboard: React.FC = () => {
-  const {
-    dashboardFilters: filters,
-    setDashboardFilters: setFilters,
-  } = useContext(AppContext);
+  const { dashboardFilters: filters, setDashboardFilters: setFilters } =
+    useContext(AppContext);
 
   const [expanded, setExpanded] = useState(true);
 
@@ -236,9 +235,7 @@ const Dashboard: React.FC = () => {
               height="53px"
               options={options}
               selectedOptions={filters.options}
-              onChange={(opts) =>
-                setFilters({ ...filters, options: opts })
-              }
+              onChange={(opts) => setFilters({ ...filters, options: opts })}
             />
           </Box>
 
@@ -274,9 +271,7 @@ const Dashboard: React.FC = () => {
               <ViewSelectionFilter
                 filters={graficFilters}
                 selectedFilter={filters.chart?.toString() || ""}
-                onChange={(val) =>
-                  setFilters({ ...filters, chart: val })
-                }
+                onChange={(val) => setFilters({ ...filters, chart: val })}
               />
             </Box>
           </Box>
@@ -305,6 +300,7 @@ const Dashboard: React.FC = () => {
             >
               <TextField
                 select
+                variant="outlined"
                 label="Grupo"
                 value={filters.group}
                 onChange={(e) =>
@@ -312,7 +308,6 @@ const Dashboard: React.FC = () => {
                 }
                 sx={{
                   ...focusedTextFieldStyles,
-                  backgroundColor: "transparent",
                 }}
               >
                 <MenuItem value="Grupo" sx={menuItemStyles}>
@@ -342,7 +337,6 @@ const Dashboard: React.FC = () => {
                   value="Vídeo"
                   sx={{
                     ...menuItemStyles,
-                    "&.Mui-selected": { backgroundColor: "transparent" },
                   }}
                 >
                   Vídeo

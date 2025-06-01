@@ -15,6 +15,7 @@ const theme = createTheme({
       black: "#191919",
       gray: "#D3D3D3",
       gold: "#9E833B",
+      lightGray: "#bfbfbf",
     },
     customText: {
       black: "#191919",
@@ -84,6 +85,7 @@ declare module "@mui/material/styles" {
       black: string;
       gray: string;
       gold: string;
+      lightGray: string;
     };
     customText: {
       black: string;
@@ -150,6 +152,7 @@ declare module "@mui/material/styles" {
       black: string;
       gray: string;
       gold: string;
+      lightGray: string;
     };
     customText: {
       black: string;
