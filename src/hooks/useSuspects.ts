@@ -39,7 +39,7 @@ export interface Numbers extends GenericData {
 
 interface SuspectList {
   suspeitos: SuspectDTO[];
-  numeros: NumbersDTO[];
+  numeros: NumbersDTO[]; 
 }
 
 interface UseSuspectsProps {

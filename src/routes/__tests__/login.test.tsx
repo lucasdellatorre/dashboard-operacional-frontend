@@ -4,9 +4,16 @@ import { beforeEach, describe, expect, it } from "vitest";
 import ContainerLogin from "../../components/login/ContainerLogin/ContainerLogin";
 import userEvent from "@testing-library/user-event";
 import Login from "../Login";
+import { ApplicationProvider } from "../../context/AppContext";
 
 const renderLogin = (ui: React.ReactElement) => {
-  return render(ui, { wrapper: MemoryRouter });
+  return render(ui, {
+    wrapper: ({ children }) => (
+      <MemoryRouter>
+        <ApplicationProvider>{children}</ApplicationProvider>
+      </MemoryRouter>
+    ),
+  });
 };
 
 describe("ContainerLogin Component - Validação de CPF", () => {
@@ -87,4 +94,25 @@ it("deve renderizar o texto 'Dashboard Operacional'", () => {
     });
   });
 
+  it("Deve exibir uma mensagem de erro se o login falhar", async () => {
+    renderLogin(<ContainerLogin />);
+
+    const cpfInput = screen.getByPlaceholderText("000.000.000-00");
+    const button = screen.getByRole("button", { name: /entrar/i });
+
+    await userEvent.type(cpfInput, "123.456.789-00");
+    fireEvent.click(button);
+
+    const errorMessage = await screen.findByText("CPF inválido. Verifique e tente novamente.");
+    expect(errorMessage).toBeInTheDocument();
+  });
+
+  it("Deve permitir que o usuário digite e formate o CPF corretamente", async () => {
+    renderLogin(<ContainerLogin />);
+
+    const cpfInput = screen.getByPlaceholderText("000.000.000-00");
+    await userEvent.type(cpfInput, "12345678901");
+
+    expect(cpfInput).toHaveValue("123.456.789-01");
+  });
 });

@@ -374,7 +374,7 @@ const Dashboard: React.FC = () => {
                 sx={focusedTextFieldStyles}
               />
               <TextField
-                id="initial-time"
+                id="final-time"
                 InputLabelProps={{ shrink: true }}
                 label="Faixa Horária - Fim"
                 type="time"

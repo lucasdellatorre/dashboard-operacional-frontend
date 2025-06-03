@@ -119,11 +119,20 @@ describe("Operation Component", () => {
     expect(screen.getByTestId("mock-table")).toBeInTheDocument();
   });
 
-  it("deve chamar setOperations ao selecionar uma operação", async () => {
+  it("deve exibir o botão de confirmação de seleção", () => {
     renderWithProviders();
+    expect(screen.getByText("Confirmar Seleção")).toBeInTheDocument();
+  });
+
+  it("deve habilitar o botão de confirmação ao selecionar uma operação", async () => {
+    renderWithProviders();
+    const confirmBtn = screen.getByText(
+      "Confirmar Seleção"
+    ) as HTMLButtonElement;
+    expect(confirmBtn.disabled).toBe(true);
     fireEvent.click(screen.getByText("Selecionar Operação"));
     await waitFor(() => {
-      expect(mockSetOperations).toHaveBeenCalledWith([mockOperations[0]]);
+      expect(confirmBtn.disabled).toBe(false);
     });
   });
 
@@ -140,4 +149,13 @@ describe("Operation Component", () => {
     fireEvent.click(screen.getByText("Criar nova operação"));
     expect(screen.getByTestId("mock-modal")).toBeInTheDocument();
   });
+
+  it("deve fechar o modal ao clicar no botão Fechar", () => {
+    renderWithProviders();
+    fireEvent.click(screen.getByText("Criar nova operação"));
+    fireEvent.click(screen.getByText("Fechar"));
+    expect(screen.queryByTestId("mock-modal")).not.toBeInTheDocument();
+  });
+
+
 });
