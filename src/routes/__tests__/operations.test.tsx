@@ -13,8 +13,8 @@ vi.mock("../../hooks/useHeaderInput", () => ({
 }));
 
 const mockOperations: Operation[] = [
-  { id: 1, operationName: "Operação Alfa", operationDate: "2024-01-01", numberOfSuspects: 3 },
-  { id: 2, operationName: "Operação Beta", operationDate: "2024-01-02", numberOfSuspects: 5 },
+  { id: 1, nome: "Operação Alfa", data_criacao: "2024-01-01", qtdAlvos: 3 },
+  { id: 2, nome: "Operação Beta", data_criacao: "2024-01-02", qtdAlvos: 5},
 ];
 
 const mockSetOperations = vi.fn();

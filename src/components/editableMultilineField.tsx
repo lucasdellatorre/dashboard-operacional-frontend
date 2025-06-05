@@ -1,8 +1,6 @@
-import { useEffect, useState } from "react";
-import { Box, Button, TextField, Typography } from "@mui/material";
+import { useState, useEffect } from "react";
+import { Box, TextField, Typography, Button } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
-import CheckIcon from "@mui/icons-material/Check";
-import CloseIcon from "@mui/icons-material/Close";
 
 interface EditableMultilineFieldProps {
   label: string;
@@ -26,14 +24,11 @@ const EditableMultilineField = ({
     }
   }, [value, editing]);
 
-  const handleConfirm = () => {
-    onChange(tempValue);
-    setEditing(false);
-  };
-
-  const handleCancel = () => {
-    setTempValue(value);
-    setEditing(false);
+  const handleEditToggle = () => {
+    if (editing) {
+      onChange(tempValue); // Atualiza o valor ao clicar novamente no lápis
+    }
+    setEditing(!editing);
   };
 
   return (
@@ -81,42 +76,10 @@ const EditableMultilineField = ({
             gap: 1,
           }}
         >
-          {editing ? (
-            <>
-              <Button
-                onClick={handleConfirm}
-                variant="contained"
-                sx={{
-                  bgcolor: "customButton.gold",
-                  minWidth: "36px",
-                  padding: 0,
-                  height: "36px",
-                  borderRadius: "0.5rem",
-                  color: "white",
-                }}
-              >
-                <CheckIcon fontSize="small" />
-              </Button>
-              <Button
-                onClick={handleCancel}
-                variant="outlined"
-                sx={{
-                  borderColor: "gray",
-                  color: "gray",
-                  minWidth: "36px",
-                  padding: 0,
-                  height: "36px",
-                  borderRadius: "0.5rem",
-                }}
-              >
-                <CloseIcon fontSize="small" />
-              </Button>
-            </>
-          ) : (
-            <Button
-              onClick={() => setEditing(true)}
-              variant="outlined"
-              sx={{
+          <Button
+            onClick={handleEditToggle}
+            variant="outlined"
+            sx={{
                 bgcolor: "customButton.gold",
                 color: "white",
                 minWidth: "36px",
@@ -124,11 +87,10 @@ const EditableMultilineField = ({
                 height: "36px",
                 borderRadius: "0.5rem",
                 borderColor: "transparent",
-              }}
-            >
-              <EditIcon fontSize="small" />
-            </Button>
-          )}
+            }}
+          >
+            <EditIcon fontSize="small" />
+          </Button>
         </Box>
       </Box>
     </Box>

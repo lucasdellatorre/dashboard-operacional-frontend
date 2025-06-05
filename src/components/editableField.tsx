@@ -1,8 +1,6 @@
 import { useState } from "react";
-import { Box, Button, TextField, Typography } from "@mui/material";
+import { Box, TextField, Typography, Button } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
-import CheckIcon from "@mui/icons-material/Check";
-import CloseIcon from "@mui/icons-material/Close";
 
 interface EditableFieldProps {
   label: string;
@@ -15,14 +13,11 @@ const EditableField = ({ label, placeholder, value, onChange }: EditableFieldPro
   const [editing, setEditing] = useState(false);
   const [tempValue, setTempValue] = useState(value);
 
-  const handleConfirm = () => {
-    onChange(tempValue);
-    setEditing(false);
-  };
-
-  const handleCancel = () => {
-    setTempValue(value);
-    setEditing(false);
+  const handleEditToggle = () => {
+    if (editing) {
+      onChange(tempValue); // Atualiza o valor ao clicar novamente no lápis
+    }
+    setEditing(!editing);
   };
 
   return (
@@ -30,11 +25,7 @@ const EditableField = ({ label, placeholder, value, onChange }: EditableFieldPro
       <Typography variant="subtitle2" fontWeight={600}>
         {label}
       </Typography>
-      <Box 
-        display="flex" 
-        flexDirection="row"
-      sx={{ gap: editing ? 1 : 0 }}
-      >
+      <Box display="flex" flexDirection="row" sx={{ gap: 0 }}>
         <TextField
           variant="outlined"
           placeholder={placeholder}
@@ -44,7 +35,7 @@ const EditableField = ({ label, placeholder, value, onChange }: EditableFieldPro
           sx={{
             width: "100%",
             "& .MuiOutlinedInput-root": {
-              borderRadius: editing ? "0.313rem" : "0.313rem 0 0 0.313rem",
+              borderRadius: "0.313rem 0 0 0.313rem",
               backgroundColor: "white",
               "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
                 borderColor: "customButton.gold",
@@ -60,37 +51,9 @@ const EditableField = ({ label, placeholder, value, onChange }: EditableFieldPro
             },
           }}
         />
-        {editing ? (
-          <>
-            <Button
-              variant="contained"
-              onClick={handleConfirm}
-              sx={{
-                bgcolor: "customButton.gold",
-                color: "white",
-                minWidth: "45px",
-                padding: "6px",
-              }}
-            >
-              <CheckIcon fontSize="small" />
-            </Button>
-            <Button
-              variant="outlined"
-              onClick={handleCancel}
-              sx={{
-                color: "gray",
-                minWidth: "45px",
-                padding: "6px",
-                borderColor: "gray",
-              }}
-            >
-              <CloseIcon fontSize="small" />
-            </Button>
-          </>
-        ) : (
-          <Button
+        <Button
             variant="outlined"
-            onClick={() => setEditing(true)}
+            onClick={handleEditToggle}
             sx={{
               bgcolor: "customButton.gold",
               borderColor: "transparent",
@@ -100,10 +63,9 @@ const EditableField = ({ label, placeholder, value, onChange }: EditableFieldPro
               fontWeight: 400,
               minWidth: "45px",
             }}
-          >
-            <EditIcon sx={{ fontSize: "1rem" }} />
-          </Button>
-        )}
+        >
+          <EditIcon sx={{ fontSize: "1rem" }} />
+        </Button>
       </Box>
     </Box>
   );

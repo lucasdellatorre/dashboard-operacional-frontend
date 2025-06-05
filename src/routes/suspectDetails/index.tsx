@@ -2,6 +2,7 @@ import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Typography";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import {
+  Button,
   FormControl,
   InputLabel,
   MenuItem,
@@ -53,6 +54,7 @@ const SuspectsDetails = () => {
   const [cpfError, setCpfError] = useState("");
   const [notes, setNotes] = useState("");
   const [relevante, setRelevante] = useState<boolean>(false);
+  const [isModified, setIsModified] = useState(false);
 
   useEffect(() => {
     if (suspect) {
@@ -64,10 +66,31 @@ const SuspectsDetails = () => {
     }
   }, [suspect]);
 
+  const handleNicknameChange = (newValue: string) => {
+    setNickname(newValue);
+    setIsModified(true);
+  };
+
+  const handleNameChange = (newValue: string) => {
+    setName(newValue);
+    setIsModified(true);
+  };
+
   const handleCpfChange = (newValue: string) => {
     const formatted = formatCPF(newValue);
     setCpf(formatted);
     setCpfError(isValidCPF(formatted) ? "" : "CPF inválido");
+    setIsModified(true);
+  };
+
+  const handleNotesChange = (newValue: string) => {
+    setNotes(newValue);
+    setIsModified(true);
+  };
+
+  const handleRelevanteChange = (value: string) => {
+    setRelevante(value === "sim");
+    setIsModified(true);
   };
 
   const EmailHeaderCells: readonly HeadCell<Email>[] = [
@@ -131,21 +154,48 @@ const SuspectsDetails = () => {
           height: "100%",
         }}
       >
-        <Typography
+        <Box
           sx={{
-            mb: 1,
-            fontSize: "1.125rem",
-            fontFamily: "Inter, sans-serif",
-            fontWeight: 700,
             display: "flex",
+            justifyContent: "space-between",
             alignItems: "center",
-            cursor: "pointer",
           }}
-          onClick={() => window.history.back()}
         >
-          <ArrowBackIosIcon sx={{ fontSize: "1.125rem" }} />
-          Voltar
-        </Typography>
+          <Typography
+            sx={{
+              mb: 1,
+              fontSize: "1.125rem",
+              fontFamily: "Inter, sans-serif",
+              fontWeight: 700,
+              alignItems: "center",
+              cursor: "pointer",
+            }}
+            onClick={() => window.history.back()}
+          >
+            <ArrowBackIosIcon sx={{ fontSize: "1.125rem" }} />
+            Voltar
+          </Typography>
+
+          <Button
+            size="small"
+            variant="contained"
+            sx={{
+              width: "5.5rem",
+              bgcolor: "customButton.gold",
+              color: "white",
+              mb: 1,
+              fontSize: "1rem",
+              fontFamily: "Inter, sans-serif",
+              fontWeight: 700,
+              textTransform: "none",
+              justifyContent: "center",
+            }}
+            onClick={() => {}} // PASSAR UMA REQUISIÇÃO PUT CONTENDO APENAS OS DADOS ALTERADOS
+            disabled={!isModified}
+          >
+            Salvar
+          </Button>
+        </Box>
 
         <Typography
           variant="h5"
@@ -182,12 +232,12 @@ const SuspectsDetails = () => {
                     <EditableField
                       label="Apelido"
                       value={nickname}
-                      onChange={setNickname}
+                      onChange={handleNicknameChange}
                     />
                     <EditableField
                       label="Nome"
                       value={name}
-                      onChange={setName}
+                      onChange={handleNameChange}
                     />
                     <EditableField
                       label="CPF"
@@ -209,7 +259,7 @@ const SuspectsDetails = () => {
                 <EditableMultilineField
                   label="Anotações"
                   value={notes}
-                  onChange={setNotes}
+                  onChange={handleNotesChange}
                 />
               )}
             </Box>
@@ -232,6 +282,9 @@ const SuspectsDetails = () => {
                     fontWeight: 600,
                     fontSize: "0.875rem",
                     color: "text.primary",
+                    "&.Mui-focused": {
+                      color: "text.primary", // evita ficar azul no foco
+                    },
                   }}
                 >
                   Relevante
@@ -240,11 +293,17 @@ const SuspectsDetails = () => {
                   labelId="relevante-label"
                   value={relevante ? "sim" : "nao"}
                   label="Relevante"
-                  onChange={(e) => setRelevante(e.target.value === "sim")}
+                  onChange={(e) => handleRelevanteChange(e.target.value)}
                   sx={{
                     fontWeight: 500,
                     color: "text.primary",
-                    "& .MuiSelect-icon": { color: "customButton.gold" },
+
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "customButton.gold",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "customButton.gold",
+                    },
                   }}
                 >
                   <MenuItem value="sim">Sim</MenuItem>
