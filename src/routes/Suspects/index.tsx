@@ -12,25 +12,38 @@ const Suspects: React.FC = () => {
   const navigate = useNavigate();
   const [openModal, setOpenModal] = useState(false);
   const { headerInputValue } = useHeaderInput();
-  const { suspects: selectedSuspectsContext, numbers: selectedNumbersContext, setSuspects, setNumbers, operations } = useContext(AppContext);
+  const {
+    suspects: selectedSuspectsContext,
+    numbers: selectedNumbersContext,
+    setSuspects,
+    setNumbers,
+    operations,
+  } = useContext(AppContext);
 
-  const [selectedSuspects, setSelectedSuspects] = useState<Suspect[]>(selectedSuspectsContext);
-  const [selectedNumbers, setSelectedNumbers] = useState<Numbers[]>(selectedNumbersContext);
+  const [selectedSuspects, setSelectedSuspects] = useState<Suspect[]>(
+    selectedSuspectsContext
+  );
+  const [selectedNumbers, setSelectedNumbers] = useState<Numbers[]>(
+    selectedNumbersContext
+  );
 
-  const operationIds = useMemo(() => operations.map((op) => op.id), [operations]);
+  const operationIds = useMemo(
+    () => operations.map((op) => op.id),
+    [operations]
+  );
 
   const { suspects, numbers, loading, error } = useSuspects({
     searchTerm: headerInputValue,
     operationIds,
   });
 
-const suspectHeadCells: readonly HeadCell<Suspect>[] = [
-  { id: "apelido", label: "Nome/Apelido" },
-  { id: "numeros", label: "Número" },
-  { id: "data_criacao", label: "Data de inserção" },
-  { id: "relevante", label: "Relevância" },
-  { id: "operacoes", label: "Operações" },
-  {
+  const suspectHeadCells: readonly HeadCell<Suspect>[] = [
+    { id: "apelido", label: "Nome/Apelido" },
+    { id: "numeros", label: "Número" },
+    { id: "data_criacao", label: "Data de inserção" },
+    { id: "relevante", label: "Relevância" },
+    { id: "operacoes", label: "Operações" },
+    {
       id: "botton",
       label: "",
       iconAction: {
@@ -54,13 +67,12 @@ const suspectHeadCells: readonly HeadCell<Suspect>[] = [
         },
       },
     },
-];
+  ];
 
-const numberHeadCells: readonly HeadCell<Numbers>[] = [
-  { id: "numero", label: "Número" },
-  { id: "operacoes", label: "Operações" },
-];
-
+  const numberHeadCells: readonly HeadCell<Numbers>[] = [
+    { id: "numero", label: "Número" },
+    { id: "operacoes", label: "Operações" },
+  ];
 
   const handleSuspectsSelection = useCallback(
     (_: readonly number[], selectedItems: Suspect[]) => {
@@ -123,7 +135,7 @@ const numberHeadCells: readonly HeadCell<Numbers>[] = [
             onSelectionChange={handleSuspectsSelection}
             initialSelected={selectedSuspectsContext.map((s) => s.id)}
             noDataMessage="Nenhum suspeito encontrado"
-            onDelete={() => { }}
+            onDelete={() => {}}
           />
 
           <GenericTable
@@ -137,12 +149,14 @@ const numberHeadCells: readonly HeadCell<Numbers>[] = [
             onSelectionChange={handleNumbersSelection}
             initialSelected={selectedNumbersContext.map((n) => n.id)}
             noDataMessage="Nenhum número encontrado"
-            onDelete={() => { }}
+            onDelete={() => {}}
           />
 
           <Box sx={{ width: "100%", display: "flex", justifyContent: "end" }}>
             <Button
-              disabled={selectedSuspects.length === 0 && selectedNumbers.length === 0}
+              disabled={
+                selectedSuspects.length === 0 && selectedNumbers.length === 0
+              }
               onClick={onConfirm}
               sx={{
                 bgcolor: "customButton.black",
@@ -162,7 +176,10 @@ const numberHeadCells: readonly HeadCell<Numbers>[] = [
         </>
       )}
 
-      <CreateSuspectModal isOpen={openModal} onClose={() => setOpenModal(false)} />
+      <CreateSuspectModal
+        isOpen={openModal}
+        onClose={() => setOpenModal(false)}
+      />
     </Box>
   );
 };

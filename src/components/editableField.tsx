@@ -11,7 +11,12 @@ interface EditableFieldProps {
   onChange: (newValue: string) => void;
 }
 
-const EditableField = ({ label, placeholder, value, onChange }: EditableFieldProps) => {
+const EditableField = ({
+  label,
+  placeholder,
+  value,
+  onChange,
+}: EditableFieldProps) => {
   const [editing, setEditing] = useState(false);
   const [tempValue, setTempValue] = useState(value);
 
@@ -30,11 +35,7 @@ const EditableField = ({ label, placeholder, value, onChange }: EditableFieldPro
       <Typography variant="subtitle2" fontWeight={600}>
         {label}
       </Typography>
-      <Box 
-        display="flex" 
-        flexDirection="row"
-      sx={{ gap: editing ? 1 : 0 }}
-      >
+      <Box display="flex" flexDirection="row" sx={{ gap: editing ? 1 : 0 }}>
         <TextField
           variant="outlined"
           placeholder={placeholder}

@@ -8,9 +8,16 @@ import userEvent from "@testing-library/user-event";
 import ContainerLogin from "../login/ContainerLogin/ContainerLogin";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
+import { ApplicationProvider } from "../../context/AppContext";
 
 const renderWithRouter = (ui: React.ReactElement) => {
-  return render(ui, { wrapper: MemoryRouter });
+  return render(ui, {
+    wrapper: ({ children }) => (
+      <MemoryRouter>
+        <ApplicationProvider>{children}</ApplicationProvider>
+      </MemoryRouter>
+    ),
+  });
 };
 
 describe("ContainerLogin Component", () => {
@@ -28,7 +35,9 @@ describe("ContainerLogin Component", () => {
     renderWithRouter(<ContainerLogin />);
     const cpfInput = screen.getByPlaceholderText("000.000.000-00");
     await userEvent.type(cpfInput, "12345678901");
-    expect(cpfInput).toHaveValue("123.456.789-01");
+    await waitFor(() => {
+      expect(cpfInput).toHaveValue("123.456.789-01");
+    });
   });
 
   it("Deve salvar o cpf do usuário no localStorage corretamente", async () => {
@@ -50,6 +59,6 @@ describe("ContainerLogin Component", () => {
     const button = screen.getByRole("button", { name: /entrar/i });
 
     await userEvent.click(button);
-    expect(button).toBeEnabled(); 
+    expect(button).toBeEnabled();
   });
 });
