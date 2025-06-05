@@ -1,12 +1,22 @@
-import { useState, useEffect } from "react";
-import { Box, TextField, Typography, Button } from "@mui/material";
+import { useEffect, useState } from "react";
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  CircularProgress,
+} from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
+import CheckIcon from "@mui/icons-material/Check";
+import CloseIcon from "@mui/icons-material/Close";
 
 interface EditableMultilineFieldProps {
   label: string;
   value: string;
   onChange: (newValue: string) => void;
   rows?: number;
+  onConfirm?: () => void;
+  loading?: boolean;
 }
 
 const EditableMultilineField = ({
@@ -14,6 +24,8 @@ const EditableMultilineField = ({
   value,
   onChange,
   rows = 8,
+  onConfirm,
+  loading = false,
 }: EditableMultilineFieldProps) => {
   const [editing, setEditing] = useState(false);
   const [tempValue, setTempValue] = useState(value);
@@ -24,11 +36,17 @@ const EditableMultilineField = ({
     }
   }, [value, editing]);
 
-  const handleEditToggle = () => {
-    if (editing) {
-      onChange(tempValue); // Atualiza o valor ao clicar novamente no lápis
+  const handleConfirm = () => {
+    onChange(tempValue);
+    setEditing(false);
+    if (onConfirm) {
+      onConfirm();
     }
-    setEditing(!editing);
+  };
+
+  const handleCancel = () => {
+    setTempValue(value);
+    setEditing(false);
   };
 
   return (
@@ -45,11 +63,12 @@ const EditableMultilineField = ({
           value={tempValue}
           onChange={(e) => setTempValue(e.target.value)}
           InputProps={{ readOnly: !editing }}
+          disabled={loading}
           sx={{
             "& .MuiOutlinedInput-root": {
               borderRadius: "1rem",
               backgroundColor: "white",
-              paddingRight: "3rem", // espaço para os botões
+              paddingRight: "3rem",
               "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
                 borderColor: "customButton.gold",
               },
@@ -60,12 +79,11 @@ const EditableMultilineField = ({
               paddingRight: "3.5rem",
             },
             "& .MuiOutlinedInput-inputMultiline": {
-              paddingRight: "3.5rem", // ⬅️ AQUI evita que o texto encoste no botão
+              paddingRight: "3.5rem",
             },
           }}
         />
 
-        {/* Botões sobrepostos ao canto direito */}
         <Box
           sx={{
             position: "absolute",
@@ -76,10 +94,49 @@ const EditableMultilineField = ({
             gap: 1,
           }}
         >
-          <Button
-            onClick={handleEditToggle}
-            variant="outlined"
-            sx={{
+          {editing ? (
+            <>
+              <Button
+                onClick={handleConfirm}
+                variant="contained"
+                disabled={loading}
+                sx={{
+                  bgcolor: "customButton.gold",
+                  minWidth: "36px",
+                  padding: 0,
+                  height: "36px",
+                  borderRadius: "0.5rem",
+                  color: "white",
+                }}
+              >
+                {loading ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  <CheckIcon fontSize="small" />
+                )}
+              </Button>
+              <Button
+                onClick={handleCancel}
+                variant="outlined"
+                disabled={loading}
+                sx={{
+                  borderColor: "gray",
+                  color: "gray",
+                  minWidth: "36px",
+                  padding: 0,
+                  height: "36px",
+                  borderRadius: "0.5rem",
+                }}
+              >
+                <CloseIcon fontSize="small" />
+              </Button>
+            </>
+          ) : (
+            <Button
+              onClick={() => setEditing(true)}
+              variant="outlined"
+              disabled={loading}
+              sx={{
                 bgcolor: "customButton.gold",
                 color: "white",
                 minWidth: "36px",
@@ -87,10 +144,15 @@ const EditableMultilineField = ({
                 height: "36px",
                 borderRadius: "0.5rem",
                 borderColor: "transparent",
-            }}
-          >
-            <EditIcon fontSize="small" />
-          </Button>
+              }}
+            >
+              {loading ? (
+                <CircularProgress size={20} color="inherit" />
+              ) : (
+                <EditIcon fontSize="small" />
+              )}
+            </Button>
+          )}
         </Box>
       </Box>
     </Box>

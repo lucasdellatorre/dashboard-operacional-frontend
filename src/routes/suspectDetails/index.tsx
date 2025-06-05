@@ -1,8 +1,9 @@
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Typography";
+import { alpha } from "@mui/material/styles";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import {
-  Button,
+  Alert,
   FormControl,
   InputLabel,
   MenuItem,
@@ -10,6 +11,7 @@ import {
   Skeleton,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
+import Collapse from "@mui/material/Collapse";
 import GenericTable from "../../components/Table/Table";
 import { GenericData, HeadCell } from "../../interface/table/tableInterface";
 import EmailModal from "../../components/modal/createEmailModal";
@@ -19,6 +21,7 @@ import { isValidCPF } from "../../utils/validationUtils";
 import EditableMultilineField from "../../components/editableMultilineField";
 import { useSuspectInfo } from "../../hooks/useSuspectInfo";
 import TelephoneModal from "../../components/modal/createTelephoneModal";
+import { updateSuspectDetails } from "../../controllers/suspectController";
 
 interface Email extends GenericData {
   email: string;
@@ -48,6 +51,15 @@ const SuspectsDetails = () => {
     Number(window.location.pathname.split("/").pop())
   );
 
+  // Estado para controlar o loading individual de cada campo
+  const [loadingFields, setLoadingFields] = useState({
+    nickname: false,
+    name: false,
+    cpf: false,
+    notes: false,
+    relevante: false,
+  });
+  
   const [nickname, setNickname] = useState("");
   const [name, setName] = useState("");
   const [cpf, setCpf] = useState("");
@@ -55,6 +67,20 @@ const SuspectsDetails = () => {
   const [notes, setNotes] = useState("");
   const [relevante, setRelevante] = useState<boolean>(false);
   const [isModified, setIsModified] = useState(false);
+  const [alert, setAlert] = useState({
+    show: false,
+    message: "",
+    type: "info" as "error" | "warning" | "info" | "success",
+  });
+  
+  useEffect(() => {
+    if (alert.show) {
+      const timer = setTimeout(() => {
+        setAlert({ ...alert, show: false });
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [alert]);
 
   useEffect(() => {
     if (suspect) {
@@ -65,6 +91,44 @@ const SuspectsDetails = () => {
       setRelevante(suspect.relevante);
     }
   }, [suspect]);
+
+  async function updateField(field: string, value: string | boolean) {
+    setLoadingFields(prev => ({ ...prev, [field]: true }));
+  
+    const fieldMapping: Record<string, string> = {
+      nickname: 'apelido',
+      name: 'nome',
+      cpf: 'cpf',
+      notes: 'anotacoes',
+      relevante: 'relevante'
+    };
+    
+    const values = {
+      [fieldMapping[field]]: value || null
+    };
+    
+    const { isSuccess, errorMessage } = await updateSuspectDetails(
+      suspect?.id.toString() || "",
+      values
+    );
+  
+    setLoadingFields(prev => ({ ...prev, [field]: false }));
+    
+    if (isSuccess) {
+      setAlert({
+        show: true,
+        type: "success",
+        message: "Campo atualizado com sucesso!",
+      });
+    } else {
+    
+      setAlert({
+        show: true,
+        type: "error",
+        message: errorMessage || "Erro ao atualizar o campo.",
+      });
+    }
+  }
 
   const handleNicknameChange = (newValue: string) => {
     setNickname(newValue);
@@ -89,8 +153,10 @@ const SuspectsDetails = () => {
   };
 
   const handleRelevanteChange = (value: string) => {
-    setRelevante(value === "sim");
+    const newValue = value === "sim";
+    setRelevante(newValue);
     setIsModified(true);
+    updateField("relevante", newValue);
   };
 
   const EmailHeaderCells: readonly HeadCell<Email>[] = [
@@ -141,6 +207,32 @@ const SuspectsDetails = () => {
         onClose={() => setOpenEmailModal(false)}
         onSubmit={criarEditarEmail}
       />
+      <Collapse in={alert.show} sx={{ bgcolor: "customBackground.secondary" }}>
+        <Alert
+          severity={alert.type}
+          onClose={() => setAlert({ ...alert, show: false })}
+          sx={{
+            mb: 2,
+            borderRadius: 2,
+            boxShadow: 3,
+            fontWeight: 500,
+            backgroundColor: (theme) =>
+              alert.type === "success"
+                ? alpha(theme.palette.success.light, 0.2)
+                : alert.type === "error"
+                ? alpha(theme.palette.error.light, 0.2)
+                : alpha(theme.palette.info.light, 0.2),
+            color: (theme) =>
+              alert.type === "success"
+                ? theme.palette.success.dark
+                : alert.type === "error"
+                ? theme.palette.error.dark
+                : theme.palette.info.dark,
+          }}
+        >
+          {alert.message}
+        </Alert>
+      </Collapse>
       <Box
         bgcolor="customBackground.secondary"
         sx={{
@@ -176,25 +268,6 @@ const SuspectsDetails = () => {
             Voltar
           </Typography>
 
-          <Button
-            size="small"
-            variant="contained"
-            sx={{
-              width: "5.5rem",
-              bgcolor: "customButton.gold",
-              color: "white",
-              mb: 1,
-              fontSize: "1rem",
-              fontFamily: "Inter, sans-serif",
-              fontWeight: 700,
-              textTransform: "none",
-              justifyContent: "center",
-            }}
-            onClick={() => {}} // PASSAR UMA REQUISIÇÃO PUT CONTENDO APENAS OS DADOS ALTERADOS
-            disabled={!isModified}
-          >
-            Salvar
-          </Button>
         </Box>
 
         <Typography
@@ -212,7 +285,7 @@ const SuspectsDetails = () => {
           </Typography>
         )}
 
-        {!error && (
+{!error && (
           <>
             <Box display="flex" flexDirection="row" gap={10} flexWrap="wrap">
               <Box
@@ -233,16 +306,23 @@ const SuspectsDetails = () => {
                       label="Apelido"
                       value={nickname}
                       onChange={handleNicknameChange}
+                      onConfirm={() => updateField("nickname", nickname)}
+                      loading={loadingFields.nickname}
                     />
                     <EditableField
                       label="Nome"
                       value={name}
                       onChange={handleNameChange}
+                      onConfirm={() => updateField("name", name)}
+                      loading={loadingFields.name}
                     />
                     <EditableField
                       label="CPF"
                       value={cpf}
                       onChange={handleCpfChange}
+                      onConfirm={() => !cpfError && updateField("cpf", cpf)}
+                      loading={loadingFields.cpf}
+                      disabled={!!cpfError}
                     />
                     {cpfError && (
                       <Typography fontSize="0.875rem" color="error">
@@ -252,7 +332,6 @@ const SuspectsDetails = () => {
                   </>
                 )}
               </Box>
-
               {loading ? (
                 <Skeleton height={160} width="100%" />
               ) : (
@@ -260,6 +339,8 @@ const SuspectsDetails = () => {
                   label="Anotações"
                   value={notes}
                   onChange={handleNotesChange}
+                  onConfirm={() => updateField("notes", notes)}
+                  loading={loadingFields.notes}
                 />
               )}
             </Box>
@@ -306,10 +387,47 @@ const SuspectsDetails = () => {
                     },
                   }}
                 >
-                  <MenuItem value="sim">Sim</MenuItem>
-                  <MenuItem value="nao">Não</MenuItem>
+                  <MenuItem
+                    value="sim"
+                    sx={{
+                      "&.Mui-selected": {
+                        backgroundColor: (theme) =>
+                          alpha(theme.palette.customButton.gold, 0.4),
+                        color: "black",
+                      },
+                      "&.Mui-selected:hover": {
+                        backgroundColor: (theme) =>
+                          alpha(theme.palette.customButton.gold, 0.5),
+                      },
+                    }}
+                  >
+                    Sim
+                  </MenuItem>
+
+                  <MenuItem
+                    value="nao"
+                    sx={{
+                      "&.Mui-selected": {
+                        backgroundColor: (theme) =>
+                          alpha(theme.palette.customButton.gold, 0.4),
+                        color: "black",
+                      },
+                      "&.Mui-selected:hover": {
+                        backgroundColor: (theme) =>
+                          alpha(theme.palette.customButton.gold, 0.5),
+                      },
+                    }}
+                  >
+                    Não
+                  </MenuItem>
                 </Select>
               </FormControl>
+            )}
+            {!loading && (
+              <p style={{ fontSize: "0.775rem", color: "#666" }}>
+                *Para editar os inputs, clique no botão de lapis e após terminar
+                de editar clique novamente no lapis para desabilitar a edição
+              </p>
             )}
 
             {!loading && suspect && (
