@@ -1,8 +1,9 @@
 import { Box, MenuItem, TextField, Typography } from "@mui/material";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import WebChart from "../../components/dashboard/WebChart/WebChart";
 import MultiSelect from "../../components/multiSelect";
 import dayjs from "dayjs";
+import { getIpMessageCounts } from "../../controllers/webIpsController";
 
 const menuItemStyles = {
   padding: "4px 16px",
@@ -50,194 +51,7 @@ const focusedTextFieldStyles = {
   },
 };
 
-const mockData = {
-  nodes: [
-    // IPs - Grupo 1 (Azul Claro) - Turno da Manhã
-    { id: "192.168.1.100", group: 1 },
-    { id: "192.168.1.101", group: 1 },
-    { id: "192.168.1.102", group: 1 },
-    { id: "192.168.1.103", group: 1 },
-
-    // IPs - Grupo 2 (Verde Claro) - Turno da Tarde
-    { id: "10.0.0.50", group: 2 },
-    { id: "10.0.0.51", group: 2 },
-    { id: "10.0.0.52", group: 2 },
-    { id: "10.0.0.53", group: 2 },
-
-    // IPs - Grupo 3 (Roxo Claro) - Turno da Noite
-    { id: "172.16.0.25", group: 3 },
-    { id: "172.16.0.26", group: 3 },
-    { id: "172.16.0.27", group: 3 },
-    { id: "172.16.0.28", group: 3 },
-
-    // Alvos (Grupo 4 - Vermelho) - Destaque
-    { id: "Alvo 1", group: 4 },
-    { id: "Alvo 2", group: 4 },
-    { id: "Alvo 3", group: 4 },
-    { id: "Alvo 4", group: 4 },
-    { id: "Alvo 5", group: 4 },
-    { id: "Alvo 6", group: 4 },
-  ],
-  links: [
-    // Exemplo de datas fictícias para cada link
-    {
-      source: "192.168.1.100",
-      target: "Alvo 1",
-      value: 450,
-      date: "2024-06-01",
-    },
-    {
-      source: "192.168.1.100",
-      target: "Alvo 2",
-      value: 320,
-      date: "2024-06-02",
-    },
-    {
-      source: "192.168.1.101",
-      target: "Alvo 2",
-      value: 390,
-      date: "2024-06-03",
-    },
-    {
-      source: "192.168.1.102",
-      target: "Alvo 3",
-      value: 280,
-      date: "2024-06-04",
-    },
-    {
-      source: "192.168.1.103",
-      target: "Alvo 4",
-      value: 510,
-      date: "2024-06-05",
-    },
-    {
-      source: "192.168.1.100",
-      target: "Alvo 5",
-      value: 420,
-      date: "2024-06-06",
-    },
-    { source: "10.0.0.50", target: "Alvo 1", value: 290, date: "2024-06-01" },
-    { source: "10.0.0.51", target: "Alvo 3", value: 280, date: "2024-06-02" },
-    { source: "10.0.0.52", target: "Alvo 4", value: 510, date: "2024-06-03" },
-    { source: "10.0.0.53", target: "Alvo 6", value: 380, date: "2024-06-04" },
-    { source: "10.0.0.50", target: "Alvo 2", value: 290, date: "2024-06-05" },
-    { source: "172.16.0.25", target: "Alvo 3", value: 220, date: "2024-06-06" },
-    { source: "172.16.0.26", target: "Alvo 4", value: 310, date: "2024-06-01" },
-    { source: "172.16.0.27", target: "Alvo 1", value: 180, date: "2024-06-02" },
-    { source: "172.16.0.28", target: "Alvo 5", value: 420, date: "2024-06-03" },
-    { source: "172.16.0.25", target: "Alvo 6", value: 390, date: "2024-06-04" },
-    {
-      source: "192.168.1.100",
-      target: "192.168.1.101",
-      value: 150,
-      date: "2024-06-05",
-    },
-    {
-      source: "192.168.1.101",
-      target: "192.168.1.102",
-      value: 200,
-      date: "2024-06-06",
-    },
-    {
-      source: "192.168.1.102",
-      target: "192.168.1.103",
-      value: 180,
-      date: "2024-06-01",
-    },
-    {
-      source: "10.0.0.50",
-      target: "10.0.0.51",
-      value: 200,
-      date: "2024-06-02",
-    },
-    {
-      source: "10.0.0.51",
-      target: "10.0.0.52",
-      value: 190,
-      date: "2024-06-03",
-    },
-    {
-      source: "10.0.0.52",
-      target: "10.0.0.53",
-      value: 170,
-      date: "2024-06-04",
-    },
-    {
-      source: "172.16.0.25",
-      target: "172.16.0.26",
-      value: 180,
-      date: "2024-06-05",
-    },
-    {
-      source: "172.16.0.26",
-      target: "172.16.0.27",
-      value: 190,
-      date: "2024-06-06",
-    },
-    {
-      source: "172.16.0.27",
-      target: "172.16.0.28",
-      value: 200,
-      date: "2024-06-01",
-    },
-    {
-      source: "192.168.1.100",
-      target: "10.0.0.50",
-      value: 420,
-      date: "2024-06-02",
-    },
-    {
-      source: "10.0.0.51",
-      target: "172.16.0.25",
-      value: 290,
-      date: "2024-06-03",
-    },
-    {
-      source: "172.16.0.26",
-      target: "192.168.1.101",
-      value: 310,
-      date: "2024-06-04",
-    },
-    {
-      source: "192.168.1.102",
-      target: "10.0.0.52",
-      value: 380,
-      date: "2024-06-05",
-    },
-    {
-      source: "10.0.0.53",
-      target: "172.16.0.27",
-      value: 290,
-      date: "2024-06-06",
-    },
-    {
-      source: "172.16.0.28",
-      target: "192.168.1.103",
-      value: 310,
-      date: "2024-06-01",
-    },
-    {
-      source: "192.168.1.101",
-      target: "Alvo 1",
-      value: 380,
-      date: "2024-06-02",
-    },
-    { source: "10.0.0.50", target: "Alvo 3", value: 290, date: "2024-06-03" },
-    { source: "172.16.0.25", target: "Alvo 2", value: 310, date: "2024-06-04" },
-    {
-      source: "192.168.1.102",
-      target: "Alvo 5",
-      value: 320,
-      date: "2024-06-05",
-    },
-    { source: "10.0.0.51", target: "Alvo 4", value: 350, date: "2024-06-06" },
-    { source: "172.16.0.26", target: "Alvo 6", value: 270, date: "2024-06-01" },
-  ],
-};
-
-const options = mockData.nodes
-  .filter((x) => x.group === 1)
-  .map((node) => node.id);
+const options = ["1", "2"]; // Substituindo mockData.nodes por opções fixas
 
 const NetworkWebRoute: React.FC = () => {
   const [selectedType, setSelectedType] = useState("IP");
@@ -246,11 +60,32 @@ const NetworkWebRoute: React.FC = () => {
   const [selectedSimmetry, setSelectedSimmetry] = useState("Ambos");
   const [dateInitial, setDateInitial] = useState("");
   const [dateFinal, setDateFinal] = useState("");
+  const [graphData, setGraphData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (selectedOptions.length > 0) {
+      setLoading(true);
+      setError(null);
+      getIpMessageCounts(selectedOptions)
+        .then((data) => {
+          setGraphData(data);
+        })
+        .catch((err) => {
+          setError("Erro ao buscar dados do gráfico");
+          setGraphData(null);
+        })
+        .finally(() => setLoading(false));
+    } else {
+      setGraphData(null);
+    }
+  }, [selectedOptions]);
 
   // Filtragem dos nós e links
   const filteredData = useMemo(() => {
-    let nodes = mockData.nodes;
-    let links = mockData.links;
+    let nodes: any[] = [];
+    let links: any[] = [];
 
     // Filtro por datas
     if (dateInitial || dateFinal) {
@@ -563,7 +398,13 @@ const NetworkWebRoute: React.FC = () => {
           justifyContent="center"
           alignItems="center"
         >
-          <WebChart data={filteredData} />
+          {loading ? (
+            <Typography color="white">Carregando...</Typography>
+          ) : error ? (
+            <Typography color="red">{error}</Typography>
+          ) : (
+            <WebChart data={graphData || { nodes: [], links: [] }} />
+          )}
         </Box>
       </Box>
     </Box>
