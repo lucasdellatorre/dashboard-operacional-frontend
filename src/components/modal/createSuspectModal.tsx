@@ -6,16 +6,13 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import MultiSelect from "../multiSelect";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CloseIcon from "@mui/icons-material/Close";
 import { z } from "zod";
 import { isValidCPF } from "../../utils/validationUtils";
-
-//Mocked Data
-const suspectNumbers = ["(54) 997088840", "(51) 98394938", "(51) 98494937", "(51) 98494936", "(51) 98494935", "(51) 98494934", "(51) 98494933"];
 
 const formatCPF = (value: string): string => {
   const numericValue = value.replace(/\D/g, "");
@@ -32,43 +29,48 @@ const addSuspectModalSchema = z.object({
     })
     .min(1, "Apelido do suspeito não pode estar vazio"),
 
-  suspectNumbers: z
-    .array(z.string())
-    .min(1, "Deve fornecer pelo menos um número")
-    .nonempty("Lista de números não pode estar vazia"),
+  suspectsNumbers: z.array(z.string()).optional(),
 
   suspectCPF: z
     .string()
     .optional()
-    .refine((cpf) => {
-      const onlyDigits = cpf?.replace(/\D/g, "") || "";
-      return onlyDigits.length == 11;
-    }, {
-      message: "CPF deve ter 11 dígitos",
-    })
-    .refine((cpf) => {
-      const cleaned = cpf?.replace(/\D/g, "") || "";
-      return !cpf || isValidCPF(cleaned);
-    }, {
-      message: "CPF inválido",
-    }),
+    .refine(
+      (cpf) => {
+        const onlyDigits = cpf?.replace(/\D/g, "") || "";
+        return onlyDigits.length == 11;
+      },
+      {
+        message: "CPF deve ter 11 dígitos",
+      }
+    )
+    .refine(
+      (cpf) => {
+        const cleaned = cpf?.replace(/\D/g, "") || "";
+        return !cpf || isValidCPF(cleaned);
+      },
+      {
+        message: "CPF inválido",
+      }
+    ),
 
   suspectName: z.string().optional(),
-}).refine((data) => {
-  const { suspectNumbers } = data;
-  return suspectNumbers.length > 0;
-
 });
 
 interface CreateSuspectModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onCreateSuspect: (data: addSuspectlSchemaType) => Promise<any>;
+  suspectsNumbers: { id: string; label: string }[];
 }
 
 type addSuspectlSchemaType = z.infer<typeof addSuspectModalSchema>;
 
-const CreateSuspectModal: React.FC<CreateSuspectModalProps> = ({ isOpen, onClose }) => {
-
+const CreateSuspectModal: React.FC<CreateSuspectModalProps> = ({
+  onCreateSuspect,
+  isOpen,
+  onClose,
+  suspectsNumbers,
+}) => {
   const {
     control,
     handleSubmit,
@@ -79,7 +81,7 @@ const CreateSuspectModal: React.FC<CreateSuspectModalProps> = ({ isOpen, onClose
     resolver: zodResolver(addSuspectModalSchema),
     defaultValues: {
       suspectName: "",
-      suspectNumbers: [],
+      suspectsNumbers: [],
     },
   });
 
@@ -87,10 +89,31 @@ const CreateSuspectModal: React.FC<CreateSuspectModalProps> = ({ isOpen, onClose
     if (isOpen) {
       reset({
         suspectName: "",
-        suspectNumbers: [],
+        suspectsNumbers: [],
       });
     }
   }, [isOpen, reset]);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const onSubmit = async (data: addSuspectlSchemaType) => {
+    setIsSubmitting(true);
+    if (!data.suspectsNumbers || data.suspectsNumbers.length === 0) {
+      setSubmitError("Selecione pelo menos um número.");
+      return;
+    }
+
+    const error = await onCreateSuspect(data);
+
+    if (error) {
+      setSubmitError(error);
+      return;
+    }
+
+    reset();
+    onClose();
+  };
 
   return (
     <Dialog
@@ -184,7 +207,7 @@ const CreateSuspectModal: React.FC<CreateSuspectModalProps> = ({ isOpen, onClose
                 {typeof errors.suspectNickname === "string"
                   ? errors.suspectNickname
                   : errors.suspectNickname.message ||
-                  "Apelido do suspeito é obrigatório"}
+                    "Apelido do suspeito é obrigatório"}
               </Typography>
             )}
           </Box>
@@ -243,22 +266,22 @@ const CreateSuspectModal: React.FC<CreateSuspectModalProps> = ({ isOpen, onClose
           </Typography>
           <Controller
             control={control}
-            name={"suspectNumbers"}
+            name={"suspectsNumbers"}
             render={({ field }) => (
               <MultiSelect
                 style="white"
                 placeholder="Selecione os números"
                 height="3.5rem"
-                options={suspectNumbers}
-                selectedOptions={field.value}
+                options={suspectsNumbers}
+                selectedOptions={field.value ?? []}
                 onChange={field.onChange}
               />
             )}
           />
           <Box>
-            {errors.suspectNumbers && (
+            {errors.suspectsNumbers && (
               <Typography color="error" variant="caption">
-                {errors.suspectNumbers.message}
+                {errors.suspectsNumbers.message}
               </Typography>
             )}
           </Box>
@@ -270,9 +293,7 @@ const CreateSuspectModal: React.FC<CreateSuspectModalProps> = ({ isOpen, onClose
           flexDirection="column"
           gap="0.3rem"
         >
-          <Typography
-            sx={{ fontWeight: "600", fontSize: "1rem" }}
-          >
+          <Typography sx={{ fontWeight: "600", fontSize: "1rem" }}>
             CPF do Suspeito
           </Typography>
           <Controller
@@ -285,8 +306,7 @@ const CreateSuspectModal: React.FC<CreateSuspectModalProps> = ({ isOpen, onClose
                 onChange={(value) => {
                   const formattedValue = formatCPF(value.target.value);
                   field.onChange(formattedValue);
-                }
-                }
+                }}
                 onBlur={field.onBlur}
                 placeholder="Digite o CPF do suspeito"
                 variant="outlined"
@@ -322,11 +342,8 @@ const CreateSuspectModal: React.FC<CreateSuspectModalProps> = ({ isOpen, onClose
 
         <Button
           type="submit"
-          onClick={handleSubmit((data) => {
-            console.log(data);
-            reset();
-            onClose();
-          })}
+          onClick={handleSubmit(onSubmit)}
+          disabled={isSubmitting}
           sx={{
             bgcolor: "customButton.gold",
             color: "customText.white",
@@ -335,8 +352,15 @@ const CreateSuspectModal: React.FC<CreateSuspectModalProps> = ({ isOpen, onClose
             width: "100%",
           }}
         >
-          Criar alvo
+          {isSubmitting ? "Criando..." : "Criar alvo"}{" "}
         </Button>
+        <Box>
+          {submitError && (
+            <Typography color="error" variant="caption">
+              {submitError}
+            </Typography>
+          )}
+        </Box>
       </Box>
     </Dialog>
   );

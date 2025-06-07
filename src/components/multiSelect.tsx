@@ -11,9 +11,14 @@ import CloseIcon from "@mui/icons-material/Close";
 
 type Style = "white" | "gray";
 
+interface Option {
+  id: string;
+  label: string;
+}
+
 interface MultiSelectProps {
-  options: string[];
-  selectedOptions: string[];
+  options: Option[];
+  selectedOptions: string[]; // Apenas os IDs selecionados
   onChange: (selected: string[]) => void;
   height?: string;
   placeholder: string;
@@ -28,23 +33,27 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   height = "auto",
   placeholder,
 }) => {
+  const selectedObjects = options.filter((opt) => selectedOptions.includes(opt.id));
+
   return (
     <Box sx={{ width: "100%" }}>
       <Autocomplete
         multiple
         disableCloseOnSelect
         options={options}
-        value={selectedOptions}
-        onChange={(_, value) => onChange(value)}
-        renderTags={(value: readonly string[], getTagProps) =>
-          value.map((option: string, index: number) => (
+        value={selectedObjects}
+        onChange={(_, value) => onChange(value.map((v) => v.id))}
+        getOptionLabel={(option) => option.label}
+        isOptionEqualToValue={(option, value) => option.id === value.id}
+        renderTags={(value, getTagProps) =>
+          value.map((option, index) => (
             <Chip
-              label={option}
+              label={option.label}
               {...getTagProps({ index })}
               size="small"
               sx={{
-                backgroundColor: style == "white" ? "white" : "#F1F1F1",
-                color: style == "white" ? "black" : "customText.black",
+                backgroundColor: style === "white" ? "white" : "#F1F1F1",
+                color: style === "white" ? "black" : "customText.black",
                 fontWeight: 500,
                 fontFamily: "Inter",
                 border: "1px solid #c8c8c8",
@@ -55,7 +64,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                 <CloseIcon
                   sx={{
                     fontSize: 20,
-                    color: "white",
+                    color: style === "white" ? "black" : "white",
                     borderRadius: "50%",
                     padding: "2px",
                   }}
@@ -78,10 +87,8 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
               }}
             />
             <ListItemText
-              primary={option}
-              primaryTypographyProps={{
-                sx: { fontSize: "0.875rem" },
-              }}
+              primary={option.label}
+              primaryTypographyProps={{ sx: { fontSize: "0.875rem" } }}
             />
           </li>
         )}
