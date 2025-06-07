@@ -16,11 +16,9 @@ const UploadAreaInput: React.FC<UploadAreaInputProps> = ({
       const selectedFile = e.target.files[0];
       if (onFileSelect(selectedFile)) {        
         setFileName(selectedFile.name);
-        console.log(selectedFile);
       }
       else {
         setFileName(null);
-        console.error("Invalid file selected.");
       }
     }
   };
