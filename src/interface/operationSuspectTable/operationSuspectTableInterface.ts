@@ -1,6 +1,6 @@
 export interface GenericData {
   id: number;
-  [key: string]: string | number | string[];
+  [key: string]: string | number | string[] | number[] | undefined;
 }
 
 export interface HeadCell<T extends GenericData> {

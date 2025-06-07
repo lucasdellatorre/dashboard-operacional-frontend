@@ -1,4 +1,3 @@
-import axios from 'axios';
 import endpoints from '../constants/endpoints';
 import { api } from '../server/service';
 
@@ -11,6 +10,13 @@ export interface SheetResponse {
   }>;
 }
 
+export interface PendingJob {
+  job_id: string;
+  nome: string;
+  size: number;
+  data_upload?: string;
+}
+
 export interface SheetUploadRequest {
   file: File;
   operacaoId: string;
@@ -18,51 +24,46 @@ export interface SheetUploadRequest {
 
 class SheetController {
   async getAllSheets(): Promise<SheetResponse> {
+    const response = await api.get<SheetResponse>(endpoints.SHEETS.getAll);
+    return response.data;
+  }
+
+  async getPendingJobs(): Promise<PendingJob[]> {
     try {
-      const response = await api.get<SheetResponse>(endpoints.SHEETS.getAll);
+      const response = await api.get<PendingJob[]>(endpoints.SHEETS.getPendingJobs);
       return response.data;
     } catch (error) {
-      console.error('Error fetching sheets:', error);
-      throw error;
+      console.error("Erro ao buscar jobs pendentes:", error);
+      return [];
     }
   }
 
-  async uploadSheet(request: SheetUploadRequest): Promise<{ Message: string }> {
-    try {
-      const formData = new FormData();
-      formData.append('file', request.file);
-      formData.append('operacaoId', request.operacaoId);
+  async uploadSheet(request: SheetUploadRequest): Promise<{ job_id: string }> {
+    const formData = new FormData();
+    formData.append('file', request.file);
+    formData.append('operacaoId', request.operacaoId);
 
-      console.log('Request details:', {
-        file: request.file,
-        operacaoId: request.operacaoId,
-        formData: Object.fromEntries(formData.entries())
-      });
-
-      const response = await api.post<{ Message: string }>(
-        endpoints.SHEETS.upload,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
-      return response.data;
-    } catch (error) {
-      console.error('Error uploading sheet:', error);
-      if (axios.isAxiosError(error)) {
-        console.error('Request details:', {
-          url: error.config?.url,
-          method: error.config?.method,
-          headers: error.config?.headers,
-          data: error.config?.data
-        });
-        console.error('Response data:', error.response?.data);
+    const response = await api.post<{ job_id: string }>(
+      endpoints.SHEETS.upload,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       }
-      throw error;
-    }
+    );
+    return response.data;
   }
-}
+  async getUploadProgress(jobId: string): Promise<{
+    status: string;
+    progress: number;
+    erro: boolean;
+    mensagem: string | null;
+  }> {
+    const response = await api.get(endpoints.SHEETS.getProgress + `/${jobId}`);
+    return response.data;
+  }
 
+
+}
 export const sheetController = new SheetController();

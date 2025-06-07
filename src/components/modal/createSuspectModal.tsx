@@ -322,8 +322,7 @@ const CreateSuspectModal: React.FC<CreateSuspectModalProps> = ({ isOpen, onClose
 
         <Button
           type="submit"
-          onClick={handleSubmit((data) => {
-            console.log(data);
+          onClick={handleSubmit(() => {
             reset();
             onClose();
           })}

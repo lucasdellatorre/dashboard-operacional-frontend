@@ -19,6 +19,8 @@ const endpoints = {
   SHEETS: {
     getAll: 'api/planilha',
     upload: 'api/interceptacao/upload',
+    getProgress: 'api/upload/progresso',
+    getPendingJobs: 'api/upload/progresso'
   },
 };
 

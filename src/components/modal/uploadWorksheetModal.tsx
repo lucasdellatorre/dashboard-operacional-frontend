@@ -6,7 +6,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CloseIcon from "@mui/icons-material/Close";
@@ -103,6 +103,10 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
     reset();
     onUploadSuccess(data.uploadFile, data.operations[0]);
   }
+
+  useEffect(() => {
+    setSubmitError(null)
+  }, [isOpen]);
 
   return (
     <Dialog
