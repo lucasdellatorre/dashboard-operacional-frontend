@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { normalizeString } from "../utils/formatUtils";
 import { api } from "../server/service";
 import { GenericData } from "../interface/table/tableInterface";
@@ -16,6 +16,13 @@ export interface SuspectDTO {
   numeros: string[];
   data_criacao: string;
 }
+
+type CreateSuspectDTO = {
+  apelido: string;
+  cpf: string;
+  nome: string;
+  numeros_ids: number[];
+};
 
 export interface NumbersDTO {
   id: number;
@@ -39,7 +46,7 @@ export interface Numbers extends GenericData {
 
 interface SuspectList {
   suspeitos: SuspectDTO[];
-  numeros: NumbersDTO[]; 
+  numeros: NumbersDTO[];
 }
 
 interface UseSuspectsProps {
@@ -52,12 +59,44 @@ export const useSuspects = ({ searchTerm, operationIds }: UseSuspectsProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Requisição de dados da API
-  useEffect(() => {
+  const createSuspect = useCallback(
+    async (
+      suspect: CreateSuspectDTO,
+      userCpf: string
+    ): Promise<CreateSuspectDTO> => {
+      try {
+        const response = await api.post<CreateSuspectDTO>(
+          "/api/suspeito",
+          suspect,
+          {
+            headers: {
+              cpfUsuario: userCpf,
+            },
+          }
+        );
+        return response.data;
+      } catch (err: any) {
+        console.error("Erro ao criar suspeito:", err);
+
+        const message =
+          err.response?.data?.message ||
+          err.response?.data?.detail || // caso use FastAPI ou algo similar
+          err.message ||
+          "Erro ao criar suspeito";
+
+        throw new Error(message);
+      }
+    },
+    []
+  );
+
+  const fetchSuspects = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     const url = `/api/numeros/operacao/${operationIds.join(",")}`;
+    console.log("fetching:", url);
+
     api
       .get<SuspectList>(url)
       .then(({ data }) => setData(data))
@@ -66,6 +105,11 @@ export const useSuspects = ({ searchTerm, operationIds }: UseSuspectsProps) => {
         setError("Não foi possível carregar os alvos.");
       })
       .finally(() => setLoading(false));
+  }, [operationIds]);
+
+  // Requisição de dados da APID
+  useEffect(() => {
+    fetchSuspects();
   }, [operationIds]);
 
   // Filtro e transformação para exibição na tabela
@@ -112,6 +156,8 @@ export const useSuspects = ({ searchTerm, operationIds }: UseSuspectsProps) => {
   }, [searchTerm, data.numeros]);
 
   return {
+    fetchSuspects,
+    createSuspect,
     suspects,
     numbers,
     loading,

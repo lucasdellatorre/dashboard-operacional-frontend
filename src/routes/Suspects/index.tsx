@@ -1,12 +1,13 @@
 import { Box, Button, Typography, CircularProgress } from "@mui/material";
 import React, { useCallback, useContext, useMemo, useState } from "react";
 import GenericTable from "../../components/Table/Table";
-import { useNavigate } from "react-router-dom";
+import { data, useNavigate } from "react-router-dom";
 import { useHeaderInput } from "../../hooks/useHeaderInput";
 import { HeadCell } from "../../interface/table/tableInterface";
 import { useSuspects, Suspect, Numbers } from "../../hooks/useSuspects";
 import CreateSuspectModal from "../../components/modal/createSuspectModal";
 import { AppContext } from "../../context/AppContext";
+import { useSuspectNumbers } from "../../hooks/useSuspectsNumbers";
 
 const Suspects: React.FC = () => {
   const navigate = useNavigate();
@@ -18,8 +19,10 @@ const Suspects: React.FC = () => {
     setSuspects,
     setNumbers,
     operations,
+    cpf,
   } = useContext(AppContext);
 
+  const { suspectsNumbers } = useSuspectNumbers();
   const [selectedSuspects, setSelectedSuspects] = useState<Suspect[]>(
     selectedSuspectsContext
   );
@@ -32,10 +35,11 @@ const Suspects: React.FC = () => {
     [operations]
   );
 
-  const { suspects, numbers, loading, error } = useSuspects({
-    searchTerm: headerInputValue,
-    operationIds,
-  });
+  const { suspects, numbers, loading, error, createSuspect, fetchSuspects } =
+    useSuspects({
+      searchTerm: headerInputValue,
+      operationIds,
+    });
 
   const suspectHeadCells: readonly HeadCell<Suspect>[] = [
     { id: "apelido", label: "Nome/Apelido" },
@@ -177,8 +181,32 @@ const Suspects: React.FC = () => {
       )}
 
       <CreateSuspectModal
+        suspectsNumbers={suspectsNumbers}
         isOpen={openModal}
         onClose={() => setOpenModal(false)}
+        onCreateSuspect={async (suspectData) => {
+          try {
+            const cleanUserCpf = cpf.replace(/\D/g, "");
+            const cleanSusCpf = (suspectData.suspectCPF ?? "").replace(
+              /\D/g,
+              ""
+            );
+
+            const createSuspectDTO = {
+              apelido: suspectData.suspectNickname,
+              cpf: cleanSusCpf,
+              nome: suspectData.suspectName ?? "",
+              numeros_ids: (suspectData.suspectsNumbers ?? []).map(Number),
+            };
+
+            await createSuspect(createSuspectDTO, cleanUserCpf);
+            fetchSuspects();
+            return null; // sucesso
+          } catch (err: any) {
+            console.error("Erro ao criar suspeito:", err);
+            return err.message || "Erro desconhecido";
+          }
+        }}
       />
     </Box>
   );
