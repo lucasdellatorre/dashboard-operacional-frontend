@@ -1,7 +1,7 @@
 import { Box, Button, Typography, CircularProgress } from "@mui/material";
 import React, { useCallback, useContext, useMemo, useState } from "react";
 import GenericTable from "../../components/Table/Table";
-import { data, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useHeaderInput } from "../../hooks/useHeaderInput";
 import { HeadCell } from "../../interface/table/tableInterface";
 import { useSuspects, Suspect, Numbers } from "../../hooks/useSuspects";
@@ -154,6 +154,7 @@ const Suspects: React.FC = () => {
             initialSelected={selectedNumbersContext.map((n) => n.id)}
             noDataMessage="Nenhum número encontrado"
             onDelete={() => {}}
+            showDeleteButton={false}
           />
 
           <Box sx={{ width: "100%", display: "flex", justifyContent: "end" }}>
@@ -201,10 +202,9 @@ const Suspects: React.FC = () => {
 
             await createSuspect(createSuspectDTO, cleanUserCpf);
             fetchSuspects();
-            return null; // sucesso
-          } catch (err: any) {
+            return null;
+          } catch (err) {
             console.error("Erro ao criar suspeito:", err);
-            return err.message || "Erro desconhecido";
           }
         }}
       />
