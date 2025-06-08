@@ -1,5 +1,11 @@
-import { useState } from "react";
-import { Box, Button, TextField, Typography } from "@mui/material";
+import { useEffect, useState } from "react";
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  CircularProgress,
+} from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
@@ -9,6 +15,9 @@ interface EditableFieldProps {
   placeholder?: string;
   value: string;
   onChange: (newValue: string) => void;
+  onConfirm?: (newValue: string) => void;
+  loading?: boolean;
+  disabled?: boolean;
 }
 
 const EditableField = ({
@@ -16,13 +25,25 @@ const EditableField = ({
   placeholder,
   value,
   onChange,
+  onConfirm,
+  loading = false,
+  disabled = false,
 }: EditableFieldProps) => {
   const [editing, setEditing] = useState(false);
   const [tempValue, setTempValue] = useState(value);
 
+  useEffect(() => {
+    if (!editing) {
+      setTempValue(value);
+    }
+  }, [value, editing]);
+
   const handleConfirm = () => {
     onChange(tempValue);
     setEditing(false);
+    if (onConfirm) {
+      onConfirm(tempValue);
+    }
   };
 
   const handleCancel = () => {
@@ -42,13 +63,18 @@ const EditableField = ({
           value={editing ? tempValue : value}
           onChange={(e) => setTempValue(e.target.value)}
           InputProps={{ readOnly: !editing }}
+          disabled={loading || disabled}
           sx={{
             width: "100%",
+            "&:hover .MuiOutlinedInput-notchedOutline": {
+              borderColor: "#bfbfbf",
+            },
             "& .MuiOutlinedInput-root": {
               borderRadius: editing ? "0.313rem" : "0.313rem 0 0 0.313rem",
               backgroundColor: "white",
               "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: "customButton.gold",
+                borderColor: editing ? "customButton.gold" : "#bfbfbf",
+                borderWidth: "1px",
               },
             },
             "& .MuiOutlinedInput-input": {
@@ -66,6 +92,7 @@ const EditableField = ({
             <Button
               variant="contained"
               onClick={handleConfirm}
+              disabled={loading || disabled}
               sx={{
                 bgcolor: "customButton.gold",
                 color: "white",
@@ -73,11 +100,16 @@ const EditableField = ({
                 padding: "6px",
               }}
             >
-              <CheckIcon fontSize="small" />
+              {loading ? (
+                <CircularProgress size={20} color="inherit" />
+              ) : (
+                <CheckIcon fontSize="small" />
+              )}
             </Button>
             <Button
               variant="outlined"
               onClick={handleCancel}
+              disabled={loading}
               sx={{
                 color: "gray",
                 minWidth: "45px",
@@ -92,6 +124,7 @@ const EditableField = ({
           <Button
             variant="outlined"
             onClick={() => setEditing(true)}
+            disabled={loading || disabled}
             sx={{
               bgcolor: "customButton.gold",
               borderColor: "transparent",
@@ -102,7 +135,11 @@ const EditableField = ({
               minWidth: "45px",
             }}
           >
-            <EditIcon sx={{ fontSize: "1rem" }} />
+            {loading ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              <EditIcon sx={{ fontSize: "1rem" }} />
+            )}
           </Button>
         )}
       </Box>

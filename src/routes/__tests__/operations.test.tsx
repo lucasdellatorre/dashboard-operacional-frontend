@@ -156,6 +156,4 @@ describe("Operation Component", () => {
     fireEvent.click(screen.getByText("Fechar"));
     expect(screen.queryByTestId("mock-modal")).not.toBeInTheDocument();
   });
-
-
 });
