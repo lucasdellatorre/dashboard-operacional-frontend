@@ -50,7 +50,7 @@ jobs:
         run: npm ci
 
       - name: Build Vite app
-        run: VITE_ENV=production npm run build
+        run: npm run build -- --mode production
 
       - name: Install Heroku CLI
         run: curl https://cli-assets.heroku.com/install.sh | sh
