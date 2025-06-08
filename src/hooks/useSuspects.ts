@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect, useCallback } from "react";
 import { normalizeString } from "../utils/formatUtils";
 import { api } from "../server/service";
 import { GenericData } from "../interface/table/tableInterface";
+import { ResponseApi } from "../interface/responseInterface";
 
 export interface SuspectOperation {
   id: number;
@@ -147,9 +148,24 @@ export const useSuspects = ({ searchTerm, operationIds }: UseSuspectsProps) => {
       }));
   }, [searchTerm, data.numeros]);
 
+  const deleteSuspect = async (id: number): Promise<ResponseApi<void>> => {
+    try {
+      await api.delete(`/api/suspeito/${id}`);
+
+      fetchSuspects();
+      return {
+        isSuccess: true,
+      };
+    } catch (error) {
+      console.log("Erro ao deletar um alvo", error);
+      throw new Error("Erro ao deletar um alvo");
+    }
+  };
+
   return {
     fetchSuspects,
     createSuspect,
+    deleteSuspect,
     suspects,
     numbers,
     loading,
