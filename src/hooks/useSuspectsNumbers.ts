@@ -19,7 +19,9 @@ export const useSuspectNumbers = () => {
     const fetchSuspect = async () => {
       try {
         setLoading(true);
-        const response = await api.get<SuspectNumber[]>(`/api/alvos`);
+        const response = await api.get<SuspectNumber[]>(
+          `/api/alvos?showSuspects=false`
+        );
         const result = response.data.map((item) => ({
           id: item.id.toString(),
           label: item.value,
