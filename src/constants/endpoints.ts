@@ -11,7 +11,17 @@ const endpoints = {
     createOperation: "api/operacao",
     getAllOperations: "api/operacao",
     getOperationById: (operationId: string) => `/operation/${operationId}`,
-  }
+  },
+  WEB: {
+    // EX: página do gráfico de teia
+    createWeb: "api/teia/message"
+  },
+  SHEETS: {
+    getAll: 'api/planilha',
+    upload: 'api/interceptacao/upload',
+    getProgress: 'api/upload/progresso',
+    getPendingJobs: 'api/upload/progresso'
+  },
 };
 
 export default endpoints;

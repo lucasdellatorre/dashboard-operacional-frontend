@@ -10,18 +10,9 @@ import CreateOperationModal from "../../components/modal/createOperationModal";
 import { AppContext } from "../../context/AppContext";
 
 const operationHeaderCells: readonly HeadCell<Operation>[] = [
-  {
-    id: "operationName",
-    label: "Nome da operação",
-  },
-  {
-    id: "operationDate",
-    label: "Data da operação",
-  },
-  {
-    id: "numberOfSuspects",
-    label: "Número de alvos na operação",
-  },
+  { id: "nome", label: "Nome da operação" },
+  { id: "data_criacao", label: "Data de criação" },
+  { id: "qtd_alvos", label: "Número de alvos na operação" },
 ];
 
 const Operations: React.FC = () => {
@@ -29,44 +20,53 @@ const Operations: React.FC = () => {
   const [searchParams] = useSearchParams();
 
   const { headerInputValue } = useHeaderInput();
-  const { operations: selectedOperations, setOperations: setSelectedOperations } = useContext(AppContext);
+  const { operations, setOperations, setSuspects, setNumbers } =
+    useContext(AppContext);
 
-  const [openModal, setOpenModal] = useState<boolean>(false);
-  const [selectedIds, setSelectedIds] = useState<readonly number[]>([]);
+  const [openModal, setOpenModal] = useState(false);
+
+  // IDs e objetos selecionados localmente (antes do confirmar)
+  const [selectedIds, setSelectedIds] = useState<readonly number[]>(
+    operations.map((op) => op.id)
+  );
+  const [selectedItems, setSelectedItems] = useState<Operation[]>(operations);
 
   const handleSelectionChange = useCallback(
-    (selectedIds: readonly number[], selectedItems: Operation[]) => {
-      setSelectedIds(selectedIds);
-      setSelectedOperations(selectedItems);
+    (ids: readonly number[], items: Operation[]) => {
+      setSelectedIds(ids);
+      setSelectedItems(items);
     },
-    [setSelectedOperations]
+    []
   );
 
-  const { filteredOperations, loading, error, createOperation, fetchOperations } = useOperations({ searchTerm: headerInputValue });
+  const {
+    filteredOperations,
+    loading,
+    error,
+    createOperation,
+    fetchOperations,
+  } = useOperations({ searchTerm: headerInputValue });
 
   const operationsSelected = () => {
+    setOperations(selectedItems);
+    setSuspects([]); // limpa alvos ao confirmar
+    setNumbers([]);
+
     const newSearchParams = new URLSearchParams(searchParams);
-    const operationIds = selectedOperations.map((item: Operation) => item.id).join("-");
+    const operationIds = selectedItems
+      .map((item: Operation) => item.id)
+      .join("-");
     newSearchParams.set("operacao", operationIds);
     navigate(`/alvos?${newSearchParams.toString()}`);
   };
 
   return (
     <Box p={3} sx={{ fontFamily: "Inter, sans-serif" }}>
-      <Box
-        display={"flex"}
-        justifyContent={"space-between"}
-        alignItems={"baseline"}
-      >
-        <Typography
-          variant="h5"
-          color="#000000"
-          mb={4}
-          fontWeight={700}
-          sx={{ fontFamily: "Inter, sans-serif" }}
-        >
+      <Box display="flex" justifyContent="space-between" alignItems="baseline">
+        <Typography variant="h5" color="#000000" mb={4} fontWeight={700}>
           Selecione uma operação para iniciar a investigação
         </Typography>
+
         <Button
           onClick={() => setOpenModal(true)}
           sx={{
@@ -93,49 +93,50 @@ const Operations: React.FC = () => {
           rows={filteredOperations}
           headCells={operationHeaderCells}
           title="Operações"
-          defaultOrderBy="operationName"
+          defaultOrderBy="nome"
           onSelectionChange={handleSelectionChange}
           initialSelected={selectedIds}
           noDataMessage="Nenhuma operação encontrada, por favor faça o upload da planilha"
-          onDelete={() => { }}
+          onDelete={() => {}}
+          showDeleteButton={false}
         />
       )}
 
       {!loading && (
-      <Box sx={{ width: "100%", display: "flex", justifyContent: "end" }}>
-        <Button
-          disabled={selectedIds.length === 0}
-          onClick={operationsSelected}
-          sx={{
-            bgcolor: "customButton.black",
-            color: "customText.white",
-            fontWeight: 600,
-            textTransform: "none",
-            "&.Mui-disabled": {
-              bgcolor: "customText.grey",
-              color: "customText.lightGrey",
-              cursor: "not-allowed",
-              fontFamily: "Inter, sans-serif",
-            },
-          }}
-        >
-          Confirmar Seleção
-        </Button>
-        <CreateOperationModal
-          isOpen={openModal}
-          onClose={() => setOpenModal(false)}
-          onCreateOperation={async (operationData) => {
-            try {
-              await createOperation(operationData.operationName);
-              setOpenModal(false);
-              fetchOperations();
-            } catch (err) {
-              console.error("Erro ao criar operação:", err);
-            }
-          }}
-        />
-      </Box>
+        <Box sx={{ width: "100%", display: "flex", justifyContent: "end" }}>
+          <Button
+            disabled={selectedIds.length === 0}
+            onClick={operationsSelected}
+            sx={{
+              bgcolor: "customButton.black",
+              color: "customText.white",
+              fontWeight: 600,
+              textTransform: "none",
+              "&.Mui-disabled": {
+                bgcolor: "customText.grey",
+                color: "customText.lightGrey",
+                cursor: "not-allowed",
+              },
+            }}
+          >
+            Confirmar Seleção
+          </Button>
+        </Box>
       )}
+
+      <CreateOperationModal
+        isOpen={openModal}
+        onClose={() => setOpenModal(false)}
+        onCreateOperation={async (operationData) => {
+          try {
+            await createOperation(operationData.operationName);
+            setOpenModal(false);
+            fetchOperations();
+          } catch (err) {
+            console.error("Erro ao criar operação:", err);
+          }
+        }}
+      />
     </Box>
   );
 };

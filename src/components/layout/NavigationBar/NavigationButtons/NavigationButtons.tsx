@@ -1,5 +1,4 @@
 import { Box } from "@mui/material";
-import TableChartIcon from "@mui/icons-material/TableChart";
 import MediationIcon from "@mui/icons-material/Mediation";
 import TargetIcon from "@mui/icons-material/AdsClickOutlined";
 import AssessmentIcon from "@mui/icons-material/Assessment";
@@ -11,6 +10,8 @@ import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import NavigationButton from "./NavigationButton/NavigationButton";
 import ToggleButton from "../ToggleButton/ToggleButton";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
+import { useContext } from "react";
+import { AppContext } from "../../../../context/AppContext";
 
 interface NavigationButtonsProps {
   isCollapsed: boolean;
@@ -24,11 +25,10 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
   logout,
 }) => {
   const location = useLocation();
-  const isOperationsPage = location.pathname === "/operacoes";
-  const isSuspectsPage = location.pathname === "/alvos";
-  const isWorksheetPage = location.pathname === "/planilhas";
-
   const isActive = (path: string): boolean => location.pathname === path;
+
+  const { suspects, numbers } = useContext(AppContext);
+  const hasTargets = suspects.length > 0 || numbers.length > 0;
 
   return (
     <Box
@@ -70,7 +70,7 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
           isActive={isActive("/alvos")}
         />
 
-        {!isOperationsPage && !isSuspectsPage && !isWorksheetPage && (
+        {hasTargets && (
           <>
             <NavigationButton
               to="/dashboard"
@@ -86,14 +86,6 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
               label="Teia"
               isCollapsed={isCollapsed}
               isActive={isActive("/teia")}
-            />
-
-            <NavigationButton
-              icon={<TableChartIcon />}
-              label="Tabelas"
-              isCollapsed={isCollapsed}
-              isActive={isActive("/tabelas")}
-              onClick={(e) => e.preventDefault()}
             />
           </>
         )}

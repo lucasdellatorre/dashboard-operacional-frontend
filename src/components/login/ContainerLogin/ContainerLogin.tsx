@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { TextField, Box, Button, Typography } from "@mui/material";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { useNavigate } from "react-router-dom";
 import { isValidCPF } from "../../../utils/validationUtils";
+import { AppContext } from "../../../context/AppContext";
 
 const ContainerLogin: React.FC = () => {
-  const [cpf, setCpf] = useState("");
+  const { cpf, setCpf } = useContext(AppContext);
   const [cpfError, setCpfError] = useState("");
   const [isPressed, setIsPressed] = useState(false);
 

@@ -27,6 +27,7 @@ function GenericTable<T extends GenericData>({
   onSelectionChange,
   initialSelected = [],
   onDelete,
+  showDeleteButton = true,
 }: GenericTableProps<T>) {
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<keyof T>(defaultOrderBy);
@@ -143,6 +144,7 @@ function GenericTable<T extends GenericData>({
     <Box sx={{ width: "100%" }}>
       <Paper sx={{ width: "100%", mb: 2 }}>
         <EnhancedTableToolbar
+          showDeleteButton={showDeleteButton}
           numSelected={selected.length}
           title={title}
           onDelete={handleDelete}
@@ -199,6 +201,9 @@ function GenericTable<T extends GenericData>({
                       <Checkbox
                         sx={{
                           "&.Mui-checked": {
+                            color: "customButton.gold",
+                          },
+                          "&.MuiCheckbox-indeterminate": {
                             color: "customButton.gold",
                           },
                         }}

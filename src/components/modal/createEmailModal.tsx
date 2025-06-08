@@ -6,73 +6,57 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CloseIcon from "@mui/icons-material/Close";
 import { z } from "zod";
 
-const addOperationModalSchema = z.object({
-  operationName: z
-    .string({
-      required_error: "Nome da operação é obrigatório",
-    })
-    .min(1, "Nome da operação não pode estar vazio"),
+const emailModalSchema = z.object({
+  email: z
+    .string({ required_error: "Email é obrigatório" })
+    .min(1, "Email é obrigatório")
+    .email("Formato de email inválido"),
 });
 
-type AddOperationSchemaType = z.infer<typeof addOperationModalSchema>;
+type EmailFormData = z.infer<typeof emailModalSchema>;
 
-interface CreateOperationModalProps {
+interface EmailModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreateOperation: (data: AddOperationSchemaType) => Promise<void>;
+  onSubmit: (data: EmailFormData) => void;
+  initialData?: EmailFormData | null;
 }
 
-const CreateOperationModal: React.FC<CreateOperationModalProps> = ({
+const EmailModal: React.FC<EmailModalProps> = ({
   isOpen,
   onClose,
-  onCreateOperation,
+  onSubmit,
+  initialData,
 }) => {
   const {
     control,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<AddOperationSchemaType>({
-    mode: "all",
-    resolver: zodResolver(addOperationModalSchema),
+  } = useForm<EmailFormData>({
+    resolver: zodResolver(emailModalSchema),
     defaultValues: {
-      operationName: "",
+      email: initialData ? initialData.email : "",
     },
+    shouldUnregister: true, // Corrigido
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-
-  const onSubmit = async (data: AddOperationSchemaType) => {
-    setIsSubmitting(true);
-    setSubmitError(null);
-    try {
-      await onCreateOperation(data);
-      reset();
-      onClose();
-    } catch (err) {
-      if (err)
-        setSubmitError("Não foi possível criar a operação. Tente novamente.");
-    } finally {
-      setIsSubmitting(false);
+  useEffect(() => {
+    if (initialData) {
+      reset(initialData);
+    } else {
+      reset({ email: "" });
     }
-  };
+  }, [initialData, reset]);
 
   return (
     <Dialog
-      open={isOpen}
-      onClose={() => {
-        setSubmitError(null);
-        onClose();
-      }}
-      fullWidth
-      maxWidth="xs"
       sx={{
         "& .MuiDialog-paper": {
           borderRadius: "10px",
@@ -84,13 +68,14 @@ const CreateOperationModal: React.FC<CreateOperationModalProps> = ({
           margin: 0,
         },
       }}
+      open={isOpen}
+      onClose={onClose}
+      fullWidth
+      maxWidth="xs"
     >
       <IconButton
         aria-label="close"
-        onClick={() => {
-          setSubmitError(null);
-          onClose();
-        }}
+        onClick={onClose}
         sx={(theme) => ({
           position: "absolute",
           right: 8,
@@ -100,7 +85,6 @@ const CreateOperationModal: React.FC<CreateOperationModalProps> = ({
       >
         <CloseIcon />
       </IconButton>
-
       <Box
         display="flex"
         flexDirection="column"
@@ -108,11 +92,23 @@ const CreateOperationModal: React.FC<CreateOperationModalProps> = ({
         mb="0.8rem"
       >
         <Typography sx={{ fontWeight: "900", fontSize: "1.2rem" }}>
-          Criação Operação
+          {initialData ? "Editar Email" : "Adicionar Email"}
         </Typography>
       </Box>
 
-      <Box display="flex" flexDirection="column" gap="1rem" alignItems="center">
+      <Box
+        display="flex"
+        flexDirection="column"
+        gap="1.5rem"
+        alignItems="center"
+      >
+        <Box
+          sx={{ width: "100%" }}
+          display="flex"
+          flexDirection="column"
+          gap="0.3rem"
+        ></Box>
+
         <Box
           sx={{ width: "100%" }}
           display="flex"
@@ -120,23 +116,20 @@ const CreateOperationModal: React.FC<CreateOperationModalProps> = ({
           gap="0.3rem"
         >
           <Typography sx={{ fontWeight: "800", fontSize: "1rem" }}>
-            Nome da operação*
+            Email*
           </Typography>
-
           <Controller
             control={control}
-            name="operationName"
+            name="email"
             render={({ field }) => (
               <TextField
                 {...field}
-                placeholder="Digite o nome da operação"
+                onBlur={field.onBlur}
+                placeholder="Digite o email"
                 variant="outlined"
-                InputLabelProps={{ shrink: false }}
                 InputProps={{
-                  notched: false,
                   sx: {
                     height: "3.5rem",
-                    width: "100%",
                     "& .MuiOutlinedInput-notchedOutline": {
                       borderColor: "rgba(0, 0, 0, 0.23)",
                     },
@@ -152,28 +145,21 @@ const CreateOperationModal: React.FC<CreateOperationModalProps> = ({
               />
             )}
           />
-
-          <Box sx={{ height: "1.5rem" }}>
-            {errors.operationName && (
-              <Typography color="error" variant="caption">
-                {typeof errors.operationName === "string"
-                  ? errors.operationName
-                  : errors.operationName.message ||
-                    "Nome da operação é obrigatório"}
-              </Typography>
-            )}
-          </Box>
+          {errors.email && (
+            <Typography color="error" variant="caption">
+              {errors.email.message}
+            </Typography>
+          )}
         </Box>
 
-        {submitError && (
-          <Typography color="error" variant="body2" textAlign="center">
-            {submitError}
-          </Typography>
-        )}
-
         <Button
-          onClick={handleSubmit(onSubmit)}
-          disabled={isSubmitting}
+          onClick={handleSubmit((data) => {
+            if (onSubmit) {
+              onSubmit(data);
+              reset();
+              onClose();
+            }
+          })}
           sx={{
             bgcolor: "customButton.gold",
             color: "customText.white",
@@ -182,11 +168,11 @@ const CreateOperationModal: React.FC<CreateOperationModalProps> = ({
             width: "100%",
           }}
         >
-          {isSubmitting ? "Criando..." : "Criar operação"}
+          {initialData ? "Salvar alterações" : "Adicionar email"}
         </Button>
       </Box>
     </Dialog>
   );
 };
 
-export default CreateOperationModal;
+export default EmailModal;

@@ -15,6 +15,11 @@ interface Data {
   nodes: Node[];
 }
 
+interface WebChartInterface {
+  data: Data;
+  isIp?: boolean;
+}
+
 // example of data:
 // {
 //   links: [
@@ -24,14 +29,14 @@ interface Data {
 //   nodes: [{ id: "Alvo", group: 1 }, { id: "Intercpt 2", group: 2 }]
 // }
 
-const Chart: React.FC<{ data: Data }> = ({ data }) => {
+const Chart: React.FC<WebChartInterface> = ({ data }) => {
   const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
     if (!svgRef.current) return;
 
     // Clear previous content
-    d3.select(svgRef.current).selectAll("*").remove();    
+    d3.select(svgRef.current).selectAll("*").remove();
 
     const svgContainer = svgRef.current.parentElement;
     const width = svgContainer ? svgContainer.clientWidth : 928;
@@ -39,11 +44,30 @@ const Chart: React.FC<{ data: Data }> = ({ data }) => {
 
     const color = d3
       .scaleOrdinal<number, string>()
-      .domain([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-      .range(d3.schemeCategory10);
+      .domain([1, 2, 3, 4, 5, 6, 7])
+      .range([
+        "#FFB74D", // 6h-12h
+        "#4A90E2", // 12h-18h
+        "#1A237E", // 18h-00h
+        "#0D0221", // 00h-6h
+        "#D62727", // Targets
+        "#757575", // Intercepts
+        "#FFA000", // Suspects
+      ]);
 
     const links = data.links.map((d) => ({ ...d }));
     const nodes = data.nodes.map((d) => ({ ...d }));
+
+    // Sort links by value to identify top 5 and next 10
+    const sortedLinks = [...links].sort(
+      (a, b) => (b.value || 0) - (a.value || 0)
+    );
+    const top5Values = new Set(
+      sortedLinks.slice(0, 5).map((link) => link.value)
+    );
+    const next10Values = new Set(
+      sortedLinks.slice(5, 15).map((link) => link.value)
+    );
 
     const simulation = d3
       .forceSimulation<Node>(nodes)
@@ -54,7 +78,7 @@ const Chart: React.FC<{ data: Data }> = ({ data }) => {
           .id((d) => d.id)
           .distance(100)
       )
-      .force("charge", d3.forceManyBody().strength(-1000))
+      .force("charge", d3.forceManyBody().strength(-2000))
       .force("center", d3.forceCenter(width / 2, height / 2))
       .force("x", d3.forceX(width / 2).strength(0.1)) // Força para manter nodos no centro X
       .force("y", d3.forceY(height / 2).strength(0.1)) // Força para manter nodos no centro Y
@@ -65,7 +89,7 @@ const Chart: React.FC<{ data: Data }> = ({ data }) => {
       .attr("width", width)
       .attr("height", height)
       .attr("viewBox", [0, 0, width, height])
-      .attr("style", "width: 100%; height: 100%; background-color: #181818")
+      .attr("style", "width: 100%; height: 100%; background-color: #1c1c1c")
       .attr("data-testid", "chart-svg");
 
     // Adicionar zoom
@@ -90,7 +114,11 @@ const Chart: React.FC<{ data: Data }> = ({ data }) => {
       .data(links)
       .join("line")
       .attr("stroke-width", (d) => Math.sqrt(d.value) / 2)
-      .attr("stroke", (d) => (d.value > 500 ? "#ff4d4d" : "#999")); // Color the links that have more than 500 value
+      .attr("stroke", (d) => {
+        if (top5Values.has(d.value)) return "#ff4d4d"; // Red for top 5
+        if (next10Values.has(d.value)) return "#FFA000"; // Yellow for next 10
+        return "#999"; // Default gray for the rest
+      });
 
     const node = g
       .append("g")
@@ -115,7 +143,7 @@ const Chart: React.FC<{ data: Data }> = ({ data }) => {
       .attr("fill", "#fff")
       .attr("text-anchor", "middle")
       .attr("dy", "-2em")
-      .attr("font-size", "14px");  // Aumentando o tamanho da fonte
+      .attr("font-size", "14px"); // Aumentando o tamanho da fonte
 
     node.call(
       d3

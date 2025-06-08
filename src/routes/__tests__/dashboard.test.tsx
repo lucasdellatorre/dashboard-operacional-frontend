@@ -3,24 +3,30 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import Dashboard from "../Dashboard";
 import { ThemeProvider } from "@mui/material/styles";
 import theme from "../../utils/theme";
+import { ApplicationProvider } from "../../context/AppContext";
 
 class ResizeObserver {
-  observe() { }
-  unobserve() { }
-  disconnect() { }
+  observe() {}
+  unobserve() {}
+  disconnect() {}
 }
-(globalThis as any).ResizeObserver = ResizeObserver;
+(globalThis as unknown).ResizeObserver = ResizeObserver;
 
 vi.mock("recharts", async () => {
   const actual = await vi.importActual<typeof import("recharts")>("recharts");
   return {
     ...actual,
-    ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+    ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+      <div>{children}</div>
+    ),
   };
 });
 
 vi.mock("../../components/multiSelect", () => ({
-  default: ({ selectedOptions, onChange }: {
+  default: ({
+    selectedOptions,
+    onChange,
+  }: {
     selectedOptions: string[];
     onChange: (options: string[]) => void;
   }) => (
@@ -54,9 +60,14 @@ vi.mock("../../components/filters/ViewSelection", () => ({
   ),
 }));
 
-const renderWithTheme = (ui: React.ReactElement) =>
-  render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
-
+const renderWithTheme = (ui: React.ReactElement) => {
+  return render(
+    <ApplicationProvider>
+      <ThemeProvider theme={theme}>{ui}</ThemeProvider>
+    </ApplicationProvider>
+  );
+};
+ 
 describe("Dashboard Component", () => {
   beforeEach(() => {
     vi.resetAllMocks();
@@ -70,7 +81,7 @@ describe("Dashboard Component", () => {
   it("deve renderizar os filtros de seleção", () => {
     renderWithTheme(<Dashboard />);
     expect(screen.getByText("Seleção de Gráficos")).toBeInTheDocument();
-    expect(screen.getByText("Tipo de Seleção")).toBeInTheDocument();
+    expect(screen.getByText("Filtrar por:")).toBeInTheDocument();
   });
 
   it("deve renderizar os gráficos por padrão (modo ALL)", () => {
@@ -91,14 +102,62 @@ describe("Dashboard Component", () => {
   it("deve alterar seleção no filtro de tipo (Texto, Vídeo, Todos)", () => {
     renderWithTheme(<Dashboard />);
 
-    const tipoSelect = screen.getAllByRole("combobox")[1]; // Seleciona "Tipo"
+    const tipoSelect = screen.getAllByRole("combobox")[1];
     fireEvent.mouseDown(tipoSelect);
 
     const listbox = screen.getByRole("listbox");
     const videoOption = within(listbox).getByText("Vídeo");
     fireEvent.click(videoOption);
-
-    // Verifica se a opção foi aplicada no combobox
     expect(screen.getAllByRole("combobox")[1]).toHaveTextContent("Vídeo");
+  });
+
+  it("deve alterar os nomes selecionados no MultiSelect", () => {
+    renderWithTheme(<Dashboard />);
+    const multiSelect = screen.getByTestId("mock-multiselect");
+    fireEvent.click(multiSelect);
+    expect(screen.getByText("MockMultiSelect: FakeUser")).toBeInTheDocument();
+  });
+
+  it("deve alterar o filtro de grupo para 'Número'", () => {
+    renderWithTheme(<Dashboard />);
+    const groupSelect = screen.getByRole("combobox", { name: /grupo/i });
+    fireEvent.mouseDown(groupSelect);
+
+    const listbox = screen.getByRole("listbox");
+    const numberOption = within(listbox).getByText("Número");
+    fireEvent.click(numberOption);
+
+    expect(screen.getByRole("combobox", { name: /grupo/i })).toHaveTextContent("Número");
+  });
+
+  it("deve alterar a data inicial e final", () => {
+    renderWithTheme(<Dashboard />);
+    const initialDateInput = screen.getByLabelText("Data Inicial");
+    const finalDateInput = screen.getByLabelText("Data Final");
+
+    fireEvent.change(initialDateInput, { target: { value: "2023-01-01" } });
+    fireEvent.change(finalDateInput, { target: { value: "2023-12-31" } });
+
+    expect(initialDateInput).toHaveValue("2023-01-01");
+    expect(finalDateInput).toHaveValue("2023-12-31");
+  });
+
+  it("deve alterar a faixa horária inicial e final", () => {
+    renderWithTheme(<Dashboard />);
+    const initialTimeInput = screen.getByLabelText(/faixa horária.*inicio/i);
+    const finalTimeInput = screen.getByLabelText(/faixa horária.*fim/i);
+
+    fireEvent.change(initialTimeInput, { target: { value: "08:00" } });
+    fireEvent.change(finalTimeInput, { target: { value: "18:00" } });
+
+    expect(initialTimeInput).toHaveValue("08:00");
+    expect(finalTimeInput).toHaveValue("18:00");
+  });
+
+  it("deve selecionar o filtro de seleção IPs", () => {
+    renderWithTheme(<Dashboard />);
+    const ipFilterButton = screen.getByText("IPs");
+    fireEvent.click(ipFilterButton);
+    expect(ipFilterButton).toHaveStyle("font-weight: bold");
   });
 });
