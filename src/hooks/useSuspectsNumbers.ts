@@ -20,7 +20,7 @@ export const useSuspectNumbers = () => {
       try {
         setLoading(true);
         const response = await api.get<SuspectNumber[]>(
-          `/api/alvos?showSuspects=false`
+          `/api/alvos?showSuspects=true`
         );
         const result = response.data.map((item) => ({
           id: item.id.toString(),

@@ -15,10 +15,11 @@ import GenericTable from "../../components/Table/Table";
 import { GenericData, HeadCell } from "../../interface/table/tableInterface";
 import EmailModal from "../../components/modal/createEmailModal";
 import EditableField from "../../components/editableField";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import EditableMultilineField from "../../components/editableMultilineField";
 import { useSuspectInfo } from "../../hooks/useSuspectInfo";
 import TelephoneModal from "../../components/modal/createTelephoneModal";
+import { AppContext } from "../../context/AppContext";
 
 interface Email extends GenericData {
   email: string;
@@ -35,7 +36,7 @@ interface Ips extends GenericData {
   ocorrencias: number;
 }
 
-const formatCPF = (value: string): string => {
+const formatsuspectCpf = (value: string): string => {
   if (!value) return "";
   const numericValue = value.replace(/\D/g, "").slice(0, 11);
   return numericValue
@@ -64,21 +65,30 @@ const SuspectsDetails = () => {
       color: "inherit !important",
     },
   };
-  const { suspect, loading, error, updateSuspectDetails } = useSuspectInfo(
-    Number(window.location.pathname.split("/").pop())
-  );
+  const { cpf } = useContext(AppContext);
+
+  const {
+    suspect,
+    loading,
+    error,
+    updateSuspectDetails,
+    createSuspectEmail,
+    deleteSuspectNumber,
+    deleteSuspectEmail,
+    createSuspectNumber,
+  } = useSuspectInfo(Number(window.location.pathname.split("/").pop()));
 
   const [loadingFields, setLoadingFields] = useState({
     nickname: false,
     name: false,
-    cpf: false,
+    suspectCpf: false,
     notes: false,
     relevante: false,
   });
 
   const [nickname, setNickname] = useState("");
   const [name, setName] = useState("");
-  const [cpf, setCpf] = useState("");
+  const [suspectCpf, setsuspectCpfSuspect] = useState("");
   const [notes, setNotes] = useState("");
   const [relevante, setRelevante] = useState<boolean>(false);
   const [alert, setAlert] = useState({
@@ -100,7 +110,7 @@ const SuspectsDetails = () => {
     if (suspect) {
       setNickname(suspect.apelido);
       setName(suspect.nome);
-      setCpf(formatCPF(suspect.cpf));
+      setsuspectCpfSuspect(formatsuspectCpf(suspect.cpf));
       setNotes(suspect.anotacoes);
       setRelevante(suspect.relevante);
     }
@@ -112,12 +122,12 @@ const SuspectsDetails = () => {
     const allValues = {
       apelido: field === "nickname" ? value : nickname || null,
       nome: field === "name" ? value : name || null,
-      cpf:
-        field === "cpf"
+      suspectCpf:
+        field === "suspectCpf"
           ? typeof value === "string"
             ? value.replace(/\D/g, "")
-            : cpf.replace(/\D/g, "")
-          : cpf.replace(/\D/g, "") || null,
+            : suspectCpf.replace(/\D/g, "")
+          : suspectCpf.replace(/\D/g, "") || null,
       anotacoes: field === "notes" ? value : notes || null,
       relevante: field === "relevante" ? value : relevante,
     };
@@ -142,6 +152,7 @@ const SuspectsDetails = () => {
         });
       }
     } catch (error) {
+      console.log("Erro ao atualizar campo:", error);
       setAlert({
         show: true,
         type: "error",
@@ -160,9 +171,9 @@ const SuspectsDetails = () => {
     setName(newValue);
   };
 
-  const handleCpfChange = (newValue: string) => {
-    const formatted = formatCPF(newValue);
-    setCpf(formatted);
+  const handlesuspectCpfChange = (newValue: string) => {
+    const formatted = formatsuspectCpf(newValue);
+    setsuspectCpfSuspect(formatted);
   };
 
   const handleNotesChange = (newValue: string) => {
@@ -202,26 +213,51 @@ const SuspectsDetails = () => {
   const [openTelephoneModal, setOpenTelephoneModal] = useState(false);
   const [openEmailModal, setOpenEmailModal] = useState(false);
 
-  function criarEditarTelephone() {
-    //TODO: create or edit email integrated with backend
-    setOpenEmailModal(false);
-  }
-  function criarEditarEmail() {
-    //TODO: create or edit email integrated with backend
-    setOpenEmailModal(false);
-  }
-
   return (
     <>
       <TelephoneModal
         isOpen={openTelephoneModal}
         onClose={() => setOpenTelephoneModal(false)}
-        onSubmit={criarEditarTelephone}
+        onCreateNumber={async (numberData) => {
+          try {
+            await createSuspectNumber(numberData.telephone, cpf);
+            setOpenTelephoneModal(false);
+            setAlert({
+              show: true,
+              type: "success",
+              message: "Telefone Adicionado com sucesso",
+            });
+          } catch (err) {
+            console.log("Erro ao adicionar numero:", err);
+            setAlert({
+              show: true,
+              type: "error",
+              message: "Ocorreu um erro. Tente novamente.",
+            });
+          }
+        }}
       />
       <EmailModal
         isOpen={openEmailModal}
         onClose={() => setOpenEmailModal(false)}
-        onSubmit={criarEditarEmail}
+        onCreateEmail={async (emailData) => {
+          try {
+            await createSuspectEmail(emailData.email, cpf);
+            setOpenEmailModal(false);
+            setAlert({
+              show: true,
+              type: "success",
+              message: "Email Adicionado com sucesso",
+            });
+          } catch (err) {
+            console.log("Erro ao adicionar email:", err);
+            setAlert({
+              show: true,
+              type: "error",
+              message: "Ocorreu um erro. Tente logar novamente.",
+            });
+          }
+        }}
       />
       {alert.show && (
         <Alert
@@ -336,10 +372,12 @@ const SuspectsDetails = () => {
                     />
                     <EditableField
                       label="CPF"
-                      value={cpf}
-                      onChange={handleCpfChange}
-                      onConfirm={(newValue) => updateField("cpf", newValue)}
-                      loading={loadingFields.cpf}
+                      value={suspectCpf}
+                      onChange={handlesuspectCpfChange}
+                      onConfirm={(newValue) =>
+                        updateField("suspectCpf", newValue)
+                      }
+                      loading={loadingFields.suspectCpf}
                     />
                   </>
                 )}
@@ -412,7 +450,7 @@ const SuspectsDetails = () => {
             )}
             {!loading && (
               <p style={{ fontSize: "0.775rem", color: "#666" }}>
-                *Para editar os inputs, clique no botão de lapis
+                *Para editar os campos, clique no botão de lapis
               </p>
             )}
 
@@ -437,11 +475,12 @@ const SuspectsDetails = () => {
                   onDelete={() => {}}
                   allowSelection={false}
                   headerCollor="white"
+                  showDeleteButton={false}
                 />
 
                 <GenericTable
-                  rows={(suspect.celulares || []).map((c, idx) => ({
-                    id: idx,
+                  rows={(suspect.celulares || []).map((c) => ({
+                    id: c.id,
                     phone: c.numero,
                     insertDate: c.lastUpdateDate,
                     insertBy: c.lastUpdateCpf,
@@ -458,13 +497,31 @@ const SuspectsDetails = () => {
                   onSelectionChange={() => {}}
                   initialSelected={[]}
                   noDataMessage="Nenhum celular encontrado para este suspeito"
-                  onDelete={() => {}}
+                  onDelete={async (selectedIds) => {
+                    try {
+                      for (const id of selectedIds) {
+                        await deleteSuspectNumber(id);
+                      }
+                      setAlert({
+                        show: true,
+                        type: "success",
+                        message: "Número deletado com sucesso",
+                      });
+                    } catch (err) {
+                      console.log("Erro ao deletar numero:", err);
+                      setAlert({
+                        show: true,
+                        type: "error",
+                        message: "Ocorreu um erro. Tente novamente.",
+                      });
+                    }
+                  }}
                   headerCollor="white"
                 />
 
                 <GenericTable
-                  rows={(suspect.emails || []).map((e, idx) => ({
-                    id: idx,
+                  rows={(suspect.emails || []).map((e) => ({
+                    id: e.id,
                     email: e.email,
                     insertDate: e.lastUpdateDate,
                     insertBy: e.lastUpdateCpf,
@@ -481,7 +538,25 @@ const SuspectsDetails = () => {
                   onSelectionChange={() => {}}
                   initialSelected={[]}
                   noDataMessage="Nenhum email encontrado para este suspeito"
-                  onDelete={() => {}}
+                  onDelete={async (selectedIds) => {
+                    try {
+                      for (const id of selectedIds) {
+                        await deleteSuspectEmail(id);
+                      }
+                      setAlert({
+                        show: true,
+                        type: "success",
+                        message: "Email deletado com sucesso",
+                      });
+                    } catch (err) {
+                      console.log("Erro ao deletar email:", err);
+                      setAlert({
+                        show: true,
+                        type: "error",
+                        message: "Ocorreu um erro. Tente novamente.",
+                      });
+                    }
+                  }}
                   headerCollor="white"
                 />
               </Box>

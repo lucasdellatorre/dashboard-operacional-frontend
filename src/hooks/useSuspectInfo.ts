@@ -1,5 +1,5 @@
 // hooks/useSuspectInfo.ts
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { api } from "../server/service";
 import { formatDate } from "../utils/formatUtils";
 import {
@@ -9,12 +9,14 @@ import {
 import { ResponseApi } from "../interface/responseInterface";
 
 interface Phone {
+  id: number;
   numero: string;
   lastUpdateCpf: string;
   lastUpdateDate: string;
 }
 
 interface Email {
+  id: number;
   email: string;
   lastUpdateCpf: string;
   lastUpdateDate: string;
@@ -23,6 +25,15 @@ interface Email {
 interface IpEntry {
   ip: string;
   ocorrencias: number;
+}
+
+interface CreateEmailResponse {
+  id: number;
+  email: string;
+}
+interface CreateNumberResponse {
+  id: number;
+  numero: string;
 }
 
 export interface SuspectInfo {
@@ -34,7 +45,7 @@ export interface SuspectInfo {
   anotacoes: string;
   emails: Email[];
   celulares: Phone[];
-  ips: IpEntry[]; // novo formato com contagem
+  ips: IpEntry[];
 }
 
 export const useSuspectInfo = (id: number) => {
@@ -42,7 +53,7 @@ export const useSuspectInfo = (id: number) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchSuspect = async () => {
+  const fetchSuspect = useCallback(async () => {
     try {
       setLoading(true);
       const response = await api.get<SuspectInfo>(`/api/suspeito/${id}`);
@@ -64,7 +75,7 @@ export const useSuspectInfo = (id: number) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     if (!id) return;
@@ -97,6 +108,94 @@ export const useSuspectInfo = (id: number) => {
       throw error;
     }
   }
+  const createSuspectEmail = useCallback(
+    async (email: string, userCpf: string): Promise<CreateEmailResponse> => {
+      try {
+        const response = await api.post<CreateEmailResponse>(
+          `/api/suspeito/${id}/email`,
+          {
+            email,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              cpfUsuario: userCpf,
+            },
+          }
+        );
+        fetchSuspect();
+        return response.data;
+      } catch (err: unknown) {
+        console.error("Erro ao criar email:", err);
+        throw new Error("Erro ao criar email do suspeito");
+      }
+    },
+    [id, fetchSuspect]
+  );
+  const deleteSuspectEmail = async (
+    emailId: number
+  ): Promise<ResponseApi<void>> => {
+    try {
+      await api.delete(`/api/suspeito/${id}/email/${emailId}`);
 
-  return { suspect, loading, error, updateSuspectDetails };
+      fetchSuspect();
+      return {
+        isSuccess: true,
+      };
+    } catch (error: unknown) {
+      console.error("Erro ao deletar email do suspeito:", error);
+      throw new Error("Erro ao deletar email do suspeito");
+    }
+  };
+  const createSuspectNumber = useCallback(
+    async (number: string, userCpf: string): Promise<CreateNumberResponse> => {
+      try {
+        const response = await api.post<CreateNumberResponse>(
+          `/api/suspeito/${id}/number`,
+          {
+            number,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              cpfUsuario: userCpf,
+            },
+          }
+        );
+        fetchSuspect();
+        return response.data;
+      } catch (err) {
+        console.log("Erro ao criar Numero", err);
+        throw new Error("Erro ao criar número ao alvo");
+      }
+    },
+    []
+  );
+
+  const deleteSuspectNumber = async (
+    numberId: number
+  ): Promise<ResponseApi<void>> => {
+    try {
+      await api.delete(`/api/suspeito/${id}/numero/${numberId}`);
+
+      fetchSuspect();
+      return {
+        isSuccess: true,
+      };
+    } catch (error) {
+      console.log("Erro ao deletar número ao alvo:", error);
+      throw new Error("Erro ao deletar número ao alvo");
+    }
+  };
+
+  return {
+    suspect,
+    loading,
+    error,
+    updateSuspectDetails,
+    createSuspectEmail,
+    createSuspectNumber,
+    deleteSuspectNumber,
+    deleteSuspectEmail,
+  };
 };
