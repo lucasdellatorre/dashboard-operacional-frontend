@@ -6,6 +6,7 @@ import { BrowserRouter } from "react-router-dom";
 import { theme } from "../../theme";
 import Operations from "../Operations";
 import { Operation } from "../../hooks/useOperations";
+import { FilterType } from "../../enum/ViewSelectionFilterEnum";
 
 // Mocks dos hooks personalizados
 vi.mock("../../hooks/useHeaderInput", () => ({
@@ -14,7 +15,7 @@ vi.mock("../../hooks/useHeaderInput", () => ({
 
 const mockOperations: Operation[] = [
   { id: 1, nome: "Operação Alfa", data_criacao: "2024-01-01", qtdAlvos: 3 },
-  { id: 2, nome: "Operação Beta", data_criacao: "2024-01-02", qtdAlvos: 5},
+  { id: 2, nome: "Operação Beta", data_criacao: "2024-01-02", qtdAlvos: 5 },
 ];
 
 const mockSetOperations = vi.fn();
@@ -29,14 +30,19 @@ vi.mock("../../hooks/useOperations", () => ({
 }));
 
 interface TableProps {
-  onSelectionChange: (selectedIds: number[], selectedItems: Operation[]) => void;
+  onSelectionChange: (
+    selectedIds: number[],
+    selectedItems: Operation[]
+  ) => void;
 }
 
 vi.mock("../../components/operationSuspectTable/table", () => ({
   default: ({ onSelectionChange }: TableProps) => (
     <div data-testid="mock-table">
       Mocked Table
-      <button onClick={() => onSelectionChange([1], [mockOperations[0]])}>Selecionar Operação</button>
+      <button onClick={() => onSelectionChange([1], [mockOperations[0]])}>
+        Selecionar Operação
+      </button>
     </div>
   ),
 }));
@@ -59,7 +65,35 @@ vi.mock("../../components/modal/createOperationModal", () => ({
 const renderWithProviders = () =>
   render(
     <ThemeProvider theme={theme}>
-      <AppContext.Provider value={{ operations: [], setOperations: mockSetOperations }}>
+      <AppContext.Provider
+        value={{
+          operations: [],
+          setOperations: mockSetOperations,
+          cpf: "",
+          setCpf: () => {},
+          suspects: [],
+          setSuspects: () => {},
+          numbers: [],
+          setNumbers: () => {},
+          worksheets: [],
+          setWorksheets: () => {},
+          dashboardFilters: {
+            filterType: FilterType.UNION,
+            chart: FilterType.ALL,
+            type: "Texto",
+            group: "Ambos",
+            options: [] as string[],
+            symmetry: "Ambos",
+          },
+          setDashboardFilters: () => {},
+          webChartFilters: {
+            type: "Texto",
+            group: "Ambos",
+            options: [] as string[],
+          },
+          setWebChartFilters: () => {},
+        }}
+      >
         <BrowserRouter>
           <Operations />
         </BrowserRouter>
@@ -74,7 +108,9 @@ describe("Operation Component", () => {
 
   it("deve renderizar o título e o botão de criar operação", () => {
     renderWithProviders();
-    expect(screen.getByText("Selecione uma operação para iniciar a investigação")).toBeInTheDocument();
+    expect(
+      screen.getByText("Selecione uma operação para iniciar a investigação")
+    ).toBeInTheDocument();
     expect(screen.getByText("Criar nova operação")).toBeInTheDocument();
   });
 
@@ -83,17 +119,28 @@ describe("Operation Component", () => {
     expect(screen.getByTestId("mock-table")).toBeInTheDocument();
   });
 
-  it("deve chamar setOperations ao selecionar uma operação", async () => {
+  it("deve exibir o botão de confirmação de seleção", () => {
     renderWithProviders();
+    expect(screen.getByText("Confirmar Seleção")).toBeInTheDocument();
+  });
+
+  it("deve habilitar o botão de confirmação ao selecionar uma operação", async () => {
+    renderWithProviders();
+    const confirmBtn = screen.getByText(
+      "Confirmar Seleção"
+    ) as HTMLButtonElement;
+    expect(confirmBtn.disabled).toBe(true);
     fireEvent.click(screen.getByText("Selecionar Operação"));
     await waitFor(() => {
-      expect(mockSetOperations).toHaveBeenCalledWith([mockOperations[0]]);
+      expect(confirmBtn.disabled).toBe(false);
     });
   });
 
   it("deve desabilitar botão de confirmação quando nada estiver selecionado", () => {
     renderWithProviders();
-    const confirmBtn = screen.getByText("Confirmar Seleção") as HTMLButtonElement;
+    const confirmBtn = screen.getByText(
+      "Confirmar Seleção"
+    ) as HTMLButtonElement;
     expect(confirmBtn.disabled).toBe(true);
   });
 
@@ -101,5 +148,12 @@ describe("Operation Component", () => {
     renderWithProviders();
     fireEvent.click(screen.getByText("Criar nova operação"));
     expect(screen.getByTestId("mock-modal")).toBeInTheDocument();
+  });
+
+  it("deve fechar o modal ao clicar no botão Fechar", () => {
+    renderWithProviders();
+    fireEvent.click(screen.getByText("Criar nova operação"));
+    fireEvent.click(screen.getByText("Fechar"));
+    expect(screen.queryByTestId("mock-modal")).not.toBeInTheDocument();
   });
 });

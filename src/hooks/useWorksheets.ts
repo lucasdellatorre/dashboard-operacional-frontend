@@ -1,82 +1,189 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { normalizeString } from "../utils/formatUtils";
-import { GenericData } from "../interface/operationSuspectTable/operationSuspectTableInterface";
+import { sheetController } from "../controllers/sheetController";
+import { GenericData } from "../interface/table/tableInterface";
 
 export interface WorkSheet extends GenericData {
   id: number;
-  worksheet: string;
-  size: string;
-  insertedBy: string;
-  date: string;
-  
+  nome: string;
+  size: number;
+  data_upload: string;
+  status?: string;
+  progress?: number;
+  job_id?: string;
+  [key: string]: string | number | string[] | undefined;
 }
-interface UseOperationsProps {
+
+interface UseWorksheetsProps {
   searchTerm: string;
 }
 
-export const mockWorksheets: WorkSheet[] = [
-  {
-    id: 1,
-    worksheet: "Planilha 1",
-    size: "14MB",
-    insertedBy: "012.345.678-90",
-    operationName: "Operação A",
-    date: "01-10-2023",
-  },
-  {
-    id: 2,
-    worksheet: "Planilha 2",
-    size: "2MB",
-    insertedBy: "234.234.234-23",
-    operationName: "Operação B, Operação C",
-    date: "12-09-2023",
-  },
-  {
-    id: 3,
-    worksheet: "Planilha 3",
-    size: "1MB",
-    insertedBy: "345.345.345-34",
-    operationName: "Operação A, Operação C, Operação D, Operação E, Operação F, Operação G, Operação H",
-    date: "12-05-2024",
-  },
-];
+export const useWorksheets = ({ searchTerm }: UseWorksheetsProps) => {
+  const [worksheets, setWorksheets] = useState<WorkSheet[]>([]);
+  const [pendingUploads, setPendingUploads] = useState<WorkSheet[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
-export const useWorksheets = ({ searchTerm }: UseOperationsProps) => {
+  // Fetch planilhas persistidas
+  useEffect(() => {
+    fetchSheetsAgain();
+    fetchPendingJobs();
+  }, []);
 
-  const [worksheets, setWorksheets] = useState<WorkSheet[]>(mockWorksheets);
-  
+  // Agrupa todas as planilhas (persistidas + pendentes)
   const filteredWorksheets = useMemo(() => {
-    let result = [...worksheets];
+    let combined = [...pendingUploads, ...worksheets];
 
     if (searchTerm?.trim()) {
       const normalizedSearch = normalizeString(searchTerm.trim());
-      result = result.filter(
-        (worksheet) =>
-          normalizeString(worksheet.worksheet).includes(normalizedSearch) ||
-          String(worksheet.id).includes(normalizedSearch)
+      combined = combined.filter(
+        (w) =>
+          normalizeString(w.nome).includes(normalizedSearch) ||
+          String(w.id).includes(normalizedSearch)
       );
     }
 
-    return result.sort((a, b) => a.worksheet.localeCompare(b.worksheet));
-  }, [searchTerm, worksheets]);
+    return combined.sort((a, b) => a.nome.localeCompare(b.nome));
+  }, [searchTerm, worksheets, pendingUploads]);
 
+  function addPendingUpload(nome: string, size: number, job_id?: string) {
+    const id = Date.now();
 
-  function addWorksheet(
-    worksheet: string,
-    size: string,
-    insertedBy: string,
-    date: string
-  ) {
-    const newWorksheet: WorkSheet = {
-      id: mockWorksheets.length + 1,
-      worksheet,
+    const newSheet: WorkSheet = {
+      id: id,
+      nome,
       size,
-      insertedBy,
-      operationName: "Operação A",
-      date,
+      data_upload: new Date().toISOString().slice(0, 10),
+      job_id,
+      status: job_id ? "Recebendo arquivo" : "Aguardando job_id",
+      progress: 0,
     };
-    setWorksheets((prevWorksheets) => [...prevWorksheets, newWorksheet]);
+
+    setPendingUploads((prev) => prev.filter(sheet => sheet.nome !== nome))
+    setPendingUploads((prev) => [...prev, newSheet]);
+
+    if (job_id) {
+      pollUploadProgress(job_id);
+    }
   }
 
-  return {filteredWorksheets, addWorksheet };
+  function removePendingUpload(name: string) {
+    setPendingUploads((prev) =>
+      prev.map((p) =>
+        p.nome === name ? { ...p, status: "Erro ao iniciar upload", progress: 0 } : p
+      )
+    );
+  }
+  function associateJobId(nome: string, job_id: string) {
+    setPendingUploads((prev) =>
+      prev.map((p) =>
+        p.nome === nome && !p.job_id ? { ...p, job_id, status: "Recebendo arquivo" } : p
+      )
+    );
+
+    pollUploadProgress(job_id);
+  }
+
+  function updatePendingProgress(job_id: string, status: string, progress: number) {
+    setPendingUploads((prev) =>
+      prev.map((p) =>
+        p.job_id === job_id ? { ...p, status, progress } : p
+      )
+    );
+  }
+
+  function pollUploadProgress(job_id: string) {
+    let errorCount = 0;
+    const MAX_ERRORS = 5;
+
+    const interval = setInterval(async () => {
+      try {
+        const progress = await sheetController.getUploadProgress(job_id);
+        updatePendingProgress(job_id, progress.status, progress.progress);
+        errorCount = 0; // reset erro se sucesso
+
+        if (progress.erro) {
+          clearInterval(interval);
+          return;
+        }
+
+        if (progress.status === "Concluído") {
+          clearInterval(interval);
+          setPendingUploads((prev) => prev.filter((p) => p.job_id !== job_id));
+          fetchSheetsAgain();
+        }
+      } catch (error) {
+        console.error("Erro ao consultar progresso do job:", error);
+        errorCount += 1;
+
+        if (errorCount >= MAX_ERRORS) {
+          updatePendingProgress(job_id, "Erro de conexão com backend", 0);
+          clearInterval(interval);
+        }
+      }
+    }, 1000);
+  }
+
+  async function fetchSheetsAgain() {
+    try {
+      setIsLoading(true); // Adicionado
+      const response = await sheetController.getAllSheets();
+      const transformed = Array.isArray(response.Planilhas)
+        ? response.Planilhas.map((sheet) => ({
+          id: sheet.id,
+          nome: sheet.nome,
+          size: sheet.size,
+          data_upload: sheet.data_upload,
+          status: "Concluído",
+        }))
+        : [];
+      setWorksheets(transformed);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error("Failed to refresh worksheets"));
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function fetchPendingJobs() {
+    try {
+      const jobs = await sheetController.getPendingJobs();
+
+      if (!Array.isArray(jobs)) return;
+
+      setPendingUploads((prev) => {
+        const existingJobIds = new Set(prev.map((p) => p.job_id));
+        const newUploads: WorkSheet[] = [];
+
+        for (const job of jobs) {
+          if (!existingJobIds.has(job.job_id)) {
+            newUploads.push({
+              id: Date.now() + Math.random(),
+              nome: job.nome,
+              size: job.size,
+              data_upload: job.data_upload ?? new Date().toISOString().slice(0, 10),
+              job_id: job.job_id,
+              status: "Recebendo arquivo",
+              progress: 0,
+            });
+
+            pollUploadProgress(job.job_id);
+          }
+        }
+
+        return [...prev, ...newUploads];
+      });
+    } catch (err) {
+      console.error("Erro ao buscar jobs pendentes:", err);
+    }
+  }
+
+  return {
+    filteredWorksheets,
+    isLoading,
+    error,
+    addPendingUpload,
+    associateJobId,
+    removePendingUpload
+  };
 };

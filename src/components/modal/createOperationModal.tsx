@@ -57,8 +57,8 @@ const CreateOperationModal: React.FC<CreateOperationModalProps> = ({
       reset();
       onClose();
     } catch (err) {
-      console.error("Erro ao criar operação:", err);
-      setSubmitError("Não foi possível criar a operação. Tente novamente.");
+      if (err)
+        setSubmitError("Não foi possível criar a operação. Tente novamente.");
     } finally {
       setIsSubmitting(false);
     }

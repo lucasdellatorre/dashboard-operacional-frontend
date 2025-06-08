@@ -39,7 +39,7 @@ export interface Numbers extends GenericData {
 
 interface SuspectList {
   suspeitos: SuspectDTO[];
-  numeros: NumbersDTO[];
+  numeros: NumbersDTO[]; 
 }
 
 interface UseSuspectsProps {
@@ -58,8 +58,6 @@ export const useSuspects = ({ searchTerm, operationIds }: UseSuspectsProps) => {
     setError(null);
 
     const url = `/api/numeros/operacao/${operationIds.join(",")}`;
-    console.log("fetching:", url);
-
     api
       .get<SuspectList>(url)
       .then(({ data }) => setData(data))

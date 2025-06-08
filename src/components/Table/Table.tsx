@@ -37,7 +37,8 @@ function GenericTable<T extends GenericData>({
   addButton = false,
   collapsible = false,
   defaultCollapsed = true,
-  headerCollor
+  headerCollor,
+  renderCell
 }: GenericTableProps<T>) {
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<keyof T>(defaultOrderBy);
@@ -224,7 +225,9 @@ function GenericTable<T extends GenericData>({
                           maxWidth: "10rem",
                         }}
                       >
-                        {headCell.iconAction ? (
+                        {renderCell && renderCell(headCell.id, row) !== undefined ? (
+                          renderCell(headCell.id, row)
+                        ) : headCell.iconAction ? (
                           <Box
                             onClick={(e) => {
                               e.stopPropagation();
@@ -265,6 +268,7 @@ function GenericTable<T extends GenericData>({
                       </TableCell>
                     );
                   })}
+
                 </TableRow>
               );
             })}
