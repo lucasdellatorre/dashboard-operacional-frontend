@@ -226,12 +226,15 @@ const SuspectsDetails = () => {
         onClose={() => setOpenEmailModal(false)}
         onSubmit={criarEditarEmail}
       />
-      <Collapse in={alert.show} sx={{ bgcolor: "customBackground.secondary" }}>
+      {alert.show && (
         <Alert
           severity={alert.type}
           onClose={() => setAlert({ ...alert, show: false })}
           sx={{
-            mb: 2,
+            position: "fixed",
+            top: 16,
+            left: "calc(50% + 1px)",
+            zIndex: 9999,
             borderRadius: 2,
             boxShadow: 3,
             fontWeight: 500,
@@ -251,7 +254,7 @@ const SuspectsDetails = () => {
         >
           {alert.message}
         </Alert>
-      </Collapse>
+      )}
       <Box
         bgcolor="customBackground.secondary"
         sx={{
