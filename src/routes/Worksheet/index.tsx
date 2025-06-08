@@ -7,7 +7,7 @@ import {
   Tooltip,
   LinearProgress,
 } from "@mui/material";
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import React, { useCallback, useContext, useState } from "react";
 import { HeadCell } from "../../interface/table/tableInterface";
 import GenericTable from "../../components/Table/Table";
@@ -97,7 +97,6 @@ const Worksheet: React.FC = () => {
 
   return (
     <Box p={3} sx={{ fontFamily: "Inter, sans-serif" }}>
-
       <Box
         display={"flex"}
         justifyContent={"space-between"}
@@ -137,8 +136,8 @@ const Worksheet: React.FC = () => {
           <CircularProgress />
         </Box>
       ) : (
-
         <GenericTable
+          showDeleteButton={false}
           singleSelect={true}
           rows={filteredWorksheets}
           headCells={workSheetsHeaderCells}
@@ -149,13 +148,24 @@ const Worksheet: React.FC = () => {
           noDataMessage="Nenhuma planilha encontrada"
           renderCell={(columnId, row) => {
             if (columnId === "status") {
-              const isError = String(row.status || "").toLowerCase().startsWith("erro");
+              const isError = String(row.status || "")
+                .toLowerCase()
+                .startsWith("erro");
 
               if (isError) {
                 return (
-                  <Box display="flex" alignItems="center" justifyContent="center">
+                  <Box
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                  >
                     <Tooltip title={String(row.status)} arrow>
-                      <Box display="flex" alignItems="center" gap={0.5} color="error.main">
+                      <Box
+                        display="flex"
+                        alignItems="center"
+                        gap={0.5}
+                        color="error.main"
+                      >
                         <ErrorOutlineIcon fontSize="small" />
                         <Typography color="error">Erro</Typography>
                       </Box>
@@ -167,7 +177,11 @@ const Worksheet: React.FC = () => {
               if (typeof row.progress === "number") {
                 return (
                   <Box>
-                    <Typography variant="caption" textAlign="center" display="block">
+                    <Typography
+                      variant="caption"
+                      textAlign="center"
+                      display="block"
+                    >
                       {`${row.progress}%`}
                     </Typography>
                     <LinearProgress
@@ -196,7 +210,14 @@ const Worksheet: React.FC = () => {
         isOpen={openModal}
         onClose={() => setOpenModal(false)}
         onUploadSuccess={handleUpload}
-        existingFiles={filteredWorksheets.filter((Worksheet) => !String(Worksheet.status || "").toLowerCase().startsWith("erro")).map((worksheet) => worksheet.nome)}
+        existingFiles={filteredWorksheets
+          .filter(
+            (Worksheet) =>
+              !String(Worksheet.status || "")
+                .toLowerCase()
+                .startsWith("erro")
+          )
+          .map((worksheet) => worksheet.nome)}
         operationsList={filteredOperations}
       />
     </Box>
