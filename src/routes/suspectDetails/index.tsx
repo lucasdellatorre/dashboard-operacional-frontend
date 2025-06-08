@@ -237,16 +237,14 @@ const SuspectsDetails = () => {
             fontWeight: 500,
             backgroundColor: (theme) =>
               alert.type === "success"
-                ? alpha(theme.palette.success.light, 0.2)
+                ? alpha(theme.palette.success.light, 1)
                 : alert.type === "error"
-                ? alpha(theme.palette.error.light, 0.2)
-                : alpha(theme.palette.info.light, 0.2),
-            color: (theme) =>
-              alert.type === "success"
-                ? theme.palette.success.dark
-                : alert.type === "error"
-                ? theme.palette.error.dark
-                : theme.palette.info.dark,
+                ? alpha(theme.palette.error.light, 1)
+                : alpha(theme.palette.info.light, 1),
+            color: "#ffffff",
+            "& .MuiAlert-icon": {
+              color: "white",
+            },
           }}
         >
           {alert.message}
