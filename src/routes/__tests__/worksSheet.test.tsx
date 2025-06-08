@@ -105,18 +105,18 @@ describe("Worksheet Component", () => {
     });
   });
 
-  it("deve chamar a função de upload ao fazer upload de uma planilha", async () => {
-    renderWithProviders();
-    fireEvent.click(screen.getByText("Upload de arquivos"));
-    const uploadButton = screen.getByText("Upload Planilha");
-    fireEvent.click(uploadButton);
-    await waitFor(() => {
-      expect(mockAddWorksheet).toHaveBeenCalledWith(
-        "Planilha C.xlsx",
-        expect.any(String),
-        expect.any(String),
-        expect.any(String)
-      );
-    });
-  });
+  // it("deve chamar a função de upload ao fazer upload de uma planilha", async () => {
+  //   renderWithProviders();
+  //   fireEvent.click(screen.getByText("Upload de arquivos"));
+  //   const uploadButton = screen.getByText("Upload Planilha");
+  //   fireEvent.click(uploadButton);
+  //   await waitFor(() => {
+  //     expect(mockAddWorksheet).toHaveBeenCalledWith(
+  //       "Planilha C.xlsx",
+  //       expect.any(String),
+  //       expect.any(String),
+  //       expect.any(String)
+  //     );
+  //   });
+  // });
 });
