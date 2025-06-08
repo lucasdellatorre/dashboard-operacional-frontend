@@ -52,10 +52,10 @@ export const ApplicationProvider = ({
   });
 
   const [webChartFilters, setWebChartFilters] = useState<ChartFilters>({
-    type: "Texto",
-    group: "Ambos",
+    type: "Todos",
+    group: "Todos",
     options: [] as string[],
-    symmetry: "Ambos",
+    symmetry: "Todos",
   });
 
   return (
