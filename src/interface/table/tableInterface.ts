@@ -37,6 +37,7 @@ export interface GenericTableProps<T extends GenericData> {
   collapsible?: boolean;
   defaultCollapsed?: boolean;
   renderCell?: (id: keyof T, row: T) => React.ReactNode;
+  allowDelete?: boolean;
 }
 
 export interface EnhancedTableHeadProps<T extends GenericData> {

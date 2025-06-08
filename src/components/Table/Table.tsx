@@ -38,7 +38,8 @@ function GenericTable<T extends GenericData>({
   collapsible = false,
   defaultCollapsed = true,
   headerCollor,
-  renderCell
+  renderCell,
+  allowDelete = false
 }: GenericTableProps<T>) {
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<keyof T>(defaultOrderBy);
@@ -310,13 +311,14 @@ function GenericTable<T extends GenericData>({
         <EnhancedTableToolbar
           numSelected={selected.length}
           title={title}
-          onDelete={handleDelete}
+          onDelete={onDelete}
           onAdd={onAdd}
           addButton={addButton}
           collapsible={collapsible}
           collapsed={collapsed}
           onToggleCollapse={handleToggleCollapse}
           headerCollor={headerCollor}
+          allowDelete={allowDelete}
         />
         {collapsible ? (
           <Collapse in={!collapsed}>{tableContent()}</Collapse>

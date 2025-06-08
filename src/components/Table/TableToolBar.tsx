@@ -6,6 +6,11 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { Box, Button } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import React from "react";
 
 interface EnhancedTableToolbarProps {
   numSelected: number;
@@ -17,6 +22,7 @@ interface EnhancedTableToolbarProps {
   collapsed?: boolean;
   onToggleCollapse?: () => void;
   headerCollor?: string;
+  allowDelete?: boolean;
 }
 
 const EnhancedTableToolbar: React.FC<EnhancedTableToolbarProps> = ({
@@ -28,8 +34,16 @@ const EnhancedTableToolbar: React.FC<EnhancedTableToolbarProps> = ({
   collapsed,
   collapsible,
   onToggleCollapse,
-  headerCollor
+  headerCollor,
+  allowDelete = false
 }) => {
+  const [openDialog, setOpenDialog] = React.useState(false);
+  const handleDeleteClick = () => setOpenDialog(true);
+  const handleDialogClose = () => setOpenDialog(false);
+  const handleConfirmDelete = () => {
+    setOpenDialog(false);
+    if (onDelete) onDelete();
+  };
   return (
     <Toolbar
       sx={[
@@ -59,12 +73,33 @@ const EnhancedTableToolbar: React.FC<EnhancedTableToolbarProps> = ({
           {numSelected > 0 ? `${numSelected} selecionado(s)` : title}
         </Typography>
       </Box>
-      {numSelected > 0 && (
-        <Tooltip title="Excluir">
-          <IconButton onClick={onDelete}>
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
+      {allowDelete && typeof onDelete === 'function' && (
+        <Box display="flex" alignItems="center" gap={1} sx={{ whiteSpace: 'nowrap', ml: 'auto', pr: 3 }}>
+          <Tooltip title="Excluir todos">
+            <IconButton onClick={handleDeleteClick}>
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
+          <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
+            Excluir todos
+          </Typography>
+          <Dialog open={openDialog} onClose={handleDialogClose}>
+            <DialogTitle>Confirmar exclusão</DialogTitle>
+            <DialogContent>
+              <Typography>
+                Deseja realmente excluir todos?
+              </Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleDialogClose} color="inherit">
+                Cancelar
+              </Button>
+              <Button onClick={handleConfirmDelete} color="error" variant="contained">
+                Excluir todos
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </Box>
       )}
       {addButton && (
         <Button
