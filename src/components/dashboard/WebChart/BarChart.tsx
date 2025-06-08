@@ -39,8 +39,8 @@ const CustomTooltip = ({ active, payload, label, tooltipLabel }: any) => {
           textAlign: "center",
         }}
       >
-        <div>{`Contato ${label}`}</div>
-        <div>{tooltipLabel || "Total"}: {payload[0].value}</div>
+        <div>{(tooltipLabel || "Contato") + ": " + label}</div>
+        <div>{"Total"}: {payload[0].value}</div>
       </Box>
     );
   }

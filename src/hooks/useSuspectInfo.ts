@@ -58,8 +58,7 @@ export const useSuspectInfo = (id: number) => {
         })),
       };
       setSuspect(formattedData);
-    } catch (err) {
-      console.error("Erro ao buscar suspeito:", err);
+    } catch (error) {
       setError("Não foi possível carregar os dados do suspeito.");
     } finally {
       setLoading(false);
@@ -93,8 +92,11 @@ export const useSuspectInfo = (id: number) => {
         isSuccess: true,
       };
     } catch (error) {
-      console.error("Erro ao atualizar os detalhes do suspeito:", error);
-      throw error;
+      setError("Erro ao atualizar os dados do suspeito.");
+      return {
+        response: undefined,
+        isSuccess: false,
+      };
     }
   }
 

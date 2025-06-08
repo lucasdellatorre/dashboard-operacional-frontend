@@ -76,10 +76,7 @@ export const useSuspects = ({ searchTerm, operationIds }: UseSuspectsProps) => {
         );
         return response.data;
       } catch (err) {
-        console.error("Erro ao criar suspeito:", err);
-
         const message = "Erro ao criar suspeito";
-
         throw new Error(message);
       }
     },
@@ -96,7 +93,6 @@ export const useSuspects = ({ searchTerm, operationIds }: UseSuspectsProps) => {
       .get<SuspectList>(url)
       .then(({ data }) => setData(data))
       .catch((err) => {
-        console.error("Erro ao carregar alvos:", err);
         setError("Não foi possível carregar os alvos.");
       })
       .finally(() => setLoading(false));

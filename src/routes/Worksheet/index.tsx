@@ -67,7 +67,6 @@ const Worksheet: React.FC = () => {
         removePendingUpload(file.name);
       }
     } catch (error) {
-      console.error("Erro ao fazer upload:", error);
       removePendingUpload(file.name);
     }
   };
