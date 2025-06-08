@@ -30,7 +30,6 @@ export interface NumbersDTO {
   operacoes: SuspectOperation[];
 }
 
-// DTOs usados na tabela (formatados como string)
 export interface Suspect extends GenericData {
   apelido: string;
   relevante: string;
@@ -75,14 +74,10 @@ export const useSuspects = ({ searchTerm, operationIds }: UseSuspectsProps) => {
           }
         );
         return response.data;
-      } catch (err: any) {
+      } catch (err) {
         console.error("Erro ao criar suspeito:", err);
 
-        const message =
-          err.response?.data?.message ||
-          err.response?.data?.detail || // caso use FastAPI ou algo similar
-          err.message ||
-          "Erro ao criar suspeito";
+        const message = "Erro ao criar suspeito";
 
         throw new Error(message);
       }
@@ -95,7 +90,6 @@ export const useSuspects = ({ searchTerm, operationIds }: UseSuspectsProps) => {
     setError(null);
 
     const url = `/api/numeros/operacao/${operationIds.join(",")}`;
-    console.log("fetching:", url);
 
     api
       .get<SuspectList>(url)
@@ -107,12 +101,10 @@ export const useSuspects = ({ searchTerm, operationIds }: UseSuspectsProps) => {
       .finally(() => setLoading(false));
   }, [operationIds]);
 
-  // Requisição de dados da APID
   useEffect(() => {
     fetchSuspects();
-  }, [operationIds]);
+  }, [operationIds, fetchSuspects]);
 
-  // Filtro e transformação para exibição na tabela
   const suspects: Suspect[] = useMemo(() => {
     const search = normalizeString(searchTerm.trim());
 

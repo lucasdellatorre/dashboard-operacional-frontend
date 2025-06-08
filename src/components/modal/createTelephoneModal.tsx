@@ -122,7 +122,7 @@ const TelephoneModal: React.FC<TelephoneModalProps> = ({
                 variant="outlined"
                 InputProps={{
                   sx: {
-                    height: "2.5rem",
+                    height: "3.5rem",
                     "& .MuiOutlinedInput-notchedOutline": {
                       borderColor: "rgba(0, 0, 0, 0.23)",
                     },
