@@ -21,7 +21,6 @@ import { isValidCPF } from "../../utils/validationUtils";
 import EditableMultilineField from "../../components/editableMultilineField";
 import { useSuspectInfo } from "../../hooks/useSuspectInfo";
 import TelephoneModal from "../../components/modal/createTelephoneModal";
-import { updateSuspectDetails } from "../../controllers/suspectController";
 
 interface Email extends GenericData {
   email: string;
@@ -67,7 +66,7 @@ const SuspectsDetails = () => {
       color: "inherit !important",
     },
   };
-  const { suspect, loading, error } = useSuspectInfo(
+  const { suspect, loading, error, updateSuspectDetails } = useSuspectInfo(
     Number(window.location.pathname.split("/").pop())
   );
 
