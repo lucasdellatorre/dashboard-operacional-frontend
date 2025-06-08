@@ -15,7 +15,7 @@ interface EditableMultilineFieldProps {
   value: string;
   onChange: (newValue: string) => void;
   rows?: number;
-  onConfirm?: () => void;
+  onConfirm?: (newValue: string) => void;
   loading?: boolean;
 }
 
@@ -29,7 +29,6 @@ const EditableMultilineField = ({
 }: EditableMultilineFieldProps) => {
   const [editing, setEditing] = useState(false);
   const [tempValue, setTempValue] = useState(value);
-
   useEffect(() => {
     if (!editing) {
       setTempValue(value);
@@ -40,7 +39,7 @@ const EditableMultilineField = ({
     onChange(tempValue);
     setEditing(false);
     if (onConfirm) {
-      onConfirm();
+      onConfirm(tempValue);
     }
   };
 
@@ -65,12 +64,16 @@ const EditableMultilineField = ({
           InputProps={{ readOnly: !editing }}
           disabled={loading}
           sx={{
+            "&:hover .MuiOutlinedInput-notchedOutline": {
+              borderColor: "#bfbfbf",
+            },
             "& .MuiOutlinedInput-root": {
               borderRadius: "1rem",
               backgroundColor: "white",
               paddingRight: "3rem",
               "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: "customButton.gold",
+                borderColor: editing ? "customButton.gold" : "#bfbfbf",
+                borderWidth: "1px",
               },
             },
             "& .MuiOutlinedInput-input": {

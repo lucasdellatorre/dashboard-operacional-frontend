@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -15,7 +15,7 @@ interface EditableFieldProps {
   placeholder?: string;
   value: string;
   onChange: (newValue: string) => void;
-  onConfirm?: () => void;
+  onConfirm?: (newValue: string) => void;
   loading?: boolean;
   disabled?: boolean;
 }
@@ -32,11 +32,17 @@ const EditableField = ({
   const [editing, setEditing] = useState(false);
   const [tempValue, setTempValue] = useState(value);
 
+  useEffect(() => {
+    if (!editing) {
+      setTempValue(value);
+    }
+  }, [value, editing]);
+
   const handleConfirm = () => {
     onChange(tempValue);
     setEditing(false);
     if (onConfirm) {
-      onConfirm();
+      onConfirm(tempValue);
     }
   };
 
@@ -60,11 +66,15 @@ const EditableField = ({
           disabled={loading || disabled}
           sx={{
             width: "100%",
+            "&:hover .MuiOutlinedInput-notchedOutline": {
+              borderColor: "#bfbfbf",
+            },
             "& .MuiOutlinedInput-root": {
               borderRadius: editing ? "0.313rem" : "0.313rem 0 0 0.313rem",
               backgroundColor: "white",
               "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: "customButton.gold",
+                borderColor: editing ? "customButton.gold" : "#bfbfbf",
+                borderWidth: "1px",
               },
             },
             "& .MuiOutlinedInput-input": {

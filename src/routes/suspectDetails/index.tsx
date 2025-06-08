@@ -39,6 +39,7 @@ interface Ips extends GenericData {
 }
 
 const formatCPF = (value: string): string => {
+  if (!value) return "";
   const numericValue = value.replace(/\D/g, "").slice(0, 11);
   return numericValue
     .replace(/(\d{3})(\d)/, "$1.$2")
@@ -47,11 +48,54 @@ const formatCPF = (value: string): string => {
 };
 
 const SuspectsDetails = () => {
+  const focusedTextFieldStyles = {
+    minWidth: "11rem",
+    "&:hover .MuiOutlinedInput-notchedOutline": {
+      borderColor: "customButton.lightGray",
+    },
+    "& label.Mui-focused": {
+      color: "inherit",
+    },
+    "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+      borderColor: "customButton.lightGray",
+      borderWidth: "1px",
+    },
+
+    "& .MuiOutlinedInput-root": {
+      "&:hover fieldset": {
+        borderColor: "customButton.lightGray",
+      },
+      "&.Mui-focused fieldset": {
+        borderColor: "customButton.lightGray",
+      },
+      "& input": {
+        outline: "none",
+      },
+    },
+  };
+  const menuItemStyles = {
+    padding: "4px 16px",
+    "&:hover": {
+      backgroundColor: "transparent !important",
+      color: "inherit !important",
+    },
+    "&.Mui-selected": {
+      backgroundColor: "hsla(44, 45.60%, 42.50%, 0.08) !important",
+      color: "inherit !important",
+    },
+    "&.Mui-selected:hover": {
+      backgroundColor: "hsla(44, 45.60%, 42.50%, 0.08) !important",
+      color: "inherit !important",
+    },
+    "&.Mui-selected, &.Mui-selected:focus, &.Mui-selected:active": {
+      backgroundColor: "hsla(44, 45.60%, 42.50%, 0.08) !important",
+      color: "inherit !important",
+    },
+  };
   const { suspect, loading, error } = useSuspectInfo(
     Number(window.location.pathname.split("/").pop())
   );
 
-  // Estado para controlar o loading individual de cada campo
   const [loadingFields, setLoadingFields] = useState({
     nickname: false,
     name: false,
@@ -59,20 +103,19 @@ const SuspectsDetails = () => {
     notes: false,
     relevante: false,
   });
-  
+
   const [nickname, setNickname] = useState("");
   const [name, setName] = useState("");
   const [cpf, setCpf] = useState("");
   const [cpfError, setCpfError] = useState("");
   const [notes, setNotes] = useState("");
   const [relevante, setRelevante] = useState<boolean>(false);
-  const [isModified, setIsModified] = useState(false);
   const [alert, setAlert] = useState({
     show: false,
     message: "",
     type: "info" as "error" | "warning" | "info" | "success",
   });
-  
+
   useEffect(() => {
     if (alert.show) {
       const timer = setTimeout(() => {
@@ -93,69 +136,71 @@ const SuspectsDetails = () => {
   }, [suspect]);
 
   async function updateField(field: string, value: string | boolean) {
-    setLoadingFields(prev => ({ ...prev, [field]: true }));
-  
+    setLoadingFields((prev) => ({ ...prev, [field]: true }));
+
     const fieldMapping: Record<string, string> = {
-      nickname: 'apelido',
-      name: 'nome',
-      cpf: 'cpf',
-      notes: 'anotacoes',
-      relevante: 'relevante'
+      nickname: "apelido",
+      name: "nome",
+      cpf: "cpf",
+      notes: "anotacoes",
+      relevante: "relevante",
     };
-    
+
     const values = {
-      [fieldMapping[field]]: value || null
+      [fieldMapping[field]]: value || null,
     };
-    
-    const { isSuccess, errorMessage } = await updateSuspectDetails(
-      suspect?.id.toString() || "",
-      values
-    );
-  
-    setLoadingFields(prev => ({ ...prev, [field]: false }));
-    
-    if (isSuccess) {
-      setAlert({
-        show: true,
-        type: "success",
-        message: "Campo atualizado com sucesso!",
-      });
-    } else {
-    
+
+    try {
+      const { isSuccess, errorMessage } = await updateSuspectDetails(
+        suspect?.id.toString() || "",
+        values
+      );
+
+      if (isSuccess) {
+        setAlert({
+          show: true,
+          type: "success",
+          message: "Campo atualizado com sucesso!",
+        });
+      } else {
+        setAlert({
+          show: true,
+          type: "error",
+          message: errorMessage || "Erro ao atualizar o campo.",
+        });
+      }
+    } catch (error) {
       setAlert({
         show: true,
         type: "error",
-        message: errorMessage || "Erro ao atualizar o campo.",
+        message: "Erro inesperado ao atualizar o campo.",
       });
+    } finally {
+      setLoadingFields((prev) => ({ ...prev, [field]: false }));
     }
   }
 
   const handleNicknameChange = (newValue: string) => {
     setNickname(newValue);
-    setIsModified(true);
   };
 
   const handleNameChange = (newValue: string) => {
     setName(newValue);
-    setIsModified(true);
   };
 
   const handleCpfChange = (newValue: string) => {
     const formatted = formatCPF(newValue);
     setCpf(formatted);
     setCpfError(isValidCPF(formatted) ? "" : "CPF inválido");
-    setIsModified(true);
   };
 
   const handleNotesChange = (newValue: string) => {
     setNotes(newValue);
-    setIsModified(true);
   };
 
   const handleRelevanteChange = (value: string) => {
     const newValue = value === "sim";
     setRelevante(newValue);
-    setIsModified(true);
     updateField("relevante", newValue);
   };
 
@@ -267,7 +312,6 @@ const SuspectsDetails = () => {
             <ArrowBackIosIcon sx={{ fontSize: "1.125rem" }} />
             Voltar
           </Typography>
-
         </Box>
 
         <Typography
@@ -285,7 +329,7 @@ const SuspectsDetails = () => {
           </Typography>
         )}
 
-{!error && (
+        {!error && (
           <>
             <Box display="flex" flexDirection="row" gap={10} flexWrap="wrap">
               <Box
@@ -306,23 +350,24 @@ const SuspectsDetails = () => {
                       label="Apelido"
                       value={nickname}
                       onChange={handleNicknameChange}
-                      onConfirm={() => updateField("nickname", nickname)}
+                      onConfirm={(newValue) =>
+                        updateField("nickname", newValue)
+                      }
                       loading={loadingFields.nickname}
                     />
                     <EditableField
                       label="Nome"
                       value={name}
                       onChange={handleNameChange}
-                      onConfirm={() => updateField("name", name)}
+                      onConfirm={(newValue) => updateField("name", newValue)}
                       loading={loadingFields.name}
                     />
                     <EditableField
                       label="CPF"
                       value={cpf}
                       onChange={handleCpfChange}
-                      onConfirm={() => !cpfError && updateField("cpf", cpf)}
+                      onConfirm={(newValue) => updateField("cpf", newValue)}
                       loading={loadingFields.cpf}
-                      disabled={!!cpfError}
                     />
                     {cpfError && (
                       <Typography fontSize="0.875rem" color="error">
@@ -339,7 +384,7 @@ const SuspectsDetails = () => {
                   label="Anotações"
                   value={notes}
                   onChange={handleNotesChange}
-                  onConfirm={() => updateField("notes", notes)}
+                  onConfirm={(newValue) => updateField("notes", newValue)}
                   loading={loadingFields.notes}
                 />
               )}
@@ -363,9 +408,7 @@ const SuspectsDetails = () => {
                     fontWeight: 600,
                     fontSize: "0.875rem",
                     color: "text.primary",
-                    "&.Mui-focused": {
-                      color: "text.primary", // evita ficar azul no foco
-                    },
+                    ...focusedTextFieldStyles,
                   }}
                 >
                   Relevante
@@ -387,37 +430,11 @@ const SuspectsDetails = () => {
                     },
                   }}
                 >
-                  <MenuItem
-                    value="sim"
-                    sx={{
-                      "&.Mui-selected": {
-                        backgroundColor: (theme) =>
-                          alpha(theme.palette.customButton.gold, 0.4),
-                        color: "black",
-                      },
-                      "&.Mui-selected:hover": {
-                        backgroundColor: (theme) =>
-                          alpha(theme.palette.customButton.gold, 0.5),
-                      },
-                    }}
-                  >
+                  <MenuItem value="sim" sx={menuItemStyles}>
                     Sim
                   </MenuItem>
 
-                  <MenuItem
-                    value="nao"
-                    sx={{
-                      "&.Mui-selected": {
-                        backgroundColor: (theme) =>
-                          alpha(theme.palette.customButton.gold, 0.4),
-                        color: "black",
-                      },
-                      "&.Mui-selected:hover": {
-                        backgroundColor: (theme) =>
-                          alpha(theme.palette.customButton.gold, 0.5),
-                      },
-                    }}
-                  >
+                  <MenuItem value="nao" sx={menuItemStyles}>
                     Não
                   </MenuItem>
                 </Select>
@@ -425,8 +442,7 @@ const SuspectsDetails = () => {
             )}
             {!loading && (
               <p style={{ fontSize: "0.775rem", color: "#666" }}>
-                *Para editar os inputs, clique no botão de lapis e após terminar
-                de editar clique novamente no lapis para desabilitar a edição
+                *Para editar os inputs, clique no botão de lapis
               </p>
             )}
 
