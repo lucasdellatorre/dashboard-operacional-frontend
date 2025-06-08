@@ -112,22 +112,23 @@ const SuspectsDetails = () => {
   async function updateField(field: string, value: string | boolean) {
     setLoadingFields((prev) => ({ ...prev, [field]: true }));
 
-    const fieldMapping: Record<string, string> = {
-      nickname: "apelido",
-      name: "nome",
-      cpf: "cpf",
-      notes: "anotacoes",
-      relevante: "relevante",
-    };
-
-    const values = {
-      [fieldMapping[field]]: value || null,
+    const allValues = {
+      apelido: field === "nickname" ? value : nickname || null,
+      nome: field === "name" ? value : name || null,
+      cpf:
+        field === "cpf"
+          ? typeof value === "string"
+            ? value.replace(/\D/g, "")
+            : cpf.replace(/\D/g, "")
+          : cpf.replace(/\D/g, "") || null,
+      anotacoes: field === "notes" ? value : notes || null,
+      relevante: field === "relevante" ? value : relevante,
     };
 
     try {
       const { isSuccess, errorMessage } = await updateSuspectDetails(
         suspect?.id.toString() || "",
-        values
+        allValues
       );
 
       if (isSuccess) {
