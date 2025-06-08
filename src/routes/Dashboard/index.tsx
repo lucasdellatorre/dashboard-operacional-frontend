@@ -258,7 +258,10 @@ const Dashboard: React.FC = () => {
               style="gray"
               placeholder="Selecione os nomes"
               height="53px"
-              options={options}
+              options={options.map((option) => ({
+                id: option,
+                label: option,
+              }))}
               selectedOptions={filters.options}
               onChange={(opts) => setFilters({ ...filters, options: opts })}
             />

@@ -17,6 +17,7 @@ interface EnhancedTableToolbarProps {
   collapsed?: boolean;
   onToggleCollapse?: () => void;
   headerCollor?: string;
+  showDeleteButton?: boolean;
 }
 
 const EnhancedTableToolbar: React.FC<EnhancedTableToolbarProps> = ({
@@ -28,7 +29,8 @@ const EnhancedTableToolbar: React.FC<EnhancedTableToolbarProps> = ({
   collapsed,
   collapsible,
   onToggleCollapse,
-  headerCollor
+  headerCollor,
+  showDeleteButton,
 }) => {
   return (
     <Toolbar
@@ -37,17 +39,20 @@ const EnhancedTableToolbar: React.FC<EnhancedTableToolbarProps> = ({
           pl: { sm: 2 },
           pr: { xs: 1, sm: 1 },
         },
-        collapsed && headerCollor ?
-          { bgcolor: headerCollor, }
-          :
-          numSelected > 0 ?
-            { bgcolor: "table.grey" }
-            :
-            { bgcolor: "table.grey" },
+        collapsed && headerCollor
+          ? { bgcolor: headerCollor }
+          : numSelected > 0
+          ? { bgcolor: "table.grey" }
+          : { bgcolor: "table.grey" },
       ]}
     >
       <Box
-        sx={{ flex: "1 1 100%", display: "flex", alignItems: "center", cursor: collapsible ? "pointer" : "default" }}
+        sx={{
+          flex: "1 1 100%",
+          display: "flex",
+          alignItems: "center",
+          cursor: collapsible ? "pointer" : "default",
+        }}
         onClick={collapsible ? onToggleCollapse : undefined}
       >
         {collapsible && (
@@ -59,7 +64,7 @@ const EnhancedTableToolbar: React.FC<EnhancedTableToolbarProps> = ({
           {numSelected > 0 ? `${numSelected} selecionado(s)` : title}
         </Typography>
       </Box>
-      {numSelected > 0 && (
+      {numSelected > 0 && showDeleteButton && (
         <Tooltip title="Excluir">
           <IconButton onClick={onDelete}>
             <DeleteIcon />

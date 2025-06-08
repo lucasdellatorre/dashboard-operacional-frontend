@@ -22,6 +22,7 @@ export interface GenericTableProps<T extends GenericData> {
     selectedItems: T[]
   ) => void;
   onDelete?: (selectedIds: readonly number[], selectedItems: T[]) => void;
+  showDeleteButton?: boolean;
 }
 
 export interface EnhancedTableHeadProps<T extends GenericData> {

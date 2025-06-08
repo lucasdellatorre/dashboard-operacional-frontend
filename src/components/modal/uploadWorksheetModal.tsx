@@ -43,7 +43,7 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
   onUploadSuccess,
   onClose,
   existingFiles,
-  operationsList
+  operationsList,
 }) => {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -52,8 +52,8 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
     handleSubmit,
     reset,
     setValue,
-    setError,      
-    clearErrors, 
+    setError,
+    clearErrors,
     formState: { errors },
   } = useForm<UploadModalForm>({
     mode: "all",
@@ -102,10 +102,10 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
     setSubmitError(null);
     reset();
     onUploadSuccess(data.uploadFile, data.operations[0]);
-  }
+  };
 
   useEffect(() => {
-    setSubmitError(null)
+    setSubmitError(null);
   }, [isOpen]);
 
   return (
@@ -176,20 +176,23 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
           <Typography sx={{ fontWeight: 800, fontSize: "1rem" }}>
             Operações*
           </Typography>
-            <Controller
-              control={control}
-              name="operations"
-              render={({ field }) => (
-                <MultiSelect
-                  style="white"
-                  placeholder="Selecione as operações"
-                  height="2.5rem"
-                  options={operationsList.map((op) => op.nome)}
-                  selectedOptions={field.value}
-                  onChange={handleChangeOperations}
-                />
-              )}
-            />
+          <Controller
+            control={control}
+            name="operations"
+            render={({ field }) => (
+              <MultiSelect
+                style="white"
+                placeholder="Selecione as operações"
+                height="2.5rem"
+                options={operationsList.map((op) => ({
+                  id: op.id.toString(),
+                  label: op.nome,
+                }))}
+                selectedOptions={field.value}
+                onChange={handleChangeOperations}
+              />
+            )}
+          />
           <Box height="1.5rem">
             {errors.operations && (
               <Typography color="error" variant="caption">
@@ -203,9 +206,7 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
           <Controller
             control={control}
             name="uploadFile"
-            render={() => (
-              <UploadAreaInput onFileSelect={handleFileSelected} />
-            )}
+            render={() => <UploadAreaInput onFileSelect={handleFileSelected} />}
           />
           <Box height="1.5rem">
             {errors.uploadFile && (

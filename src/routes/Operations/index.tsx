@@ -20,17 +20,15 @@ const Operations: React.FC = () => {
   const [searchParams] = useSearchParams();
 
   const { headerInputValue } = useHeaderInput();
-  const {
-    operations,
-    setOperations,
-    setSuspects,
-    setNumbers,
-  } = useContext(AppContext);
+  const { operations, setOperations, setSuspects, setNumbers } =
+    useContext(AppContext);
 
   const [openModal, setOpenModal] = useState(false);
 
   // IDs e objetos selecionados localmente (antes do confirmar)
-  const [selectedIds, setSelectedIds] = useState<readonly number[]>(operations.map(op => op.id));
+  const [selectedIds, setSelectedIds] = useState<readonly number[]>(
+    operations.map((op) => op.id)
+  );
   const [selectedItems, setSelectedItems] = useState<Operation[]>(operations);
 
   const handleSelectionChange = useCallback(
@@ -55,7 +53,9 @@ const Operations: React.FC = () => {
     setNumbers([]);
 
     const newSearchParams = new URLSearchParams(searchParams);
-    const operationIds = selectedItems.map((item: Operation) => item.id).join("-");
+    const operationIds = selectedItems
+      .map((item: Operation) => item.id)
+      .join("-");
     newSearchParams.set("operacao", operationIds);
     navigate(`/alvos?${newSearchParams.toString()}`);
   };
@@ -98,6 +98,7 @@ const Operations: React.FC = () => {
           initialSelected={selectedIds}
           noDataMessage="Nenhuma operação encontrada, por favor faça o upload da planilha"
           onDelete={() => {}}
+          showDeleteButton={false}
         />
       )}
 
@@ -139,6 +140,5 @@ const Operations: React.FC = () => {
     </Box>
   );
 };
-
 
 export default Operations;
