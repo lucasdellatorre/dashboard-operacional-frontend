@@ -48,31 +48,6 @@ const formatCPF = (value: string): string => {
 };
 
 const SuspectsDetails = () => {
-  const focusedTextFieldStyles = {
-    minWidth: "11rem",
-    "&:hover .MuiOutlinedInput-notchedOutline": {
-      borderColor: "customButton.lightGray",
-    },
-    "& label.Mui-focused": {
-      color: "inherit",
-    },
-    "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-      borderColor: "customButton.lightGray",
-      borderWidth: "1px",
-    },
-
-    "& .MuiOutlinedInput-root": {
-      "&:hover fieldset": {
-        borderColor: "customButton.lightGray",
-      },
-      "&.Mui-focused fieldset": {
-        borderColor: "customButton.lightGray",
-      },
-      "& input": {
-        outline: "none",
-      },
-    },
-  };
   const menuItemStyles = {
     padding: "4px 16px",
     "&:hover": {
@@ -408,7 +383,10 @@ const SuspectsDetails = () => {
                     fontWeight: 600,
                     fontSize: "0.875rem",
                     color: "text.primary",
-                    ...focusedTextFieldStyles,
+                    "&.Mui-focused": {
+                      color: "text.primary",
+                      fontWeight: 700,
+                    },
                   }}
                 >
                   Relevante
