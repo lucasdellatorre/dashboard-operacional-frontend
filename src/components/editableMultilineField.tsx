@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { Box, Button, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  CircularProgress,
+} from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
@@ -9,6 +15,8 @@ interface EditableMultilineFieldProps {
   value: string;
   onChange: (newValue: string) => void;
   rows?: number;
+  onConfirm?: (newValue: string) => void;
+  loading?: boolean;
 }
 
 const EditableMultilineField = ({
@@ -16,10 +24,11 @@ const EditableMultilineField = ({
   value,
   onChange,
   rows = 8,
+  onConfirm,
+  loading = false,
 }: EditableMultilineFieldProps) => {
   const [editing, setEditing] = useState(false);
   const [tempValue, setTempValue] = useState(value);
-
   useEffect(() => {
     if (!editing) {
       setTempValue(value);
@@ -29,6 +38,9 @@ const EditableMultilineField = ({
   const handleConfirm = () => {
     onChange(tempValue);
     setEditing(false);
+    if (onConfirm) {
+      onConfirm(tempValue);
+    }
   };
 
   const handleCancel = () => {
@@ -50,13 +62,27 @@ const EditableMultilineField = ({
           value={tempValue}
           onChange={(e) => setTempValue(e.target.value)}
           InputProps={{ readOnly: !editing }}
+          disabled={loading}
           sx={{
+            "&:hover .MuiOutlinedInput-notchedOutline": {
+              borderColor: "#bfbfbf",
+            },
             "& .MuiOutlinedInput-root": {
               borderRadius: "1rem",
               backgroundColor: "white",
-              paddingRight: "3rem", // espaço para os botões
+              paddingRight: "3rem",
               "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: "customButton.gold",
+                borderColor: editing ? "customButton.gold" : "#bfbfbf",
+                borderWidth: "1px",
+              },
+              "&:hover fieldset": {
+                borderColor: "customButton.lightGray",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "customButton.lightGray",
+              },
+              "& input": {
+                outline: "none",
               },
             },
             "& .MuiOutlinedInput-input": {
@@ -65,12 +91,11 @@ const EditableMultilineField = ({
               paddingRight: "3.5rem",
             },
             "& .MuiOutlinedInput-inputMultiline": {
-              paddingRight: "3.5rem", // ⬅️ AQUI evita que o texto encoste no botão
+              paddingRight: "3.5rem",
             },
           }}
         />
 
-        {/* Botões sobrepostos ao canto direito */}
         <Box
           sx={{
             position: "absolute",
@@ -86,6 +111,7 @@ const EditableMultilineField = ({
               <Button
                 onClick={handleConfirm}
                 variant="contained"
+                disabled={loading}
                 sx={{
                   bgcolor: "customButton.gold",
                   minWidth: "36px",
@@ -95,11 +121,16 @@ const EditableMultilineField = ({
                   color: "white",
                 }}
               >
-                <CheckIcon fontSize="small" />
+                {loading ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  <CheckIcon fontSize="small" />
+                )}
               </Button>
               <Button
                 onClick={handleCancel}
                 variant="outlined"
+                disabled={loading}
                 sx={{
                   borderColor: "gray",
                   color: "gray",
@@ -116,6 +147,7 @@ const EditableMultilineField = ({
             <Button
               onClick={() => setEditing(true)}
               variant="outlined"
+              disabled={loading}
               sx={{
                 bgcolor: "customButton.gold",
                 color: "white",
@@ -126,7 +158,11 @@ const EditableMultilineField = ({
                 borderColor: "transparent",
               }}
             >
-              <EditIcon fontSize="small" />
+              {loading ? (
+                <CircularProgress size={20} color="inherit" />
+              ) : (
+                <EditIcon fontSize="small" />
+              )}
             </Button>
           )}
         </Box>

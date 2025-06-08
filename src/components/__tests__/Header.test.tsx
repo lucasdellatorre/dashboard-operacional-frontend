@@ -28,4 +28,5 @@ describe("Header Component", () => {
     const welcomeMessage = screen.getByText("Olá, seja bem vindo!");
     expect(welcomeMessage).toBeInTheDocument();
   });
+
 });

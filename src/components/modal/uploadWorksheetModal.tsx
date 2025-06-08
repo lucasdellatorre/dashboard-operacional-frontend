@@ -6,7 +6,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CloseIcon from "@mui/icons-material/Close";
@@ -32,7 +32,7 @@ type UploadModalForm = z.infer<typeof uploadModalSchema>;
 
 interface UploadModalProps {
   isOpen: boolean;
-  onUploadSuccess: (file: File) => void;
+  onUploadSuccess: (file: File, operacaoId: string) => void;
   onClose: () => void;
   existingFiles: string[];
   operationsList: Operation[];
@@ -43,18 +43,17 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
   onUploadSuccess,
   onClose,
   existingFiles,
-  operationsList
+  operationsList,
 }) => {
   const [submitError, setSubmitError] = useState<string | null>(null);
-
 
   const {
     control,
     handleSubmit,
     reset,
     setValue,
-    setError,      
-    clearErrors, 
+    setError,
+    clearErrors,
     formState: { errors },
   } = useForm<UploadModalForm>({
     mode: "all",
@@ -82,10 +81,10 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
       });
       return false;
     }
-      clearErrors("uploadFile");
-      setValue("uploadFile", file, { shouldValidate: true });
+    clearErrors("uploadFile");
+    setValue("uploadFile", file, { shouldValidate: true });
 
-      return true;
+    return true;
   };
 
   const onSubmit = (data: UploadModalForm) => {
@@ -102,9 +101,13 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
     }
     setSubmitError(null);
     reset();
-    onUploadSuccess(data.uploadFile);
-  }
-  
+    onUploadSuccess(data.uploadFile, data.operations[0]);
+  };
+
+  useEffect(() => {
+    setSubmitError(null);
+  }, [isOpen]);
+
   return (
     <Dialog
       sx={{
@@ -178,12 +181,15 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
             name="operations"
             render={({ field }) => (
               <MultiSelect
+                style="white"
                 placeholder="Selecione as operações"
                 height="2.5rem"
-                options={operationsList.map((operation) => (operation.nome))}
+                options={operationsList.map((op) => ({
+                  id: op.id.toString(),
+                  label: op.nome,
+                }))}
                 selectedOptions={field.value}
-                onChange={handleChangeOperations} 
-                style={"gray"} 
+                onChange={handleChangeOperations}
               />
             )}
           />
@@ -200,9 +206,7 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
           <Controller
             control={control}
             name="uploadFile"
-            render={() => (
-              <UploadAreaInput onFileSelect={handleFileSelected} />
-            )}
+            render={() => <UploadAreaInput onFileSelect={handleFileSelected} />}
           />
           <Box height="1.5rem">
             {errors.uploadFile && (
