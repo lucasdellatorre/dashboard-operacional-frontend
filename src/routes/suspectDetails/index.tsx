@@ -11,13 +11,11 @@ import {
   Skeleton,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
-import Collapse from "@mui/material/Collapse";
 import GenericTable from "../../components/Table/Table";
 import { GenericData, HeadCell } from "../../interface/table/tableInterface";
 import EmailModal from "../../components/modal/createEmailModal";
 import EditableField from "../../components/editableField";
 import { useEffect, useState } from "react";
-import { isValidCPF } from "../../utils/validationUtils";
 import EditableMultilineField from "../../components/editableMultilineField";
 import { useSuspectInfo } from "../../hooks/useSuspectInfo";
 import TelephoneModal from "../../components/modal/createTelephoneModal";
@@ -81,7 +79,6 @@ const SuspectsDetails = () => {
   const [nickname, setNickname] = useState("");
   const [name, setName] = useState("");
   const [cpf, setCpf] = useState("");
-  const [cpfError, setCpfError] = useState("");
   const [notes, setNotes] = useState("");
   const [relevante, setRelevante] = useState<boolean>(false);
   const [alert, setAlert] = useState({
@@ -166,7 +163,6 @@ const SuspectsDetails = () => {
   const handleCpfChange = (newValue: string) => {
     const formatted = formatCPF(newValue);
     setCpf(formatted);
-    setCpfError(isValidCPF(formatted) ? "" : "CPF inválido");
   };
 
   const handleNotesChange = (newValue: string) => {
@@ -347,11 +343,6 @@ const SuspectsDetails = () => {
                       onConfirm={(newValue) => updateField("cpf", newValue)}
                       loading={loadingFields.cpf}
                     />
-                    {cpfError && (
-                      <Typography fontSize="0.875rem" color="error">
-                        {cpfError}
-                      </Typography>
-                    )}
                   </>
                 )}
               </Box>

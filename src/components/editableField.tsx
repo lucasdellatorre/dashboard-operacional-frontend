@@ -76,14 +76,24 @@ const EditableField = ({
                 borderColor: editing ? "customButton.gold" : "#bfbfbf",
                 borderWidth: "1px",
               },
+              "&:hover fieldset": {
+                borderColor: "customButton.lightGray",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "customButton.lightGray",
+              },
+              "& input": {
+                outline: "none",
+              },
             },
+
             "& .MuiOutlinedInput-input": {
               padding: "0.625rem",
               fontFamily: "Inter, sans-serif",
               fontWeight: 400,
             },
             "& label.Mui-focused": {
-              color: "customButton.gold",
+              color: "inherit",
             },
           }}
         />

@@ -75,6 +75,15 @@ const EditableMultilineField = ({
                 borderColor: editing ? "customButton.gold" : "#bfbfbf",
                 borderWidth: "1px",
               },
+              "&:hover fieldset": {
+                borderColor: "customButton.lightGray",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "customButton.lightGray",
+              },
+              "& input": {
+                outline: "none",
+              },
             },
             "& .MuiOutlinedInput-input": {
               fontFamily: "Inter, sans-serif",
