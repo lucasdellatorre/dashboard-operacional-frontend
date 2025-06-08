@@ -42,32 +42,32 @@ export const useSuspectInfo = (id: number) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const fetchSuspect = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get<SuspectInfo>(`/api/suspeito/${id}`);
+      const formattedData = {
+        ...response.data,
+        celulares: response.data.celulares.map((c) => ({
+          ...c,
+          lastUpdateDate: formatDate(c.lastUpdateDate),
+        })),
+        emails: response.data.emails.map((c) => ({
+          ...c,
+          lastUpdateDate: formatDate(c.lastUpdateDate),
+        })),
+      };
+      setSuspect(formattedData);
+    } catch (err) {
+      console.error("Erro ao buscar suspeito:", err);
+      setError("Não foi possível carregar os dados do suspeito.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!id) return;
-
-    const fetchSuspect = async () => {
-      try {
-        setLoading(true);
-        const response = await api.get<SuspectInfo>(`/api/suspeito/${id}`);
-        const formattedData = {
-          ...response.data,
-          celulares: response.data.celulares.map((c) => ({
-            ...c,
-            lastUpdateDate: formatDate(c.lastUpdateDate),
-          })),
-          emails: response.data.emails.map((c) => ({
-            ...c,
-            lastUpdateDate: formatDate(c.lastUpdateDate),
-          })),
-        };
-        setSuspect(formattedData);
-      } catch (err) {
-        console.error("Erro ao buscar suspeito:", err);
-        setError("Não foi possível carregar os dados do suspeito.");
-      } finally {
-        setLoading(false);
-      }
-    };
 
     fetchSuspect();
   }, [id]);
