@@ -1,5 +1,18 @@
-import { Box, Button, Typography, CircularProgress } from "@mui/material";
-import React, { useCallback, useContext, useMemo, useState } from "react";
+import {
+  Box,
+  Button,
+  alpha,
+  Typography,
+  CircularProgress,
+  Alert,
+} from "@mui/material";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import GenericTable from "../../components/Table/Table";
 import { useNavigate } from "react-router-dom";
 import { useHeaderInput } from "../../hooks/useHeaderInput";
@@ -29,6 +42,20 @@ const Suspects: React.FC = () => {
   const [selectedNumbers, setSelectedNumbers] = useState<Numbers[]>(
     selectedNumbersContext
   );
+  const [alert, setAlert] = useState({
+    show: false,
+    message: "",
+    type: "info" as "error" | "warning" | "info" | "success",
+  });
+
+  useEffect(() => {
+    if (alert.show) {
+      const timer = setTimeout(() => {
+        setAlert({ ...alert, show: false });
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [alert]);
 
   const operationIds = useMemo(
     () => operations.map((op) => op.id),
@@ -100,6 +127,33 @@ const Suspects: React.FC = () => {
 
   return (
     <Box p={3} sx={{ fontFamily: "Inter, sans-serif" }}>
+      {alert.show && (
+        <Alert
+          severity={alert.type}
+          onClose={() => setAlert({ ...alert, show: false })}
+          sx={{
+            position: "fixed",
+            top: 16,
+            left: "calc(50% + 1px)",
+            zIndex: 9999,
+            borderRadius: 2,
+            boxShadow: 3,
+            fontWeight: 500,
+            backgroundColor: (theme) =>
+              alert.type === "success"
+                ? alpha(theme.palette.success.light, 1)
+                : alert.type === "error"
+                ? alpha(theme.palette.error.light, 1)
+                : alpha(theme.palette.info.light, 1),
+            color: "#ffffff",
+            "& .MuiAlert-icon": {
+              color: "white",
+            },
+          }}
+        >
+          {alert.message}
+        </Alert>
+      )}
       <Box display="flex" justifyContent="space-between" alignItems="baseline">
         <Typography variant="h5" color="#000000" mb={4} fontWeight={700}>
           Selecione os alvos para exibição do dashboard
@@ -202,9 +256,19 @@ const Suspects: React.FC = () => {
 
             await createSuspect(createSuspectDTO, cleanUserCpf);
             fetchSuspects();
+            setAlert({
+              show: true,
+              type: "success",
+              message: "Suspeito criado com sucesso",
+            });
             return null;
           } catch (err) {
-            console.error("Erro ao criar suspeito:", err);
+            setAlert({
+              show: true,
+              type: "error",
+              message:
+                "Ocorreu um erro ao criar o suspeito. Tente logar novamente.",
+            });
           }
         }}
       />
