@@ -36,6 +36,7 @@ jobs:
     env:
       HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
       HEROKU_APP_NAME_FRONTEND: ${{ secrets.HEROKU_APP_NAME_FRONTEND }}
+      VITE_ENV: production
 
     steps:
       - name: Checkout code
