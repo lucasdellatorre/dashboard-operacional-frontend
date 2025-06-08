@@ -76,7 +76,13 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
           ))
         }
         renderOption={(props, option, { selected }) => (
-          <li {...props}>
+          <li
+            {...props}
+            style={{
+              ...props.style,
+              backgroundColor: "transparent",
+            }}
+          >
             <Checkbox
               checked={selected}
               size="small"
@@ -113,7 +119,6 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                   borderWidth: "1px",
                 },
               "& .MuiOutlinedInput-root": {
-                padding: "8px 14px",
                 minHeight: height,
                 display: "flex",
                 alignItems: "center",
