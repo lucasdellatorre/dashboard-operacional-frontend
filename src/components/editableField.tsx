@@ -44,20 +44,24 @@ const EditableField = ({
           InputProps={{ readOnly: !editing }}
           sx={{
             width: "100%",
-            "& .MuiOutlinedInput-root": {
-              borderRadius: editing ? "0.313rem" : "0.313rem 0 0 0.313rem",
-              backgroundColor: "white",
-              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: "customButton.gold",
+            '& .MuiOutlinedInput-root': {
+              borderRadius: editing ? '0.313rem' : '0.313rem 0 0 0.313rem',
+              backgroundColor: 'white',
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'customButton.lightGray',
+              },
+              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'customButton.lightGray',
+                borderWidth: '1px',
               },
             },
-            "& .MuiOutlinedInput-input": {
-              padding: "0.625rem",
-              fontFamily: "Inter, sans-serif",
+            '& .MuiOutlinedInput-input': {
+              padding: '0.625rem',
+              fontFamily: 'Inter, sans-serif',
               fontWeight: 400,
             },
-            "& label.Mui-focused": {
-              color: "customButton.gold",
+            '& label.Mui-focused': {
+              color: 'inherit',
             },
           }}
         />
