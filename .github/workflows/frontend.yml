@@ -36,7 +36,6 @@ jobs:
     env:
       HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
       HEROKU_APP_NAME_FRONTEND: ${{ secrets.HEROKU_APP_NAME_FRONTEND }}
-      VITE_ENV: production
 
     steps:
       - name: Checkout code
@@ -51,7 +50,7 @@ jobs:
         run: npm ci
 
       - name: Build Vite app
-        run: npm run build
+        run: VITE_ENV=production npm run build
 
       - name: Install Heroku CLI
         run: curl https://cli-assets.heroku.com/install.sh | sh
