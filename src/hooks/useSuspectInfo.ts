@@ -2,6 +2,11 @@
 import { useEffect, useState } from "react";
 import { api } from "../server/service";
 import { formatDate } from "../utils/formatUtils";
+import {
+  suspectInterface,
+  suspectResponseInterface,
+} from "../interface/suspect/suspectInterface";
+import { ResponseApi } from "../interface/responseInterface";
 
 interface Phone {
   numero: string;
@@ -67,5 +72,31 @@ export const useSuspectInfo = (id: number) => {
     fetchSuspect();
   }, [id]);
 
-  return { suspect, loading, error, fetchSuspect };
+  async function updateSuspectDetails(
+    id: string,
+    values: Partial<suspectInterface>
+  ): Promise<ResponseApi<suspectResponseInterface>> {
+    try {
+      const response = await api.put<suspectResponseInterface>(
+        `/api/suspeito/${id}`,
+        {
+          nome: values.nome,
+          apelido: values.apelido,
+          cpf: values.cpf,
+          relevante: values.relevante,
+          anotacoes: values.anotacoes,
+        }
+      );
+
+      return {
+        response: response.data,
+        isSuccess: true,
+      };
+    } catch (error) {
+      console.error("Erro ao atualizar os detalhes do suspeito:", error);
+      throw error;
+    }
+  }
+
+  return { suspect, loading, error, updateSuspectDetails };
 };

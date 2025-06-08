@@ -126,6 +126,13 @@ const TelephoneModal: React.FC<TelephoneModalProps> = ({
                     "& .MuiOutlinedInput-notchedOutline": {
                       borderColor: "rgba(0, 0, 0, 0.23)",
                     },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(0, 0, 0, 0.23)",
+                      borderWidth: "1px",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(0, 0, 0, 0.23)",
+                    },
                   },
                 }}
               />

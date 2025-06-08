@@ -1,7 +1,9 @@
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Typography";
+import { alpha } from "@mui/material/styles";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import {
+  Alert,
   FormControl,
   InputLabel,
   MenuItem,
@@ -9,6 +11,7 @@ import {
   Skeleton,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
+import Collapse from "@mui/material/Collapse";
 import GenericTable from "../../components/Table/Table";
 import { GenericData, HeadCell } from "../../interface/table/tableInterface";
 import EmailModal from "../../components/modal/createEmailModal";
@@ -35,6 +38,7 @@ interface Ips extends GenericData {
 }
 
 const formatCPF = (value: string): string => {
+  if (!value) return "";
   const numericValue = value.replace(/\D/g, "").slice(0, 11);
   return numericValue
     .replace(/(\d{3})(\d)/, "$1.$2")
@@ -43,9 +47,36 @@ const formatCPF = (value: string): string => {
 };
 
 const SuspectsDetails = () => {
-  const { suspect, loading, error } = useSuspectInfo(
+  const menuItemStyles = {
+    padding: "4px 16px",
+    "&:hover": {
+      backgroundColor: "transparent !important",
+      color: "inherit !important",
+    },
+    "&.Mui-selected": {
+      backgroundColor: "hsla(44, 45.60%, 42.50%, 0.08) !important",
+      color: "inherit !important",
+    },
+    "&.Mui-selected:hover": {
+      backgroundColor: "hsla(44, 45.60%, 42.50%, 0.08) !important",
+      color: "inherit !important",
+    },
+    "&.Mui-selected, &.Mui-selected:focus, &.Mui-selected:active": {
+      backgroundColor: "hsla(44, 45.60%, 42.50%, 0.08) !important",
+      color: "inherit !important",
+    },
+  };
+  const { suspect, loading, error, updateSuspectDetails } = useSuspectInfo(
     Number(window.location.pathname.split("/").pop())
   );
+
+  const [loadingFields, setLoadingFields] = useState({
+    nickname: false,
+    name: false,
+    cpf: false,
+    notes: false,
+    relevante: false,
+  });
 
   const [nickname, setNickname] = useState("");
   const [name, setName] = useState("");
@@ -53,6 +84,20 @@ const SuspectsDetails = () => {
   const [cpfError, setCpfError] = useState("");
   const [notes, setNotes] = useState("");
   const [relevante, setRelevante] = useState<boolean>(false);
+  const [alert, setAlert] = useState({
+    show: false,
+    message: "",
+    type: "info" as "error" | "warning" | "info" | "success",
+  });
+
+  useEffect(() => {
+    if (alert.show) {
+      const timer = setTimeout(() => {
+        setAlert({ ...alert, show: false });
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [alert]);
 
   useEffect(() => {
     if (suspect) {
@@ -64,10 +109,73 @@ const SuspectsDetails = () => {
     }
   }, [suspect]);
 
+  async function updateField(field: string, value: string | boolean) {
+    setLoadingFields((prev) => ({ ...prev, [field]: true }));
+
+    const fieldMapping: Record<string, string> = {
+      nickname: "apelido",
+      name: "nome",
+      cpf: "cpf",
+      notes: "anotacoes",
+      relevante: "relevante",
+    };
+
+    const values = {
+      [fieldMapping[field]]: value || null,
+    };
+
+    try {
+      const { isSuccess, errorMessage } = await updateSuspectDetails(
+        suspect?.id.toString() || "",
+        values
+      );
+
+      if (isSuccess) {
+        setAlert({
+          show: true,
+          type: "success",
+          message: "Campo atualizado com sucesso!",
+        });
+      } else {
+        setAlert({
+          show: true,
+          type: "error",
+          message: errorMessage || "Erro ao atualizar o campo.",
+        });
+      }
+    } catch (error) {
+      setAlert({
+        show: true,
+        type: "error",
+        message: "Erro inesperado ao atualizar o campo.",
+      });
+    } finally {
+      setLoadingFields((prev) => ({ ...prev, [field]: false }));
+    }
+  }
+
+  const handleNicknameChange = (newValue: string) => {
+    setNickname(newValue);
+  };
+
+  const handleNameChange = (newValue: string) => {
+    setName(newValue);
+  };
+
   const handleCpfChange = (newValue: string) => {
     const formatted = formatCPF(newValue);
     setCpf(formatted);
     setCpfError(isValidCPF(formatted) ? "" : "CPF inválido");
+  };
+
+  const handleNotesChange = (newValue: string) => {
+    setNotes(newValue);
+  };
+
+  const handleRelevanteChange = (value: string) => {
+    const newValue = value === "sim";
+    setRelevante(newValue);
+    updateField("relevante", newValue);
   };
 
   const EmailHeaderCells: readonly HeadCell<Email>[] = [
@@ -118,6 +226,35 @@ const SuspectsDetails = () => {
         onClose={() => setOpenEmailModal(false)}
         onSubmit={criarEditarEmail}
       />
+      {alert.show && (
+        <Alert
+          severity={alert.type}
+          onClose={() => setAlert({ ...alert, show: false })}
+          sx={{
+            position: "fixed",
+            top: 16,
+            left: "calc(50% + 1px)",
+            zIndex: 9999,
+            borderRadius: 2,
+            boxShadow: 3,
+            fontWeight: 500,
+            backgroundColor: (theme) =>
+              alert.type === "success"
+                ? alpha(theme.palette.success.light, 0.2)
+                : alert.type === "error"
+                ? alpha(theme.palette.error.light, 0.2)
+                : alpha(theme.palette.info.light, 0.2),
+            color: (theme) =>
+              alert.type === "success"
+                ? theme.palette.success.dark
+                : alert.type === "error"
+                ? theme.palette.error.dark
+                : theme.palette.info.dark,
+          }}
+        >
+          {alert.message}
+        </Alert>
+      )}
       <Box
         bgcolor="customBackground.secondary"
         sx={{
@@ -131,21 +268,28 @@ const SuspectsDetails = () => {
           height: "100%",
         }}
       >
-        <Typography
+        <Box
           sx={{
-            mb: 1,
-            fontSize: "1.125rem",
-            fontFamily: "Inter, sans-serif",
-            fontWeight: 700,
             display: "flex",
+            justifyContent: "space-between",
             alignItems: "center",
-            cursor: "pointer",
           }}
-          onClick={() => window.history.back()}
         >
-          <ArrowBackIosIcon sx={{ fontSize: "1.125rem" }} />
-          Voltar
-        </Typography>
+          <Typography
+            sx={{
+              mb: 1,
+              fontSize: "1.125rem",
+              fontFamily: "Inter, sans-serif",
+              fontWeight: 700,
+              alignItems: "center",
+              cursor: "pointer",
+            }}
+            onClick={() => window.history.back()}
+          >
+            <ArrowBackIosIcon sx={{ fontSize: "1.125rem" }} />
+            Voltar
+          </Typography>
+        </Box>
 
         <Typography
           variant="h5"
@@ -182,17 +326,25 @@ const SuspectsDetails = () => {
                     <EditableField
                       label="Apelido"
                       value={nickname}
-                      onChange={setNickname}
+                      onChange={handleNicknameChange}
+                      onConfirm={(newValue) =>
+                        updateField("nickname", newValue)
+                      }
+                      loading={loadingFields.nickname}
                     />
                     <EditableField
                       label="Nome"
                       value={name}
-                      onChange={setName}
+                      onChange={handleNameChange}
+                      onConfirm={(newValue) => updateField("name", newValue)}
+                      loading={loadingFields.name}
                     />
                     <EditableField
                       label="CPF"
                       value={cpf}
                       onChange={handleCpfChange}
+                      onConfirm={(newValue) => updateField("cpf", newValue)}
+                      loading={loadingFields.cpf}
                     />
                     {cpfError && (
                       <Typography fontSize="0.875rem" color="error">
@@ -202,14 +354,15 @@ const SuspectsDetails = () => {
                   </>
                 )}
               </Box>
-
               {loading ? (
                 <Skeleton height={160} width="100%" />
               ) : (
                 <EditableMultilineField
                   label="Anotações"
                   value={notes}
-                  onChange={setNotes}
+                  onChange={handleNotesChange}
+                  onConfirm={(newValue) => updateField("notes", newValue)}
+                  loading={loadingFields.notes}
                 />
               )}
             </Box>
@@ -232,6 +385,10 @@ const SuspectsDetails = () => {
                     fontWeight: 600,
                     fontSize: "0.875rem",
                     color: "text.primary",
+                    "&.Mui-focused": {
+                      color: "text.primary",
+                      fontWeight: 700,
+                    },
                   }}
                 >
                   Relevante
@@ -240,17 +397,33 @@ const SuspectsDetails = () => {
                   labelId="relevante-label"
                   value={relevante ? "sim" : "nao"}
                   label="Relevante"
-                  onChange={(e) => setRelevante(e.target.value === "sim")}
+                  onChange={(e) => handleRelevanteChange(e.target.value)}
                   sx={{
                     fontWeight: 500,
                     color: "text.primary",
-                    "& .MuiSelect-icon": { color: "customButton.gold" },
+
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "customButton.gold",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "customButton.gold",
+                    },
                   }}
                 >
-                  <MenuItem value="sim">Sim</MenuItem>
-                  <MenuItem value="nao">Não</MenuItem>
+                  <MenuItem value="sim" sx={menuItemStyles}>
+                    Sim
+                  </MenuItem>
+
+                  <MenuItem value="nao" sx={menuItemStyles}>
+                    Não
+                  </MenuItem>
                 </Select>
               </FormControl>
+            )}
+            {!loading && (
+              <p style={{ fontSize: "0.775rem", color: "#666" }}>
+                *Para editar os inputs, clique no botão de lapis
+              </p>
             )}
 
             {!loading && suspect && (
