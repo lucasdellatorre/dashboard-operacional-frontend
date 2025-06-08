@@ -6,7 +6,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useContext, useMemo, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import BarChartGeneric, {
@@ -16,6 +16,9 @@ import { FilterType } from "../../enum/ViewSelectionFilterEnum";
 import ViewSelectionFilter from "../../components/filters/ViewSelection";
 import MultiSelect from "../../components/multiSelect";
 import { AppContext } from "../../context/AppContext";
+import { useContactMessages } from "../../hooks/useContactMessages";
+import { useNavigate } from "react-router-dom";
+import { MessageFilterGroup, MessageFilterType } from "../../interface/dashboard/chartInterface";
 
 const menuItemStyles = {
   padding: "4px 16px",
@@ -71,24 +74,6 @@ const graficFilters = [
   { value: FilterType.DATA, label: "Data" },
 ];
 
-const mensagensPorContato: BarChartData[] = [
-  { key: "9123456789", value: 50 },
-  { key: "9123456788", value: 37 },
-  { key: "9123456787", value: 40 },
-  { key: "9123456786", value: 425 },
-  { key: "9123456785", value: 80 },
-  { key: "9123456784", value: 385 },
-  { key: "9123456783", value: 90 },
-  { key: "9123456782", value: 275 },
-  { key: "9123456781", value: 490 },
-  { key: "9123456780", value: 310 },
-  { key: "9123456799", value: 245 },
-  { key: "9123456798", value: 380 },
-  { key: "9123456797", value: 295 },
-  { key: "9123456796", value: 410 },
-  { key: "9123456795", value: 330 },
-];
-
 const mensagensPorHorario: BarChartData[] = [
   { key: "00-2h", value: 1200 },
   { key: "2-4h", value: 900 },
@@ -141,46 +126,62 @@ interface ChartConfig {
   tooltipLabel: string;
 }
 
-const chartConfigs: ChartConfig[] = [
-  {
-    type: FilterType.INTERACTIONS,
-    data: mensagensPorContato,
-    title: "Mensagens por Contato",
-    subtitle: "Número de",
-    tooltipLabel: "Total",
-  },
-  {
-    type: FilterType.IP,
-    data: mensagensPorIP,
-    title: "Mensagens por IP",
-    subtitle: "Número de",
-    tooltipLabel: "Total",
-  },
-  {
-    type: FilterType.TIME,
-    data: mensagensPorHorario,
-    title: "Mensagens por Horário",
-    subtitle: "Número de",
-    tooltipLabel: "Total",
-  },
-  {
-    type: FilterType.DATA,
-    data: mensagensPorDia,
-    title: "Mensagens por Dia",
-    subtitle: "Número de",
-    tooltipLabel: "Dias",
-  },
-];
-
 const Dashboard: React.FC = () => {
-  const { dashboardFilters: filters, setDashboardFilters: setFilters } =
-    useContext(AppContext);
+  const {
+    dashboardFilters: filters,
+    setDashboardFilters: setFilters,
+    operations,
+    numbers,
+    suspects
+  } = useContext(AppContext);
 
   const [expanded, setExpanded] = useState(true);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!operations[0] && !numbers[0] && !suspects[0]) {
+      navigate("/operacoes");
+    }
+  }, [operations, numbers, suspects, navigate])
 
   const toggleExpanded = () => {
     setExpanded(!expanded);
   };
+
+  const contactData = useContactMessages();
+
+
+  const chartConfigs = useMemo(() => [
+    {
+      type: FilterType.INTERACTIONS,
+      data: contactData,
+      title: "Mensagens por Contato",
+      subtitle: "Número de",
+      tooltipLabel: "Total",
+    },
+    {
+      type: FilterType.IP,
+      data: mensagensPorIP,
+      title: "Mensagens por IP",
+      subtitle: "Número de",
+      tooltipLabel: "Total",
+    },
+    {
+      type: FilterType.TIME,
+      data: mensagensPorHorario,
+      title: "Mensagens por Horário",
+      subtitle: "Número de",
+      tooltipLabel: "Total",
+    },
+    {
+      type: FilterType.DATA,
+      data: mensagensPorDia,
+      title: "Mensagens por Dia",
+      subtitle: "Número de",
+      tooltipLabel: "Dias",
+    },
+  ], [contactData]);
 
   const chartArea = useMemo(() => {
     const renderChart = (cfg: ChartConfig) => (
@@ -216,7 +217,7 @@ const Dashboard: React.FC = () => {
     }
     const cfg = chartConfigs.find((c) => c.type === filters.chart);
     return cfg ? renderChart(cfg) : null;
-  }, [filters.chart]);
+  }, [filters.chart, chartConfigs]);
 
   return (
     <Box
@@ -332,21 +333,17 @@ const Dashboard: React.FC = () => {
                 label="Grupo"
                 value={filters.group}
                 onChange={(e) =>
-                  setFilters({ ...filters, group: e.target.value })
+                  setFilters({ ...filters, group: e.target.value as MessageFilterGroup })
                 }
                 sx={{
                   ...focusedTextFieldStyles,
                 }}
               >
-                <MenuItem value="Grupo" sx={menuItemStyles}>
-                  Grupo
-                </MenuItem>
-                <MenuItem value="Número" sx={menuItemStyles}>
-                  Número
-                </MenuItem>
-                <MenuItem value="Ambos" sx={menuItemStyles}>
-                  Ambos
-                </MenuItem>
+                {Object.values(MessageFilterGroup).map((type) => (
+                  <MenuItem key={type} value={type} sx={menuItemStyles}>
+                    {type}
+                  </MenuItem>
+                ))}
               </TextField>
 
               <TextField
@@ -354,24 +351,15 @@ const Dashboard: React.FC = () => {
                 label="Tipo"
                 value={filters.type}
                 onChange={(e) =>
-                  setFilters({ ...filters, type: e.target.value })
+                  setFilters({ ...filters, type: e.target.value as MessageFilterType })
                 }
                 sx={focusedTextFieldStyles}
               >
-                <MenuItem value="Texto" sx={menuItemStyles}>
-                  Texto
-                </MenuItem>
-                <MenuItem
-                  value="Vídeo"
-                  sx={{
-                    ...menuItemStyles,
-                  }}
-                >
-                  Vídeo
-                </MenuItem>
-                <MenuItem value="Todos" sx={menuItemStyles}>
-                  Todos
-                </MenuItem>
+                {Object.values(MessageFilterType).map((type) => (
+                  <MenuItem key={type} value={type} sx={menuItemStyles}>
+                    {type}
+                  </MenuItem>
+                ))}
               </TextField>
 
               <TextField
@@ -379,27 +367,38 @@ const Dashboard: React.FC = () => {
                 InputLabelProps={{ shrink: true }}
                 label="Data Inicial"
                 type="date"
+                value={filters.dateInitial}
+                onChange={(e) => setFilters({ ...filters, dateInitial: e.target.value })}
                 sx={focusedTextFieldStyles}
               />
+
               <TextField
                 id="date-final"
                 InputLabelProps={{ shrink: true }}
                 label="Data Final"
                 type="date"
+                value={filters.dateFinal}
+                onChange={(e) => setFilters({ ...filters, dateFinal: e.target.value })}
                 sx={focusedTextFieldStyles}
               />
+
               <TextField
                 id="initial-time"
                 InputLabelProps={{ shrink: true }}
-                label="Faixa Horária - Inicio"
+                label="Faixa Horária - Início"
                 type="time"
+                value={filters.timeInitial}
+                onChange={(e) => setFilters({ ...filters, timeInitial: e.target.value })}
                 sx={focusedTextFieldStyles}
               />
+
               <TextField
                 id="final-time"
                 InputLabelProps={{ shrink: true }}
                 label="Faixa Horária - Fim"
                 type="time"
+                value={filters.timeFinal}
+                onChange={(e) => setFilters({ ...filters, timeFinal: e.target.value })}
                 sx={focusedTextFieldStyles}
               />
             </Box>

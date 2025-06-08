@@ -19,7 +19,7 @@ export interface PendingJob {
 
 export interface SheetUploadRequest {
   file: File;
-  operacaoId: string;
+  operacaoId: number;
 }
 
 class SheetController {
@@ -41,7 +41,7 @@ class SheetController {
   async uploadSheet(request: SheetUploadRequest): Promise<{ job_id: string }> {
     const formData = new FormData();
     formData.append('file', request.file);
-    formData.append('operacaoId', request.operacaoId);
+    formData.append('operacaoId', request.operacaoId.toString());
 
     const response = await api.post<{ job_id: string }>(
       endpoints.SHEETS.upload,
