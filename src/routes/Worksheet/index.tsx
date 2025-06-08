@@ -51,7 +51,7 @@ const Worksheet: React.FC = () => {
     [setWorksheets]
   );
 
-  const handleUpload = async (file: File, operation: string) => {
+  const handleUpload = async (file: File, operation: number) => {
     setOpenModal(false);
 
     addPendingUpload(file.name, file.size);

@@ -108,44 +108,72 @@ const BarChartGeneric: React.FC<BarChartGenericProps> = ({
       >
         {title}
       </Typography>
-      <Box sx={{ flex: 1, minHeight: 0 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData} margin={{ top: 5, bottom: 5, left: 5, right: 5 }}>
-            <XAxis
-              dataKey="name"
-              tick={{ fill: theme.palette.customText.lightGrey, ...textStyles.bodyMedium }} 
-              height={75} 
-              interval={0}
-              angle={-45}
-              textAnchor="end"
-            />
-            <YAxis
-              tick={{ fill: theme.palette.customText.lightGrey, ...textStyles.bodyMedium }}
-              ticks={yTicks}
-              domain={[minY, maxY]}
-            />
-            {yTicks.map((y) => (
-              y !== 0 && (
-                <ReferenceLine
-                  key={"refline-" + y}
-                  y={y}
-                  stroke={theme.palette.customInput.lightGrey}
-                  strokeDasharray="6 4"
-                  strokeWidth={1}
-                  ifOverflow="extendDomain"
-                />
-              )
-            ))}
-            <Tooltip content={({ active, payload, label }) => <CustomTooltip active={active} payload={payload} label={label} tooltipLabel={tooltipLabel} />} />
-            <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-              {chartData.map((entry, idx) => (
-                <Cell key={`cell-${idx}`} fill={entry.fill} />
+
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          overflowX: "auto",
+          // scrollbarWidth: "thin", // Firefox
+          scrollbarColor: (theme) => `${theme.palette.customButton.gold} transparent`, // Firefox
+          "&::-webkit-scrollbar": {
+            height: 8,
+          },
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: (theme) => theme.palette.customButton.gold,
+            borderRadius: 4,
+          },
+          "&::-webkit-scrollbar-track": {
+            backgroundColor: "transparent",
+          },
+        }}
+      >
+        <Box sx={{ minWidth: `${data.length * 50}px`, height: "100%" }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData} margin={{ top: 5, bottom: 5, left: 5, right: 5 }}>
+              <XAxis
+                dataKey="name"
+                tick={{ fill: theme.palette.customText.lightGrey, ...textStyles.bodyMedium }}
+                height={75}
+                interval={0}
+                angle={-45}
+                textAnchor="end"
+              />
+              <YAxis
+                tick={{ fill: theme.palette.customText.lightGrey, ...textStyles.bodyMedium }}
+                ticks={yTicks}
+                domain={[minY, maxY]}
+              />
+              {yTicks.map((y) => (
+                y !== 0 && (
+                  <ReferenceLine
+                    key={"refline-" + y}
+                    y={y}
+                    stroke={theme.palette.customInput.lightGrey}
+                    strokeDasharray="6 4"
+                    strokeWidth={1}
+                    ifOverflow="extendDomain"
+                  />
+                )
               ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+              <Tooltip content={({ active, payload, label }) => (
+                <CustomTooltip
+                  active={active}
+                  payload={payload}
+                  label={label}
+                  tooltipLabel={tooltipLabel}
+                />
+              )} />
+              <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                {chartData.map((entry, idx) => (
+                  <Cell key={`cell-${idx}`} fill={entry.fill} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </Box>
       </Box>
-    </Paper>
+    </Paper >
   );
 };
 
