@@ -1,5 +1,18 @@
-import { Box, Button, Typography, CircularProgress } from "@mui/material";
-import React, { useCallback, useContext, useMemo, useState } from "react";
+import {
+  Box,
+  Button,
+  alpha,
+  Typography,
+  CircularProgress,
+  Alert,
+} from "@mui/material";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import GenericTable from "../../components/Table/Table";
 import { useNavigate } from "react-router-dom";
 import { useHeaderInput } from "../../hooks/useHeaderInput";
@@ -7,30 +20,68 @@ import { HeadCell } from "../../interface/table/tableInterface";
 import { useSuspects, Suspect, Numbers } from "../../hooks/useSuspects";
 import CreateSuspectModal from "../../components/modal/createSuspectModal";
 import { AppContext } from "../../context/AppContext";
+import { useSuspectNumbers } from "../../hooks/useSuspectsNumbers";
 
 const Suspects: React.FC = () => {
   const navigate = useNavigate();
   const [openModal, setOpenModal] = useState(false);
   const { headerInputValue } = useHeaderInput();
-  const { suspects: selectedSuspectsContext, numbers: selectedNumbersContext, setSuspects, setNumbers, operations } = useContext(AppContext);
+  const {
+    suspects: selectedSuspectsContext,
+    numbers: selectedNumbersContext,
+    setSuspects,
+    setNumbers,
+    operations,
+    cpf,
+  } = useContext(AppContext);
 
-  const [selectedSuspects, setSelectedSuspects] = useState<Suspect[]>(selectedSuspectsContext);
-  const [selectedNumbers, setSelectedNumbers] = useState<Numbers[]>(selectedNumbersContext);
+  const { suspectsNumbers } = useSuspectNumbers();
+  const [selectedSuspects, setSelectedSuspects] = useState<Suspect[]>(
+    selectedSuspectsContext
+  );
+  const [selectedNumbers, setSelectedNumbers] = useState<Numbers[]>(
+    selectedNumbersContext
+  );
+  const [alert, setAlert] = useState({
+    show: false,
+    message: "",
+    type: "info" as "error" | "warning" | "info" | "success",
+  });
 
-  const operationIds = useMemo(() => operations.map((op) => op.id), [operations]);
+  useEffect(() => {
+    if (alert.show) {
+      const timer = setTimeout(() => {
+        setAlert({ ...alert, show: false });
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [alert]);
 
-  const { suspects, numbers, loading, error } = useSuspects({
+  const operationIds = useMemo(
+    () => operations.map((op) => op.id),
+    [operations]
+  );
+
+  const {
+    suspects,
+    numbers,
+    loading,
+    error,
+    createSuspect,
+    fetchSuspects,
+    deleteSuspect,
+  } = useSuspects({
     searchTerm: headerInputValue,
     operationIds,
   });
 
-const suspectHeadCells: readonly HeadCell<Suspect>[] = [
-  { id: "apelido", label: "Nome/Apelido" },
-  { id: "numeros", label: "Número" },
-  { id: "data_criacao", label: "Data de inserção" },
-  { id: "relevante", label: "Relevância" },
-  { id: "operacoes", label: "Operações" },
-  {
+  const suspectHeadCells: readonly HeadCell<Suspect>[] = [
+    { id: "apelido", label: "Nome/Apelido" },
+    { id: "numeros", label: "Número" },
+    { id: "data_criacao", label: "Data de inserção" },
+    { id: "relevante", label: "Relevância" },
+    { id: "operacoes", label: "Operações" },
+    {
       id: "botton",
       label: "",
       iconAction: {
@@ -54,13 +105,12 @@ const suspectHeadCells: readonly HeadCell<Suspect>[] = [
         },
       },
     },
-];
+  ];
 
-const numberHeadCells: readonly HeadCell<Numbers>[] = [
-  { id: "numero", label: "Número" },
-  { id: "operacoes", label: "Operações" },
-];
-
+  const numberHeadCells: readonly HeadCell<Numbers>[] = [
+    { id: "numero", label: "Número" },
+    { id: "operacoes", label: "Operações" },
+  ];
 
   const handleSuspectsSelection = useCallback(
     (_: readonly number[], selectedItems: Suspect[]) => {
@@ -84,6 +134,33 @@ const numberHeadCells: readonly HeadCell<Numbers>[] = [
 
   return (
     <Box p={3} sx={{ fontFamily: "Inter, sans-serif" }}>
+      {alert.show && (
+        <Alert
+          severity={alert.type}
+          onClose={() => setAlert({ ...alert, show: false })}
+          sx={{
+            position: "fixed",
+            top: 16,
+            left: "calc(50% + 1px)",
+            zIndex: 9999,
+            borderRadius: 2,
+            boxShadow: 3,
+            fontWeight: 500,
+            backgroundColor: (theme) =>
+              alert.type === "success"
+                ? alpha(theme.palette.success.light, 1)
+                : alert.type === "error"
+                ? alpha(theme.palette.error.light, 1)
+                : alpha(theme.palette.info.light, 1),
+            color: "#ffffff",
+            "& .MuiAlert-icon": {
+              color: "white",
+            },
+          }}
+        >
+          {alert.message}
+        </Alert>
+      )}
       <Box display="flex" justifyContent="space-between" alignItems="baseline">
         <Typography variant="h5" color="#000000" mb={4} fontWeight={700}>
           Selecione os alvos para exibição do dashboard
@@ -123,7 +200,25 @@ const numberHeadCells: readonly HeadCell<Numbers>[] = [
             onSelectionChange={handleSuspectsSelection}
             initialSelected={selectedSuspectsContext.map((s) => s.id)}
             noDataMessage="Nenhum suspeito encontrado"
-            onDelete={() => { }}
+            onDelete={async (selectedIds) => {
+              try {
+                for (const id of selectedIds) {
+                  await deleteSuspect(id);
+                }
+                setAlert({
+                  show: true,
+                  type: "success",
+                  message: "Suspeito deletado com sucesso",
+                });
+              } catch (err) {
+                console.error("Erro ao deletar suspeitos:", err);
+                setAlert({
+                  show: true,
+                  type: "error",
+                  message: "Ocorreu um erro . Tente novamente.",
+                });
+              }
+            }}
           />
 
           <GenericTable
@@ -137,12 +232,14 @@ const numberHeadCells: readonly HeadCell<Numbers>[] = [
             onSelectionChange={handleNumbersSelection}
             initialSelected={selectedNumbersContext.map((n) => n.id)}
             noDataMessage="Nenhum número encontrado"
-            onDelete={() => { }}
+            showDeleteButton={false}
           />
 
           <Box sx={{ width: "100%", display: "flex", justifyContent: "end" }}>
             <Button
-              disabled={selectedSuspects.length === 0 && selectedNumbers.length === 0}
+              disabled={
+                selectedSuspects.length === 0 && selectedNumbers.length === 0
+              }
               onClick={onConfirm}
               sx={{
                 bgcolor: "customButton.black",
@@ -162,7 +259,44 @@ const numberHeadCells: readonly HeadCell<Numbers>[] = [
         </>
       )}
 
-      <CreateSuspectModal isOpen={openModal} onClose={() => setOpenModal(false)} />
+      <CreateSuspectModal
+        suspectsNumbers={suspectsNumbers}
+        isOpen={openModal}
+        onClose={() => setOpenModal(false)}
+        onCreateSuspect={async (suspectData) => {
+          try {
+            const cleanUserCpf = cpf.replace(/\D/g, "");
+            const cleanSusCpf = (suspectData.suspectCPF ?? "").replace(
+              /\D/g,
+              ""
+            );
+
+            const createSuspectDTO = {
+              apelido: suspectData.suspectNickname,
+              cpf: cleanSusCpf,
+              nome: suspectData.suspectName ?? "",
+              numeros_ids: (suspectData.suspectsNumbers ?? []).map(Number),
+            };
+
+            await createSuspect(createSuspectDTO, cleanUserCpf);
+            fetchSuspects();
+            setAlert({
+              show: true,
+              type: "success",
+              message: "Suspeito criado com sucesso",
+            });
+            return null;
+          } catch (err) {
+            console.error("Erro ao criar suspeito:", err);
+            setAlert({
+              show: true,
+              type: "error",
+              message:
+                "Ocorreu um erro ao criar o suspeito. Tente logar novamente.",
+            });
+          }
+        }}
+      />
     </Box>
   );
 };

@@ -3,17 +3,18 @@ import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import DeleteIcon from "@mui/icons-material/Delete";
-import FilterListIcon from "@mui/icons-material/FilterList";
 
 interface EnhancedTableToolbarProps {
   numSelected: number;
   title: string;
   onDelete?: () => void;
+  showDeleteButton?: boolean;
 }
 const EnhancedTableToolbar: React.FC<EnhancedTableToolbarProps> = ({
   numSelected,
   title,
   onDelete,
+  showDeleteButton = true,
 }) => {
   return (
     <Toolbar
@@ -47,7 +48,7 @@ const EnhancedTableToolbar: React.FC<EnhancedTableToolbarProps> = ({
           {title}
         </Typography>
       )}
-      {numSelected > 0 && (
+      {numSelected > 0 && showDeleteButton && (
         <Tooltip title="Excluir">
           <IconButton onClick={onDelete}>
             <DeleteIcon />

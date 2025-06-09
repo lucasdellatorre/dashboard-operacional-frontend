@@ -1,6 +1,6 @@
 export interface GenericData {
   id: number;
-  [key: string]: string | number | string[];
+  [key: string]: string | number | string[] | number[] | undefined;
 }
 
 export interface HeadCell<T extends GenericData> {
@@ -22,6 +22,7 @@ export interface GenericTableProps<T extends GenericData> {
     selectedItems: T[]
   ) => void;
   onDelete?: (selectedIds: readonly number[], selectedItems: T[]) => void;
+  showDeleteButton?: boolean;
 }
 
 export interface EnhancedTableHeadProps<T extends GenericData> {

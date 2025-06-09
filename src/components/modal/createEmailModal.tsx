@@ -124,13 +124,20 @@ const EmailModal: React.FC<EmailModalProps> = ({
             render={({ field }) => (
               <TextField
                 {...field}
-                onBlur={field.onBlur} // Corrigido
+                onBlur={field.onBlur}
                 placeholder="Digite o email"
                 variant="outlined"
                 InputProps={{
                   sx: {
-                    height: "2.5rem",
+                    height: "3.5rem",
                     "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(0, 0, 0, 0.23)",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(0, 0, 0, 0.23)",
+                      borderWidth: "1px",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
                       borderColor: "rgba(0, 0, 0, 0.23)",
                     },
                   },

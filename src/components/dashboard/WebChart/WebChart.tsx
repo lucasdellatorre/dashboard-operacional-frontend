@@ -42,18 +42,37 @@ const Chart: React.FC<WebChartInterface> = ({ data }) => {
     const width = svgContainer ? svgContainer.clientWidth : 928;
     const height = svgContainer ? svgContainer.clientHeight : 600;
 
-    const color = d3
-      .scaleOrdinal<number, string>()
-      .domain([1, 2, 3, 4, 5, 6, 7])
-      .range([
-        "#FFB74D", // 6h-12h
-        "#4A90E2", // 12h-18h
-        "#1A237E", // 18h-00h
-        "#0D0221", // 00h-6h
-        "#D62727", // Targets
-        "#757575", // Intercepts
-        "#FFA000", // Suspects
-      ]);
+    // Mapeamento explícito de cor por grupo
+    const groupColorMap: Record<number, string> = {
+      1: "#808CBF", // Manhã
+      2: "#31438C", // Tarde
+      3: "#0F1E55", // Noite
+      4: "#D62727", // Alvos
+      5: "#000A2F", // Madrugada
+    };
+
+    const svg = d3
+      .select(svgRef.current)
+      .attr("width", width)
+      .attr("height", height)
+      .attr("viewBox", [0, 0, width, height])
+      .attr("style", "width: 100%; height: 100%; background-color: #1c1c1c")
+      .attr("data-testid", "chart-svg");
+
+    // Adicionar zoom
+    const g = svg.append("g");
+    svg.call(
+      d3
+        .zoom<SVGSVGElement, unknown>()
+        .extent([
+          [0, 0],
+          [width, height],
+        ])
+        .scaleExtent([0.1, 4])
+        .on("zoom", (event) => {
+          g.attr("transform", event.transform);
+        })
+    );
 
     const links = data.links.map((d) => ({ ...d }));
     const nodes = data.nodes.map((d) => ({ ...d }));
@@ -80,32 +99,9 @@ const Chart: React.FC<WebChartInterface> = ({ data }) => {
       )
       .force("charge", d3.forceManyBody().strength(-2000))
       .force("center", d3.forceCenter(width / 2, height / 2))
-      .force("x", d3.forceX(width / 2).strength(0.1)) // Força para manter nodos no centro X
-      .force("y", d3.forceY(height / 2).strength(0.1)) // Força para manter nodos no centro Y
+      .force("x", d3.forceX(width / 2).strength(0.1))
+      .force("y", d3.forceY(height / 2).strength(0.1))
       .force("collision", d3.forceCollide().radius(30));
-
-    const svg = d3
-      .select(svgRef.current)
-      .attr("width", width)
-      .attr("height", height)
-      .attr("viewBox", [0, 0, width, height])
-      .attr("style", "width: 100%; height: 100%; background-color: #1c1c1c")
-      .attr("data-testid", "chart-svg");
-
-    // Adicionar zoom
-    const g = svg.append("g");
-    svg.call(
-      d3
-        .zoom<SVGSVGElement, unknown>()
-        .extent([
-          [0, 0],
-          [width, height],
-        ])
-        .scaleExtent([0.1, 4])
-        .on("zoom", (event) => {
-          g.attr("transform", event.transform);
-        })
-    );
 
     const link = g
       .append("g")
@@ -128,7 +124,7 @@ const Chart: React.FC<WebChartInterface> = ({ data }) => {
       .data(nodes)
       .join("circle")
       .attr("r", 15)
-      .attr("fill", (d) => color(d.group))
+      .attr("fill", (d) => groupColorMap[d.group] || "#757575")
       .style("cursor", "pointer")
       .on("dblclick", (_event, d) => {
         window.open(`/node/${d.id}`, "_blank");
@@ -143,7 +139,7 @@ const Chart: React.FC<WebChartInterface> = ({ data }) => {
       .attr("fill", "#fff")
       .attr("text-anchor", "middle")
       .attr("dy", "-2em")
-      .attr("font-size", "14px"); // Aumentando o tamanho da fonte
+      .attr("font-size", "14px");
 
     node.call(
       d3
@@ -160,9 +156,9 @@ const Chart: React.FC<WebChartInterface> = ({ data }) => {
         .attr("x2", (d) => (d.target as Node).x || 0)
         .attr("y2", (d) => (d.target as Node).y || 0);
 
-      node.attr("cx", (d) => d.x || 0).attr("cy", (d) => d.y || 0); // Node position
+      node.attr("cx", (d) => d.x || 0).attr("cy", (d) => d.y || 0);
 
-      nodeText.attr("x", (d) => d.x || 0).attr("y", (d) => d.y || 0); // Node text
+      nodeText.attr("x", (d) => d.x || 0).attr("y", (d) => d.y || 0);
     }
 
     function dragstarted(event: d3.D3DragEvent<SVGCircleElement, Node, Node>) {

@@ -7,6 +7,7 @@ export interface WebLink {
     source: string;
     target: string;
     value: number;
+    date?: string;
 }
 
 export interface CreateWeb {
