@@ -2,7 +2,7 @@ import { createContext, useState } from "react";
 import { Operation } from "../hooks/useOperations";
 import { Suspect, Numbers } from "../hooks/useSuspects";
 import { WorkSheet } from "../hooks/useWorksheets";
-import { ChartFilters } from "../interface/dashboard/chartInterface";
+import { ChartFilters, MessageFilterGroup, MessageFilterType } from "../interface/dashboard/chartInterface";
 import { FilterType } from "../enum/ViewSelectionFilterEnum";
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -41,21 +41,27 @@ export const ApplicationProvider = ({
   const [suspects, setSuspects] = useState<Suspect[]>([]);
   const [numbers, setNumbers] = useState<Numbers[]>([]);
   const [worksheets, setWorksheets] = useState<WorkSheet[]>([]);
-
+  console.log('suspects: ', worksheets)
   const [dashboardFilters, setDashboardFilters] = useState<ChartFilters>({
     filterType: FilterType.UNION,
     chart: FilterType.ALL,
-    type: "Texto",
-    group: "Ambos",
+    type: MessageFilterType.Texto,
+    group: MessageFilterGroup.Ambos,
     options: [] as string[],
-    symmetry: "Ambos",
+    dateInitial: "",
+    dateFinal: "",
+    timeInitial: "",
+    timeFinal: "",
   });
 
   const [webChartFilters, setWebChartFilters] = useState<ChartFilters>({
-    type: "Todos",
-    group: "Todos",
+    type: MessageFilterType.Todos,
+    group: MessageFilterGroup.Ambos,
     options: [] as string[],
-    symmetry: "Todos",
+    dateInitial: "",
+    dateFinal: "",
+    timeInitial: "",
+    timeFinal: "",
   });
 
   return (
