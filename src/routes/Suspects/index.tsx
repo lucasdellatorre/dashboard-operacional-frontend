@@ -62,11 +62,18 @@ const Suspects: React.FC = () => {
     [operations]
   );
 
-  const { suspects, numbers, loading, error, createSuspect, fetchSuspects } =
-    useSuspects({
-      searchTerm: headerInputValue,
-      operationIds,
-    });
+  const {
+    suspects,
+    numbers,
+    loading,
+    error,
+    createSuspect,
+    fetchSuspects,
+    deleteSuspect,
+  } = useSuspects({
+    searchTerm: headerInputValue,
+    operationIds,
+  });
 
   const suspectHeadCells: readonly HeadCell<Suspect>[] = [
     { id: "apelido", label: "Nome/Apelido" },
@@ -193,7 +200,25 @@ const Suspects: React.FC = () => {
             onSelectionChange={handleSuspectsSelection}
             initialSelected={selectedSuspectsContext.map((s) => s.id)}
             noDataMessage="Nenhum suspeito encontrado"
-            onDelete={() => {}}
+            onDelete={async (selectedIds) => {
+              try {
+                for (const id of selectedIds) {
+                  await deleteSuspect(id);
+                }
+                setAlert({
+                  show: true,
+                  type: "success",
+                  message: "Suspeito deletado com sucesso",
+                });
+              } catch (err) {
+                console.error("Erro ao deletar suspeitos:", err);
+                setAlert({
+                  show: true,
+                  type: "error",
+                  message: "Ocorreu um erro . Tente novamente.",
+                });
+              }
+            }}
           />
 
           <GenericTable
@@ -207,7 +232,6 @@ const Suspects: React.FC = () => {
             onSelectionChange={handleNumbersSelection}
             initialSelected={selectedNumbersContext.map((n) => n.id)}
             noDataMessage="Nenhum número encontrado"
-            onDelete={() => {}}
             showDeleteButton={false}
           />
 
@@ -263,6 +287,7 @@ const Suspects: React.FC = () => {
             });
             return null;
           } catch (err) {
+            console.error("Erro ao criar suspeito:", err);
             setAlert({
               show: true,
               type: "error",

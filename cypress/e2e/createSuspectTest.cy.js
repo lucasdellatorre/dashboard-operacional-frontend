@@ -1,13 +1,15 @@
 describe("CreateSuspectModal", () => {
   beforeEach(() => {
-    cy.visit("/alvos"); // Replace with the actual route that renders the modal or the button that opens it
+    cy.visit("/login");
+    cy.get('input[placeholder="000.000.000-00"]').type("03401973070");
+    cy.contains("Entrar").click();
+
+    cy.visit("/alvos");
   });
 
-  it("should fill and submit the Create Suspect form", () => {
-    // Open modal if necessary
+  it("deve preencher o formulario de criar um alvo", () => {
     cy.get(".css-h9yv4t > .MuiButtonBase-root").click();
 
-    // Fill "Apelido do Alvo"
     cy.get('input[placeholder="Digite o apelido do suspeito"]').type(
       "Suspeito Teste"
     );
@@ -15,27 +17,20 @@ describe("CreateSuspectModal", () => {
     cy.get('input[placeholder="Digite o nome do suspeito"]').type(
       "Suspeito Teste"
     );
-    // Select numbers (assumes MultiSelect renders selectable checkboxes or tags)
+
     cy.get(
       ".MuiAutocomplete-root > .MuiFormControl-root > .MuiInputBase-root"
     ).click();
-    cy.contains("(54) 997088840").click();
-    cy.contains("(51) 98394938").click();
-    cy.get("body").click(0, 0); // Click outside to close dropdown
+    cy.get('[role="option"]').eq(0).click();
+    cy.get('[role="option"]').eq(1).click();
+    cy.get('[role="dialog"]').click(10, 10);
 
-    // Select operations
-    cy.contains("Selecione as operações").click();
-    cy.contains("li", "Operação A").click();
-    cy.contains("li", "Operação B").click();
-    cy.get("body").click(0, 0); // Click outside to close dropdown
+    cy.get('input[placeholder="Digite o CPF do suspeito"]')
+      .clear()
+      .type("05102625039");
 
-    // Click "Criar suspeito" button
-    cy.contains("Criar suspeito").click();
+    cy.contains("Criar alvo").click();
 
-    // Expect modal to close (or assert something on submit)
     cy.contains("Criação Alvos").should("not.exist");
-
-    // Optional: assert side effect like a new row added to a table
-    // cy.contains('Suspeito Teste').should('exist');
   });
 });
