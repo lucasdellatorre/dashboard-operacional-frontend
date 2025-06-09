@@ -2,9 +2,12 @@ import { useContext, useEffect, useState } from "react";
 import { AppContext } from "../context/AppContext";
 import { BarChartData } from "../components/dashboard/WebChart/BarChart";
 import { api } from "../server/service";
-import { MessageGroupToBackend, MessageTypeToBackend } from "../interface/dashboard/chartInterface";
+import {
+    MessageGroupToBackend,
+    MessageTypeToBackend,
+} from "../interface/dashboard/chartInterface";
 
-export const useContactMessages = (): BarChartData[] => {
+export const useContactMessages = () => {
     const {
         dashboardFilters: filters,
         numbers,
@@ -13,12 +16,16 @@ export const useContactMessages = (): BarChartData[] => {
     } = useContext(AppContext);
 
     const [data, setData] = useState<BarChartData[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
         const fetchMessages = async () => {
             try {
+                setIsLoading(true);
+                setError(null); // limpa erro anterior
                 const payload = {
-                    numeros: [],//numbers.map((n) => n.numero),
+                    numeros: numbers.map((n) => n.numero),
                     grupo: MessageGroupToBackend[filters.group],
                     tipo: MessageTypeToBackend[filters.type],
                     data_inicial: filters.dateInitial || null,
@@ -29,13 +36,9 @@ export const useContactMessages = (): BarChartData[] => {
                     suspeitos: suspects.map((s) => s.cpf),
                 };
 
-                console.log("Buscando mensagens: " + JSON.stringify(payload));
-
                 const response = await api.get("/api/mensagens/contatos", {
                     params: payload,
                 });
-
-                console.log("Response: " + JSON.stringify(response.data));
 
                 const formatted: BarChartData[] = (response.data || []).map(
                     (item: any) => ({
@@ -45,9 +48,11 @@ export const useContactMessages = (): BarChartData[] => {
                 );
 
                 setData(formatted);
-            } catch (error) {
-                console.error("Failed to fetch contact messages:", error);
+            } catch (err: any) {
                 setData([]);
+                setError(err);
+            } finally {
+                setIsLoading(false);
             }
         };
 
@@ -64,5 +69,9 @@ export const useContactMessages = (): BarChartData[] => {
         filters.timeFinal,
     ]);
 
-    return data;
+    return {
+        contactMessages: data,
+        isLoading,
+        error,
+    };
 };

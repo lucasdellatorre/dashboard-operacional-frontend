@@ -58,7 +58,6 @@ const fetchOperations = useCallback(async () => {
         
         return response.data;        
       } catch (err) {
-        console.error("Erro ao criar operação:", err);
         throw new Error("Erro ao criar operação");
       }
     },

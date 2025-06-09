@@ -1,14 +1,17 @@
 import {
+  Paper,
   Box,
   Collapse,
   IconButton,
   MenuItem,
+  Skeleton,
   TextField,
   Typography,
 } from "@mui/material";
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import BarChartGeneric, {
   BarChartData,
 } from "../../components/dashboard/WebChart/BarChart";
@@ -19,6 +22,7 @@ import { AppContext } from "../../context/AppContext";
 import { useContactMessages } from "../../hooks/useContactMessages";
 import { useNavigate } from "react-router-dom";
 import { MessageFilterGroup, MessageFilterType } from "../../interface/dashboard/chartInterface";
+import { usePeriodMessages } from "../../hooks/usePeriodMessages";
 
 const menuItemStyles = {
   padding: "4px 16px",
@@ -72,21 +76,6 @@ const graficFilters = [
   { value: FilterType.IP, label: "IPs" },
   { value: FilterType.TIME, label: "Horário" },
   { value: FilterType.DATA, label: "Data" },
-];
-
-const mensagensPorHorario: BarChartData[] = [
-  { key: "00-2h", value: 1200 },
-  { key: "2-4h", value: 900 },
-  { key: "4-6h", value: 1100 },
-  { key: "6-8h", value: 8000 },
-  { key: "8-10h", value: 1500 },
-  { key: "10-12h", value: 7000 },
-  { key: "12-14h", value: 1600 },
-  { key: "14-16h", value: 5000 },
-  { key: "16-18h", value: 9000 },
-  { key: "18-20h", value: 6000 },
-  { key: "20-22h", value: 4800 },
-  { key: "22-23:59h", value: 7500 },
 ];
 
 const mensagensPorIP: BarChartData[] = [
@@ -149,30 +138,40 @@ const Dashboard: React.FC = () => {
     setExpanded(!expanded);
   };
 
-  const contactData = useContactMessages();
+  const {
+    contactMessages,
+    isLoading: loadingContact,
+    error: errorContact,
+  } = useContactMessages();
+
+  const {
+    periodMessages,
+    isLoading: loadingPeriod,
+    error: errorPeriod,
+  } = usePeriodMessages();
 
 
   const chartConfigs = useMemo(() => [
     {
       type: FilterType.INTERACTIONS,
-      data: contactData,
+      data: contactMessages,
       title: "Mensagens por Contato",
       subtitle: "Número de",
-      tooltipLabel: "Total",
+      tooltipLabel: "Contato",
     },
     {
       type: FilterType.IP,
       data: mensagensPorIP,
       title: "Mensagens por IP",
       subtitle: "Número de",
-      tooltipLabel: "Total",
+      tooltipLabel: "IP",
     },
     {
       type: FilterType.TIME,
-      data: mensagensPorHorario,
+      data: periodMessages,
       title: "Mensagens por Horário",
       subtitle: "Número de",
-      tooltipLabel: "Total",
+      tooltipLabel: "Período",
     },
     {
       type: FilterType.DATA,
@@ -181,25 +180,110 @@ const Dashboard: React.FC = () => {
       subtitle: "Número de",
       tooltipLabel: "Dias",
     },
-  ], [contactData]);
+  ], [contactMessages, periodMessages]);
 
   const chartArea = useMemo(() => {
-    const renderChart = (cfg: ChartConfig) => (
-      <Box
-        key={cfg.type}
-        sx={{ cursor: "pointer" }}
-        width={filters.chart !== FilterType.ALL ? "100%" : "48%"}
-        onClick={() => setFilters({ ...filters, chart: cfg.type })}
-      >
-        <BarChartGeneric
-          data={cfg.data}
-          title={cfg.title}
-          subtitle={cfg.subtitle}
-          tooltipLabel={cfg.tooltipLabel}
-          expanded={filters.chart === cfg.type}
-        />
-      </Box>
-    );
+    const renderChart = (cfg: ChartConfig) => {
+      const isLoading =
+        (cfg.type === FilterType.INTERACTIONS && loadingContact) ||
+        (cfg.type === FilterType.TIME && loadingPeriod);
+
+      const hasError =
+        (cfg.type === FilterType.INTERACTIONS && errorContact) ||
+        (cfg.type === FilterType.TIME && errorPeriod);
+
+      const isEmpty = cfg.data.length === 0;
+
+      return (
+        <Box
+          key={cfg.type}
+          sx={{ cursor: "pointer" }}
+          width={filters.chart !== FilterType.ALL ? "100%" : "48%"}
+          onClick={() => setFilters({ ...filters, chart: cfg.type })}
+        >
+          {isLoading ? (
+            <Box
+              sx={{
+                height: "100%",
+                padding: 2,
+                display: "flex",
+                alignItems: "flex-end",
+                gap: 1,
+                backgroundColor: "#fff",
+                borderRadius: "12px",
+              }}
+            >
+              {[...Array(12)].map((_, idx) => (
+                <Skeleton
+                  key={idx}
+                  variant="rectangular"
+                  animation="wave"
+                  width={"100%"}
+                  height={Math.floor(Math.random() * 200) + 40}
+                  sx={{ borderRadius: 1 }}
+                />
+              ))}
+            </Box>
+          ) : hasError ? (
+            <Paper
+              elevation={1}
+              sx={{
+                padding: "2rem",
+                height: "100%",
+                backgroundColor: "#fff",
+                borderRadius: "12px",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                gap: "1rem",
+                minHeight: 280,
+              }}
+            >
+              <ErrorOutlineIcon sx={{ fontSize: 48, color: "error.main" }} />
+              <Typography variant="h6" color="error.main">
+                Erro ao carregar o gráfico
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {cfg.title}
+              </Typography>
+            </Paper>
+          ) : isEmpty ? (
+            <Paper
+              elevation={1}
+              sx={{
+                padding: "2rem",
+                height: "100%",
+                backgroundColor: "#fff",
+                borderRadius: "12px",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                gap: "1rem",
+                minHeight: 280,
+              }}
+            >
+              <Typography variant="h6" color="text.primary">
+                Nenhum dado encontrado
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {cfg.title}
+              </Typography>
+            </Paper>
+          ) : (
+            <BarChartGeneric
+              data={cfg.data}
+              title={cfg.title}
+              subtitle={cfg.subtitle}
+              tooltipLabel={cfg.tooltipLabel}
+              expanded={filters.chart === cfg.type}
+            />
+          )}
+        </Box>
+      );
+    };
+
     if (filters.chart === FilterType.ALL) {
       return (
         <Box
@@ -215,9 +299,19 @@ const Dashboard: React.FC = () => {
         </Box>
       );
     }
+
     const cfg = chartConfigs.find((c) => c.type === filters.chart);
     return cfg ? renderChart(cfg) : null;
-  }, [filters.chart, chartConfigs]);
+  }, [
+    filters.chart,
+    chartConfigs,
+    loadingContact,
+    loadingPeriod,
+    errorContact,
+    errorPeriod,
+    setFilters,
+  ]);
+
 
   return (
     <Box

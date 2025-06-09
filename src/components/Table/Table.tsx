@@ -61,7 +61,7 @@ function GenericTable<T extends GenericData>({
     ) {
       setSelected(initialSelected);
     }
-  }, [initialSelected]);
+  }, []);
 
   const notifySelectionChange = useCallback(() => {
     if (onSelectionChange) {

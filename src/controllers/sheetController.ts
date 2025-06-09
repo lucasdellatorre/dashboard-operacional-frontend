@@ -33,7 +33,6 @@ class SheetController {
       const response = await api.get<PendingJob[]>(endpoints.SHEETS.getPendingJobs);
       return response.data;
     } catch (error) {
-      console.error("Erro ao buscar jobs pendentes:", error);
       return [];
     }
   }

@@ -28,7 +28,6 @@ export const useSuspectNumbers = () => {
         }));
         setSuspectsNumbers(result);
       } catch (err) {
-        console.error("Erro ao buscar numeros", err);
         setError("Não foi possível carregar os numeros.");
       } finally {
         setLoading(false);
