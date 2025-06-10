@@ -81,6 +81,29 @@ const Operations: React.FC = () => {
     navigate(`/alvos?${newSearchParams.toString()}`);
   };
 
+  if (error) {
+    return (
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        minHeight="300px"
+      >
+        <Alert severity="error" sx={{ width: "100%", maxWidth: 600 }}>
+          <Typography fontWeight={600}>
+            Ocorreu um problema ao carregar as operações.
+          </Typography>
+          <Typography variant="body2">
+            {error.message === "Network Error"
+              ? "Não foi possível se conectar ao servidor. Verifique sua conexão."
+              : error.message}
+          </Typography>
+        </Alert>
+      </Box>
+    );
+  }
+
   return (
     <Box p={3} sx={{ fontFamily: "Inter, sans-serif" }}>
       {alert.show && (
@@ -129,13 +152,14 @@ const Operations: React.FC = () => {
       </Box>
 
       {loading ? (
-        <Box display="flex" justifyContent="center" alignItems="center" mt={4}>
-          <CircularProgress color="inherit" />
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="200px"
+        >
+          <CircularProgress />
         </Box>
-      ) : error ? (
-        <Typography color="error" fontWeight={600}>
-          Não foi possível carregar as operações. Tente novamente mais tarde.
-        </Typography>
       ) : (
         <GenericTable
           rows={filteredOperations}

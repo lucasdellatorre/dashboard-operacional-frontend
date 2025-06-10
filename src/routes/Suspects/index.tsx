@@ -132,6 +132,28 @@ const Suspects: React.FC = () => {
     navigate("/dashboard");
   };
 
+  if (error) {
+    return (
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        minHeight="300px"
+      >
+        <Alert severity="error" sx={{ width: "100%", maxWidth: 600 }}>
+          <Typography fontWeight={600}>
+            Ocorreu um problema ao carregar os suspeitos.
+          </Typography>
+          <Typography variant="body2">
+           Não foi possível se conectar ao servidor. Verifique sua conexão.
+          </Typography>
+        </Alert>
+      </Box>
+    );
+  }
+
+
   return (
     <Box p={3} sx={{ fontFamily: "Inter, sans-serif" }}>
       {alert.show && (
