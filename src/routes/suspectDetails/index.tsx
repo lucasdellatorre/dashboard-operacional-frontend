@@ -503,6 +503,13 @@ const SuspectsDetails = () => {
                   initialSelected={[]}
                   noDataMessage="Nenhum celular encontrado para este suspeito"
                   onDelete={async (selectedIds) => {
+                    if (suspect.celulares.length <= 1) {
+                      setAlert({
+                        show: true,
+                        type: "error",
+                        message: "O suspeito deve ter pelo menos um número.",
+                      });
+                    }
                     try {
                       setLoadingNumbersDelete(true);
                       for (const id of selectedIds) {
