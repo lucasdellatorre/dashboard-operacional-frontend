@@ -113,6 +113,7 @@ export const useSuspectInfo = (id: number) => {
   const createSuspectEmail = useCallback(
     async (email: string, userCpf: string): Promise<CreateEmailResponse> => {
       try {
+        const cleanUserCpf = userCpf.replace(/\D/g, "");
         const response = await api.post<CreateEmailResponse>(
           `/api/suspeito/${id}/email`,
           {
@@ -121,7 +122,7 @@ export const useSuspectInfo = (id: number) => {
           {
             headers: {
               "Content-Type": "application/json",
-              cpfUsuario: userCpf,
+              cpfUsuario: cleanUserCpf,
             },
           }
         );
