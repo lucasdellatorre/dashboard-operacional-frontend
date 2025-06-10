@@ -1,9 +1,18 @@
-import { Box, MenuItem, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  MenuItem,
+  TextField,
+  Typography,
+  Collapse,
+  IconButton,
+} from "@mui/material";
 import React, { useState, useMemo, useEffect } from "react";
 import WebChart from "../../components/dashboard/WebChart/WebChart";
 import MultiSelect from "../../components/multiSelect";
 import dayjs from "dayjs";
 import { getIpMessageCounts } from "../../controllers/webIpsController";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
 const menuItemStyles = {
   padding: "4px 16px",
@@ -54,11 +63,18 @@ const focusedTextFieldStyles = {
 const options = ["1", "2"]; // Substituindo mockData.nodes por opções fixas
 
 const NetworkWebRoute: React.FC = () => {
+  const [expanded, setExpanded] = useState(true);
   const [selectedType, setSelectedType] = useState("IP");
   const [selectedGroup, setSelectedGroup] = useState("Ambos");
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
-  const [selectedSimmetry, setSelectedSimmetry] = useState("Ambos");
-  const [dateInitial, setDateInitial] = useState("");
+  const [selectedShift, setSelectedShift] = useState("Todos");
+
+  // Definir data inicial como 1 mês atrás
+  const oneMonthAgo = new Date();
+  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+  const [dateInitial, setDateInitial] = useState(
+    oneMonthAgo.toISOString().split("T")[0]
+  );
   const [dateFinal, setDateFinal] = useState("");
   const [graphData, setGraphData] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
@@ -81,6 +97,12 @@ const NetworkWebRoute: React.FC = () => {
       setGraphData(null);
     }
   }, [selectedOptions]);
+  const [timeInitial, setTimeInitial] = useState("00:00");
+  const [timeFinal, setTimeFinal] = useState("23:59");
+
+  const toggleExpanded = () => {
+    setExpanded(!expanded);
+  };
 
   // Filtragem dos nós e links
   const filteredData = useMemo(() => {
@@ -143,16 +165,18 @@ const NetworkWebRoute: React.FC = () => {
       );
     }
 
-    // Filtro de Simetria
-    if (selectedSimmetry !== "Ambos") {
+    // Filtro de Turno
+    if (selectedShift !== "Todos") {
       links = links.filter((link) => {
         const sourceNode = nodes.find((n) => n.id === link.source);
         const targetNode = nodes.find((n) => n.id === link.target);
         if (!sourceNode || !targetNode) return false;
-        if (selectedSimmetry === "Simétricos") {
-          return sourceNode.group === targetNode.group;
-        } else if (selectedSimmetry === "Assimétricos") {
-          return sourceNode.group !== targetNode.group;
+        if (selectedShift === "Manhã") {
+          return sourceNode.group === 1 && targetNode.group === 1;
+        } else if (selectedShift === "Tarde") {
+          return sourceNode.group === 2 && targetNode.group === 2;
+        } else if (selectedShift === "Noite") {
+          return sourceNode.group === 3 && targetNode.group === 3;
         }
         return true;
       });
@@ -166,7 +190,7 @@ const NetworkWebRoute: React.FC = () => {
     selectedOptions,
     selectedGroup,
     selectedType,
-    selectedSimmetry,
+    selectedShift,
     dateInitial,
     dateFinal,
   ]);
@@ -183,202 +207,309 @@ const NetworkWebRoute: React.FC = () => {
       <Box
         display="flex"
         flexDirection="column"
-        gap="0.5rem"
-        px="1.5rem"
-        py="0.5rem"
-        style={{ minHeight: 0 }}
+        justifyContent="space-between"
+        borderBottom={expanded ? "1px solid #e0e0e0" : "none"}
+        sx={{
+          transition: "all 0.3s ease-in-out",
+        }}
       >
-        <Box
-          sx={{
-            width: "100%",
-            minWidth: "0",
-            display: "flex",
-            flexDirection: "column",
-            gap: "0.25rem",
-          }}
-        >
-          <Typography
-            fontFamily={"Inter, sans-serif"}
-            fontWeight={600}
-            fontSize={"1.1rem"}
-            mb={0.5}
-            mt={0.5}
-          >
-            Seleção de IPs
-          </Typography>
-          <MultiSelect
-            style="gray"
-            placeholder="Selecione os IPs"
-            height="40px"
-            options={options}
-            selectedOptions={selectedOptions}
-            onChange={setSelectedOptions}
-          />
-        </Box>
-
-        <Box
-          width="100%"
-          display="flex"
-          py="0.2rem"
-          flexDirection="column"
-          gap="0.25rem"
-        >
-          <Typography
-            variant="caption"
-            fontSize={"14px"}
-            fontFamily="Inter, sans-serif"
-            fontWeight={600}
-            mb={0.5}
-          >
-            Filtrar por:
-          </Typography>
+        <Collapse in={expanded} timeout="auto">
           <Box
             display="flex"
-            flexDirection="row"
-            flexWrap="wrap"
-            gap="1rem"
-            alignItems="center"
+            flexDirection="column"
+            gap="1.5rem"
+            px="1.5rem"
+            py="1rem"
+            sx={{
+              transition: "all 0.3s ease-in-out",
+            }}
           >
-            <TextField
-              select
-              label="Grupo"
-              value={selectedGroup}
-              onChange={(e) => setSelectedGroup(e.target.value)}
+            <Box
               sx={{
-                ...focusedTextFieldStyles,
-                minWidth: "8rem",
-                backgroundColor: "transparent",
+                width: "fit-content",
+                minWidth: "25rem",
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.75rem",
               }}
-              size="small"
             >
-              {["IP", "Interlocutor", "Ambos"].map((value) => (
-                <MenuItem key={value} value={value} sx={menuItemStyles}>
-                  {value}
-                </MenuItem>
-              ))}
-            </TextField>
+              <Typography
+                fontFamily={"Inter, sans-serif"}
+                fontWeight={600}
+                fontSize={"1.25rem"}
+                color="text.primary"
+              >
+                Seleção de IPs
+              </Typography>
+              <MultiSelect
+                style="gray"
+                placeholder="Selecione os IPs"
+                height="53px"
+                options={options}
+                selectedOptions={selectedOptions}
+                onChange={setSelectedOptions}
+              />
+            </Box>
 
-            <TextField
-              select
-              label="Tipo"
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-              sx={{ ...focusedTextFieldStyles, minWidth: "8rem" }}
-              size="small"
+            <Box
+              width="100%"
+              display="flex"
+              flexDirection="column"
+              gap="0.75rem"
             >
-              <MenuItem value="IP" sx={menuItemStyles}>
-                IP
-              </MenuItem>
-              <MenuItem value="Interlocutor" sx={menuItemStyles}>
-                Interlocutor
-              </MenuItem>
-              <MenuItem value="Todos" sx={menuItemStyles}>
-                Todos
-              </MenuItem>
-            </TextField>
+              <Typography
+                variant="caption"
+                fontSize={"14px"}
+                fontFamily="Inter, sans-serif"
+                fontWeight={600}
+                color="text.primary"
+              >
+                Filtrar por:
+              </Typography>
 
-            <TextField
-              select
-              label="Simetria"
-              value={selectedSimmetry}
-              onChange={(e) => setSelectedSimmetry(e.target.value)}
-              sx={{ ...focusedTextFieldStyles, minWidth: "8rem" }}
-              size="small"
+              <Box
+                display="flex"
+                flexDirection="row"
+                flexWrap="wrap"
+                gap="2.5rem"
+                sx={{
+                  transition: "all 0.3s ease-in-out",
+                }}
+              >
+                <TextField
+                  select
+                  label="Grupo"
+                  value={selectedGroup}
+                  onChange={(e) => setSelectedGroup(e.target.value)}
+                  sx={{
+                    ...focusedTextFieldStyles,
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  {["IP", "Interlocutor", "Ambos"].map((value) => (
+                    <MenuItem key={value} value={value} sx={menuItemStyles}>
+                      {value}
+                    </MenuItem>
+                  ))}
+                </TextField>
+
+                <TextField
+                  select
+                  label="Tipo"
+                  value={selectedType}
+                  onChange={(e) => setSelectedType(e.target.value)}
+                  sx={focusedTextFieldStyles}
+                >
+                  <MenuItem value="IP" sx={menuItemStyles}>
+                    IP
+                  </MenuItem>
+                  <MenuItem value="Interlocutor" sx={menuItemStyles}>
+                    Interlocutor
+                  </MenuItem>
+                  <MenuItem value="Todos" sx={menuItemStyles}>
+                    Todos
+                  </MenuItem>
+                </TextField>
+
+                <TextField
+                  select
+                  label="Turno"
+                  value={selectedShift}
+                  onChange={(e) => setSelectedShift(e.target.value)}
+                  sx={focusedTextFieldStyles}
+                >
+                  {["Todos", "Manhã", "Tarde", "Noite"].map((value) => (
+                    <MenuItem key={value} value={value} sx={menuItemStyles}>
+                      {value}
+                    </MenuItem>
+                  ))}
+                </TextField>
+
+                <TextField
+                  id="date-initial"
+                  InputLabelProps={{ shrink: true }}
+                  label="Data Inicial"
+                  type="date"
+                  value={dateInitial}
+                  onChange={(e) => setDateInitial(e.target.value)}
+                  sx={focusedTextFieldStyles}
+                />
+
+                <TextField
+                  id="date-final"
+                  InputLabelProps={{ shrink: true }}
+                  label="Data Final"
+                  type="date"
+                  value={dateFinal}
+                  onChange={(e) => setDateFinal(e.target.value)}
+                  sx={focusedTextFieldStyles}
+                />
+
+                <TextField
+                  id="time-initial"
+                  InputLabelProps={{ shrink: true }}
+                  label="Horário Inicial"
+                  type="time"
+                  value={timeInitial}
+                  onChange={(e) => setTimeInitial(e.target.value)}
+                  sx={focusedTextFieldStyles}
+                />
+
+                <TextField
+                  id="time-final"
+                  InputLabelProps={{ shrink: true }}
+                  label="Horário Final"
+                  type="time"
+                  value={timeFinal}
+                  onChange={(e) => setTimeFinal(e.target.value)}
+                  sx={focusedTextFieldStyles}
+                />
+              </Box>
+            </Box>
+
+            {/* Legenda dos Turnos */}
+            <Box
+              display="flex"
+              gap="1.5rem"
+              alignItems="center"
+              mt="0.5rem"
+              mb="1rem"
+              sx={{
+                transition: "all 0.3s ease-in-out",
+              }}
             >
-              {["Simétricos", "Assimétricos", "Ambos"].map((value) => (
-                <MenuItem key={value} value={value} sx={menuItemStyles}>
-                  {value}
-                </MenuItem>
-              ))}
-            </TextField>
-
-            <TextField
-              id="date-initial"
-              InputLabelProps={{ shrink: true }}
-              label="Data Inicial"
-              type="date"
-              value={dateInitial}
-              onChange={(e) => setDateInitial(e.target.value)}
-              sx={{ ...focusedTextFieldStyles, minWidth: "8rem" }}
-              size="small"
-            />
-
-            <TextField
-              id="date-final"
-              InputLabelProps={{ shrink: true }}
-              label="Data Final"
-              type="date"
-              value={dateFinal}
-              onChange={(e) => setDateFinal(e.target.value)}
-              sx={{ ...focusedTextFieldStyles, minWidth: "8rem" }}
-              size="small"
-            />
+              <Typography
+                variant="subtitle2"
+                fontFamily="Inter, sans-serif"
+                fontWeight={600}
+                fontSize="0.95rem"
+                color="text.primary"
+              >
+                Legenda de Turnos:
+              </Typography>
+              <Box display="flex" gap="1rem" flexWrap="wrap">
+                <Box display="flex" alignItems="center" gap="0.5rem">
+                  <Box
+                    width="14px"
+                    height="14px"
+                    bgcolor="#000A2F"
+                    borderRadius="50%"
+                    sx={{
+                      transition: "all 0.3s ease-in-out",
+                      "&:hover": {
+                        transform: "scale(1.1)",
+                      },
+                    }}
+                  />
+                  <Typography
+                    variant="body2"
+                    fontSize="0.95rem"
+                    color="text.primary"
+                  >
+                    Madrugada (00h-6h)
+                  </Typography>
+                </Box>
+                <Box display="flex" alignItems="center" gap="0.5rem">
+                  <Box
+                    width="14px"
+                    height="14px"
+                    bgcolor="#808CBF"
+                    borderRadius="50%"
+                    sx={{
+                      transition: "all 0.3s ease-in-out",
+                      "&:hover": {
+                        transform: "scale(1.1)",
+                      },
+                    }}
+                  />
+                  <Typography
+                    variant="body2"
+                    fontSize="0.95rem"
+                    color="text.primary"
+                  >
+                    Manhã (6h-12h)
+                  </Typography>
+                </Box>
+                <Box display="flex" alignItems="center" gap="0.5rem">
+                  <Box
+                    width="14px"
+                    height="14px"
+                    bgcolor="#31438C"
+                    borderRadius="50%"
+                    sx={{
+                      transition: "all 0.3s ease-in-out",
+                      "&:hover": {
+                        transform: "scale(1.1)",
+                      },
+                    }}
+                  />
+                  <Typography
+                    variant="body2"
+                    fontSize="0.95rem"
+                    color="text.primary"
+                  >
+                    Tarde (12h-18h)
+                  </Typography>
+                </Box>
+                <Box display="flex" alignItems="center" gap="0.5rem">
+                  <Box
+                    width="14px"
+                    height="14px"
+                    bgcolor="#0F1E55"
+                    borderRadius="50%"
+                    sx={{
+                      transition: "all 0.3s ease-in-out",
+                      "&:hover": {
+                        transform: "scale(1.1)",
+                      },
+                    }}
+                  />
+                  <Typography
+                    variant="body2"
+                    fontSize="0.95rem"
+                    color="text.primary"
+                  >
+                    Noite (18h-00h)
+                  </Typography>
+                </Box>
+                <Box display="flex" alignItems="center" gap="0.5rem">
+                  <Box
+                    width="14px"
+                    height="14px"
+                    bgcolor="#D62727"
+                    borderRadius="50%"
+                    sx={{
+                      transition: "all 0.3s ease-in-out",
+                      "&:hover": {
+                        transform: "scale(1.1)",
+                      },
+                    }}
+                  />
+                  <Typography
+                    variant="body2"
+                    fontSize="0.95rem"
+                    color="text.primary"
+                  >
+                    Alvos
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
           </Box>
-        </Box>
-
-        {/* Legenda dos Turnos */}
-        <Box
-          display="flex"
-          gap="1.5rem"
-          alignItems="center"
-          mt="0.2rem"
-          mb="0.2rem"
+        </Collapse>
+        <IconButton
+          onClick={toggleExpanded}
+          size="small"
+          disableRipple
+          sx={{
+            transition: "all 0.3s ease-in-out",
+            "&:hover": {
+              transform: "scale(1.1)",
+            },
+          }}
         >
-          <Typography
-            variant="subtitle2"
-            fontFamily="Inter, sans-serif"
-            fontWeight={600}
-            fontSize="0.95rem"
-          >
-            Legenda de Turnos:
-          </Typography>
-          <Box display="flex" gap="0.7rem">
-            <Box display="flex" alignItems="center" gap="0.3rem">
-              <Box
-                width="14px"
-                height="14px"
-                bgcolor="#808CBF"
-                borderRadius="50%"
-              />
-              <Typography variant="body2" fontSize="0.95rem">
-                Manhã
-              </Typography>
-            </Box>
-            <Box display="flex" alignItems="center" gap="0.3rem">
-              <Box
-                width="14px"
-                height="14px"
-                bgcolor="#31438C"
-                borderRadius="50%"
-              />
-              <Typography variant="body2" fontSize="0.95rem">
-                Tarde
-              </Typography>
-            </Box>
-            <Box display="flex" alignItems="center" gap="0.3rem">
-              <Box
-                width="14px"
-                height="14px"
-                bgcolor="#08102F"
-                borderRadius="50%"
-              />
-              <Typography variant="body2" fontSize="0.95rem">
-                Noite
-              </Typography>
-            </Box>
-            <Box display="flex" alignItems="center" gap="0.3rem">
-              <Box
-                width="14px"
-                height="14px"
-                bgcolor="#D62727"
-                borderRadius="50%"
-              />
-              <Typography variant="body2" fontSize="0.95rem">
-                Alvos
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
+          {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+        </IconButton>
       </Box>
 
       <Box

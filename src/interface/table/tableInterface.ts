@@ -5,7 +5,7 @@ export interface IconAction {
 
 export interface GenericData {
   id: number;
-  [key: string]: string | number | string[];
+  [key: string]: string | number | string[] | number[] | undefined;
 }
 
 export interface HeadCell<T extends GenericData> {
@@ -36,6 +36,8 @@ export interface GenericTableProps<T extends GenericData> {
   headerCollor?: string;
   collapsible?: boolean;
   defaultCollapsed?: boolean;
+  renderCell?: (id: keyof T, row: T) => React.ReactNode;
+  showDeleteButton?: boolean;
 }
 
 export interface EnhancedTableHeadProps<T extends GenericData> {

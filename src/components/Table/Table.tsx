@@ -37,7 +37,9 @@ function GenericTable<T extends GenericData>({
   addButton = false,
   collapsible = false,
   defaultCollapsed = true,
-  headerCollor
+  headerCollor,
+  renderCell,
+  showDeleteButton = true,
 }: GenericTableProps<T>) {
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<keyof T>(defaultOrderBy);
@@ -59,7 +61,7 @@ function GenericTable<T extends GenericData>({
     ) {
       setSelected(initialSelected);
     }
-  }, [initialSelected]);
+  }, []);
 
   const notifySelectionChange = useCallback(() => {
     if (onSelectionChange) {
@@ -125,12 +127,9 @@ function GenericTable<T extends GenericData>({
     [selected, singleSelect]
   );
 
-  const handleChangePage = useCallback(
-    (_event: unknown, newPage: number) => {
-      setPage(newPage);
-    },
-    []
-  );
+  const handleChangePage = useCallback((_event: unknown, newPage: number) => {
+    setPage(newPage);
+  }, []);
 
   const handleChangeRowsPerPage = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -193,14 +192,18 @@ function GenericTable<T extends GenericData>({
                   <TableCell
                     padding="checkbox"
                     sx={{
-                      bgcolor: isItemSelected ? "table.lightGrey" : "table.white",
+                      bgcolor: isItemSelected
+                        ? "table.lightGrey"
+                        : "table.white",
                     }}
                   >
                     {allowSelection && (
                       <Checkbox
                         sx={{
                           "&.Mui-checked": { color: "customButton.gold" },
-                          "&.MuiCheckbox-indeterminate": { color: "customButton.gold" },
+                          "&.MuiCheckbox-indeterminate": {
+                            color: "customButton.gold",
+                          },
                         }}
                         checked={isItemSelected}
                       />
@@ -220,11 +223,16 @@ function GenericTable<T extends GenericData>({
                         scope={isFirstCell ? "row" : undefined}
                         id={isFirstCell ? labelId : undefined}
                         sx={{
-                          bgcolor: isItemSelected ? "table.lightGrey" : "table.white",
+                          bgcolor: isItemSelected
+                            ? "table.lightGrey"
+                            : "table.white",
                           maxWidth: "10rem",
                         }}
                       >
-                        {headCell.iconAction ? (
+                        {renderCell &&
+                        renderCell(headCell.id, row) !== undefined ? (
+                          renderCell(headCell.id, row)
+                        ) : headCell.iconAction ? (
                           <Box
                             onClick={(e) => {
                               e.stopPropagation();
@@ -313,6 +321,7 @@ function GenericTable<T extends GenericData>({
           collapsed={collapsed}
           onToggleCollapse={handleToggleCollapse}
           headerCollor={headerCollor}
+          showDeleteButton={showDeleteButton}
         />
         {collapsible ? (
           <Collapse in={!collapsed}>{tableContent()}</Collapse>

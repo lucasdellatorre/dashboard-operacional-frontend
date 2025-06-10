@@ -57,8 +57,8 @@ const CreateOperationModal: React.FC<CreateOperationModalProps> = ({
       reset();
       onClose();
     } catch (err) {
-      console.error("Erro ao criar operação:", err);
-      setSubmitError("Não foi possível criar a operação. Tente novamente.");
+      if (err)
+        setSubmitError("Não foi possível criar a operação. Tente novamente.");
     } finally {
       setIsSubmitting(false);
     }
@@ -112,12 +112,7 @@ const CreateOperationModal: React.FC<CreateOperationModalProps> = ({
         </Typography>
       </Box>
 
-      <Box
-        display="flex"
-        flexDirection="column"
-        gap="1rem"
-        alignItems="center"
-      >
+      <Box display="flex" flexDirection="column" gap="1rem" alignItems="center">
         <Box
           sx={{ width: "100%" }}
           display="flex"
@@ -140,7 +135,7 @@ const CreateOperationModal: React.FC<CreateOperationModalProps> = ({
                 InputProps={{
                   notched: false,
                   sx: {
-                    height: "2.5rem",
+                    height: "3.5rem",
                     width: "100%",
                     "& .MuiOutlinedInput-notchedOutline": {
                       borderColor: "rgba(0, 0, 0, 0.23)",

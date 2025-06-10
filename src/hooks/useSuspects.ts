@@ -1,7 +1,8 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { normalizeString } from "../utils/formatUtils";
 import { api } from "../server/service";
 import { GenericData } from "../interface/table/tableInterface";
+import { ResponseApi } from "../interface/responseInterface";
 
 export interface SuspectOperation {
   id: number;
@@ -17,13 +18,19 @@ export interface SuspectDTO {
   data_criacao: string;
 }
 
+type CreateSuspectDTO = {
+  apelido: string;
+  cpf: string;
+  nome: string;
+  numeros_ids: number[];
+};
+
 export interface NumbersDTO {
   id: number;
   numero: string;
   operacoes: SuspectOperation[];
 }
 
-// DTOs usados na tabela (formatados como string)
 export interface Suspect extends GenericData {
   apelido: string;
   relevante: string;
@@ -52,25 +59,49 @@ export const useSuspects = ({ searchTerm, operationIds }: UseSuspectsProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Requisição de dados da API
-  useEffect(() => {
+  const createSuspect = useCallback(
+    async (
+      suspect: CreateSuspectDTO,
+      userCpf: string
+    ): Promise<CreateSuspectDTO> => {
+      try {
+        const response = await api.post<CreateSuspectDTO>(
+          "/api/suspeito",
+          suspect,
+          {
+            headers: {
+              cpfUsuario: userCpf,
+            },
+          }
+        );
+        return response.data;
+      } catch (err) {
+        const message = "Erro ao criar suspeito";
+        throw new Error(message);
+      }
+    },
+    []
+  );
+
+  const fetchSuspects = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     const url = `/api/numeros/operacao/${operationIds.join(",")}`;
-    console.log("fetching:", url);
 
     api
       .get<SuspectList>(url)
       .then(({ data }) => setData(data))
       .catch((err) => {
-        console.error("Erro ao carregar alvos:", err);
         setError("Não foi possível carregar os alvos.");
       })
       .finally(() => setLoading(false));
   }, [operationIds]);
 
-  // Filtro e transformação para exibição na tabela
+  useEffect(() => {
+    fetchSuspects();
+  }, [operationIds, fetchSuspects]);
+
   const suspects: Suspect[] = useMemo(() => {
     const search = normalizeString(searchTerm.trim());
 
@@ -113,7 +144,24 @@ export const useSuspects = ({ searchTerm, operationIds }: UseSuspectsProps) => {
       }));
   }, [searchTerm, data.numeros]);
 
+  const deleteSuspect = async (id: number): Promise<ResponseApi<void>> => {
+    try {
+      await api.delete(`/api/suspeito/${id}`);
+
+      fetchSuspects();
+      return {
+        isSuccess: true,
+      };
+    } catch (error) {
+      console.log("Erro ao deletar um alvo", error);
+      throw new Error("Erro ao deletar um alvo");
+    }
+  };
+
   return {
+    fetchSuspects,
+    createSuspect,
+    deleteSuspect,
     suspects,
     numbers,
     loading,

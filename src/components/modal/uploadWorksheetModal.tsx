@@ -1,19 +1,20 @@
 import {
+  Autocomplete,
   Box,
   Button,
   Dialog,
   IconButton,
+  TextField,
   Tooltip,
   Typography,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CloseIcon from "@mui/icons-material/Close";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { z } from "zod";
 import UploadAreaInput from "../uploadAreaInput";
-import MultiSelect from "../multiSelect";
 import { Operation } from "../../hooks/useOperations";
 
 const uploadModalSchema = z.object({
@@ -22,17 +23,14 @@ const uploadModalSchema = z.object({
     .refine((file) => /\.xlsx$/i.test(file.name), {
       message: "O arquivo deve estar no formato .xlsx",
     }),
-  operations: z
-    .array(z.string())
-    .min(1, "Deve fornecer pelo menos uma operação")
-    .nonempty("Lista de operações não pode estar vazia"),
+  operation: z.number().min(1, "Selecione uma operação"),
 });
 
 type UploadModalForm = z.infer<typeof uploadModalSchema>;
 
 interface UploadModalProps {
   isOpen: boolean;
-  onUploadSuccess: (file: File) => void;
+  onUploadSuccess: (file: File, operacaoId: number) => void;
   onClose: () => void;
   existingFiles: string[];
   operationsList: Operation[];
@@ -43,33 +41,27 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
   onUploadSuccess,
   onClose,
   existingFiles,
-  operationsList
+  operationsList,
 }) => {
   const [submitError, setSubmitError] = useState<string | null>(null);
-
 
   const {
     control,
     handleSubmit,
     reset,
     setValue,
-    setError,      
-    clearErrors, 
+    setError,
+    clearErrors,
     formState: { errors },
   } = useForm<UploadModalForm>({
     mode: "all",
     resolver: zodResolver(uploadModalSchema),
     defaultValues: {
       uploadFile: undefined,
-      operations: [],
+      operation: 0
     },
   });
 
-  const handleChangeOperations = (selected: string[]) => {
-    setValue("operations", selected as [string, ...string[]], {
-      shouldValidate: true,
-    });
-  };
 
   const handleFileSelected = (file: File) => {
     // clear any previous duplicate-name error
@@ -82,10 +74,10 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
       });
       return false;
     }
-      clearErrors("uploadFile");
-      setValue("uploadFile", file, { shouldValidate: true });
+    clearErrors("uploadFile");
+    setValue("uploadFile", file, { shouldValidate: true });
 
-      return true;
+    return true;
   };
 
   const onSubmit = (data: UploadModalForm) => {
@@ -102,9 +94,13 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
     }
     setSubmitError(null);
     reset();
-    onUploadSuccess(data.uploadFile);
+    onUploadSuccess(data.uploadFile, data.operation);
   }
-  
+
+  useEffect(() => {
+    setSubmitError(null);
+  }, [isOpen]);
+
   return (
     <Dialog
       sx={{
@@ -168,41 +164,40 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
         </Tooltip>
       </Box>
 
-      <Box display="flex" flexDirection="column" gap="1rem" alignItems="center">
-        <Box width="100%" display="flex" flexDirection="column" gap="0.4rem">
-          <Typography sx={{ fontWeight: 800, fontSize: "1rem" }}>
-            Operações*
+      <Box display="flex" flexDirection="column" gap="2.5rem" alignItems="center">
+        <Box width="100%" display="flex" flexDirection="column" gap="1.8rem" paddingTop={"0.5rem"}>
+          <Typography sx={{ fontWeight: 600, fontSize: "1rem" }}>
+            Operação*
           </Typography>
           <Controller
             control={control}
-            name="operations"
+            name="operation"
             render={({ field }) => (
-              <MultiSelect
-                placeholder="Selecione as operações"
-                height="2.5rem"
-                options={operationsList.map((operation) => (operation.nome))}
-                selectedOptions={field.value}
-                onChange={handleChangeOperations} 
-                style={"gray"} 
+              <Autocomplete
+                options={operationsList}
+                getOptionLabel={(option) => option.nome}
+                onChange={(_, newValue) => field.onChange(newValue?.id || 0)}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Operação"
+                    error={!!errors.operation}
+                    helperText={errors.operation?.message}
+                    size="small"
+                  />
+                )}
+                value={operationsList.find((op) => op.id === field.value) || null}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
               />
             )}
           />
-          <Box height="1.5rem">
-            {errors.operations && (
-              <Typography color="error" variant="caption">
-                {errors.operations.message}
-              </Typography>
-            )}
-          </Box>
         </Box>
 
-        <Box width="100%" display="flex" flexDirection="column" gap="0.4rem">
+        <Box width="100%" display="flex" flexDirection="column" gap="0.8rem">
           <Controller
             control={control}
             name="uploadFile"
-            render={() => (
-              <UploadAreaInput onFileSelect={handleFileSelected} />
-            )}
+            render={() => <UploadAreaInput onFileSelect={handleFileSelected} />}
           />
           <Box height="1.5rem">
             {errors.uploadFile && (
@@ -211,26 +206,26 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
               </Typography>
             )}
           </Box>
-        </Box>
 
-        <Box width="100%">
-          <Button
-            fullWidth
-            onClick={handleSubmit(onSubmit)}
-            sx={{
-              bgcolor: "customButton.gold",
-              color: "customText.white",
-              textTransform: "none",
-              fontWeight: 600,
-            }}
-          >
-            Fazer Upload
-          </Button>
-          {submitError && (
-            <Typography color="error" variant="caption" sx={{ mt: 1 }}>
-              {submitError}
-            </Typography>
-          )}
+          <Box width="100%">
+            <Button
+              fullWidth
+              onClick={handleSubmit(onSubmit)}
+              sx={{
+                bgcolor: "customButton.gold",
+                color: "customText.white",
+                textTransform: "none",
+                fontWeight: 600,
+              }}
+            >
+              Fazer Upload
+            </Button>
+            {submitError && (
+              <Typography color="error" variant="caption" sx={{ mt: 1 }}>
+                {submitError}
+              </Typography>
+            )}
+          </Box>
         </Box>
       </Box>
     </Dialog>
