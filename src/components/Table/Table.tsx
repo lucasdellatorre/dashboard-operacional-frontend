@@ -39,6 +39,7 @@ function GenericTable<T extends GenericData>({
   defaultCollapsed = true,
   headerCollor,
   renderCell,
+  isDeleting,
   showDeleteButton = true,
 }: GenericTableProps<T>) {
   const [order, setOrder] = useState<Order>("asc");
@@ -322,6 +323,7 @@ function GenericTable<T extends GenericData>({
           onToggleCollapse={handleToggleCollapse}
           headerCollor={headerCollor}
           showDeleteButton={showDeleteButton}
+          isDeleting={isDeleting}
         />
         {collapsible ? (
           <Collapse in={!collapsed}>{tableContent()}</Collapse>

@@ -86,6 +86,10 @@ const SuspectsDetails = () => {
     relevante: false,
   });
 
+  const [loadingNumbersDelete, setLoadingNumbersDelete] =
+    useState<boolean>(false);
+  const [loadingEmailDelete, setLoadingEmailDelete] = useState<boolean>(false);
+
   const [nickname, setNickname] = useState("");
   const [name, setName] = useState("");
   const [suspectCpf, setsuspectCpfSuspect] = useState("");
@@ -479,6 +483,7 @@ const SuspectsDetails = () => {
                 />
 
                 <GenericTable
+                  isDeleting={loadingNumbersDelete}
                   rows={(suspect.celulares || []).map((c) => ({
                     id: c.id,
                     phone: c.numero,
@@ -499,6 +504,7 @@ const SuspectsDetails = () => {
                   noDataMessage="Nenhum celular encontrado para este suspeito"
                   onDelete={async (selectedIds) => {
                     try {
+                      setLoadingNumbersDelete(true);
                       for (const id of selectedIds) {
                         await deleteSuspectNumber(id);
                       }
@@ -507,7 +513,9 @@ const SuspectsDetails = () => {
                         type: "success",
                         message: "Número deletado com sucesso",
                       });
+                      setLoadingNumbersDelete(false);
                     } catch (err) {
+                      setLoadingNumbersDelete(false);
                       console.log("Erro ao deletar numero:", err);
                       setAlert({
                         show: true,
@@ -520,6 +528,7 @@ const SuspectsDetails = () => {
                 />
 
                 <GenericTable
+                  isDeleting={loadingEmailDelete}
                   rows={(suspect.emails || []).map((e) => ({
                     id: e.id,
                     email: e.email,
@@ -540,6 +549,7 @@ const SuspectsDetails = () => {
                   noDataMessage="Nenhum email encontrado para este suspeito"
                   onDelete={async (selectedIds) => {
                     try {
+                      setLoadingEmailDelete(true);
                       for (const id of selectedIds) {
                         await deleteSuspectEmail(id);
                       }
@@ -548,7 +558,9 @@ const SuspectsDetails = () => {
                         type: "success",
                         message: "Email deletado com sucesso",
                       });
+                      setLoadingEmailDelete(false);
                     } catch (err) {
+                      setLoadingEmailDelete(false);
                       console.log("Erro ao deletar email:", err);
                       setAlert({
                         show: true,

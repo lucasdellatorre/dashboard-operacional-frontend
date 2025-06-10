@@ -3,7 +3,7 @@ import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { Box, Button } from "@mui/material";
+import { Box, Button, CircularProgress } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
@@ -18,6 +18,7 @@ interface EnhancedTableToolbarProps {
   onToggleCollapse?: () => void;
   headerCollor?: string;
   showDeleteButton?: boolean;
+  isDeleting?: boolean;
 }
 
 const EnhancedTableToolbar: React.FC<EnhancedTableToolbarProps> = ({
@@ -31,6 +32,7 @@ const EnhancedTableToolbar: React.FC<EnhancedTableToolbarProps> = ({
   onToggleCollapse,
   headerCollor,
   showDeleteButton,
+  isDeleting = false,
 }) => {
   return (
     <Toolbar
@@ -64,13 +66,30 @@ const EnhancedTableToolbar: React.FC<EnhancedTableToolbarProps> = ({
           {numSelected > 0 ? `${numSelected} selecionado(s)` : title}
         </Typography>
       </Box>
-      {numSelected > 0 && showDeleteButton && (
-        <Tooltip title="Excluir">
-          <IconButton onClick={onDelete}>
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
+      {isDeleting ? (
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            position: "absolute",
+            right: "6rem",
+          }}
+        >
+          <CircularProgress color="inherit" size="20px" />
+          <Typography variant="caption">deletando...</Typography>
+        </Box>
+      ) : (
+        numSelected > 0 &&
+        showDeleteButton && (
+          <Tooltip title="Excluir">
+            <IconButton onClick={onDelete}>
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
+        )
       )}
+
       {addButton && (
         <Button
           onClick={onAdd}
@@ -79,6 +98,7 @@ const EnhancedTableToolbar: React.FC<EnhancedTableToolbarProps> = ({
             color: "customText.white",
             textTransform: "none",
             fontWeight: 600,
+            ml: 2, // Add some margin to the left
           }}
         >
           Adicionar
