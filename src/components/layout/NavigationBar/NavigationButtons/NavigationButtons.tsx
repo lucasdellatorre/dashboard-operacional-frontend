@@ -12,6 +12,7 @@ import ToggleButton from "../ToggleButton/ToggleButton";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
 import { useContext } from "react";
 import { AppContext } from "../../../../context/AppContext";
+import NetworkCheckIcon from "@mui/icons-material/NetworkCheck";
 
 interface NavigationButtonsProps {
   isCollapsed: boolean;
@@ -86,6 +87,13 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
               label="Teia"
               isCollapsed={isCollapsed}
               isActive={isActive("/teia")}
+            />
+            <NavigationButton
+              to="/teia-rede"
+              icon={<NetworkCheckIcon />}
+              label="Teia por IP"
+              isCollapsed={isCollapsed}
+              isActive={isActive("/teia-rede")}
             />
           </>
         )}
