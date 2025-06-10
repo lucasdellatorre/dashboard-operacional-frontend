@@ -58,10 +58,9 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
     resolver: zodResolver(uploadModalSchema),
     defaultValues: {
       uploadFile: undefined,
-      operation: 0
+      operation: 0,
     },
   });
-
 
   const handleFileSelected = (file: File) => {
     // clear any previous duplicate-name error
@@ -95,7 +94,7 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
     setSubmitError(null);
     reset();
     onUploadSuccess(data.uploadFile, data.operation);
-  }
+  };
 
   useEffect(() => {
     setSubmitError(null);
@@ -164,8 +163,19 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
         </Tooltip>
       </Box>
 
-      <Box display="flex" flexDirection="column" gap="2.5rem" alignItems="center">
-        <Box width="100%" display="flex" flexDirection="column" gap="1.8rem" paddingTop={"0.5rem"}>
+      <Box
+        display="flex"
+        flexDirection="column"
+        gap="2.5rem"
+        alignItems="center"
+      >
+        <Box
+          width="100%"
+          display="flex"
+          flexDirection="column"
+          gap="1.8rem"
+          paddingTop={"0.5rem"}
+        >
           <Typography sx={{ fontWeight: 600, fontSize: "1rem" }}>
             Operação*
           </Typography>
@@ -184,9 +194,37 @@ const UploadWorksheetModal: React.FC<UploadModalProps> = ({
                     error={!!errors.operation}
                     helperText={errors.operation?.message}
                     size="small"
+                    sx={{
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "customButton.lightGray",
+                      },
+                      "& label.Mui-focused": {
+                        color: "inherit",
+                      },
+                      "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
+                        {
+                          borderColor: "customButton.lightGray",
+                          borderWidth: "1px",
+                        },
+                      "& .MuiOutlinedInput-root": {
+                        display: "flex",
+                        alignItems: "center",
+                        "&:hover fieldset": {
+                          borderColor: "customButton.lightGray",
+                        },
+                        "&.Mui-focused fieldset": {
+                          borderColor: "customButton.lightGray",
+                        },
+                        "& input": {
+                          outline: "none",
+                        },
+                      },
+                    }}
                   />
                 )}
-                value={operationsList.find((op) => op.id === field.value) || null}
+                value={
+                  operationsList.find((op) => op.id === field.value) || null
+                }
                 isOptionEqualToValue={(option, value) => option.id === value.id}
               />
             )}

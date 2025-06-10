@@ -258,7 +258,7 @@ const SuspectsDetails = () => {
             setAlert({
               show: true,
               type: "error",
-              message: "Ocorreu um erro. Tente logar novamente.",
+              message: "Ocorreu um erro",
             });
           }
         }}
