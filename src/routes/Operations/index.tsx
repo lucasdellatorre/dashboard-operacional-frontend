@@ -186,6 +186,7 @@ const Operations: React.FC = () => {
             });
             fetchOperations();
           } catch (err) {
+            console.log("Erro ao criar operação:", err);
             setAlert({
               show: true,
               type: "error",

@@ -6,7 +6,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CloseIcon from "@mui/icons-material/Close";
@@ -24,15 +24,15 @@ type EmailFormData = z.infer<typeof emailModalSchema>;
 interface EmailModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: EmailFormData) => void;
   initialData?: EmailFormData | null;
+  onCreateEmail: (data: EmailFormData) => Promise<void>;
 }
 
 const EmailModal: React.FC<EmailModalProps> = ({
   isOpen,
   onClose,
-  onSubmit,
   initialData,
+  onCreateEmail,
 }) => {
   const {
     control,
@@ -44,7 +44,7 @@ const EmailModal: React.FC<EmailModalProps> = ({
     defaultValues: {
       email: initialData ? initialData.email : "",
     },
-    shouldUnregister: true, // Corrigido
+    shouldUnregister: true,
   });
 
   useEffect(() => {
@@ -54,6 +54,20 @@ const EmailModal: React.FC<EmailModalProps> = ({
       reset({ email: "" });
     }
   }, [initialData, reset]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const onSubmit = async (data: EmailFormData) => {
+    setIsSubmitting(true);
+    try {
+      await onCreateEmail(data);
+      reset();
+      onClose();
+    } catch (err) {
+      console.error("Erro ao criar email:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <Dialog
@@ -153,13 +167,8 @@ const EmailModal: React.FC<EmailModalProps> = ({
         </Box>
 
         <Button
-          onClick={handleSubmit((data) => {
-            if (onSubmit) {
-              onSubmit(data);
-              reset();
-              onClose();
-            }
-          })}
+          onClick={handleSubmit(onSubmit)}
+          disabled={isSubmitting}
           sx={{
             bgcolor: "customButton.gold",
             color: "customText.white",
@@ -168,7 +177,7 @@ const EmailModal: React.FC<EmailModalProps> = ({
             width: "100%",
           }}
         >
-          {initialData ? "Salvar alterações" : "Adicionar email"}
+          {isSubmitting ? "Adicionando..." : "Adicionar Email"}
         </Button>
       </Box>
     </Dialog>

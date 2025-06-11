@@ -6,7 +6,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CloseIcon from "@mui/icons-material/Close";
@@ -24,14 +24,14 @@ type TelephoneFormData = z.infer<typeof telephoneModalSchema>;
 interface TelephoneModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: TelephoneFormData) => void;
+  onCreateNumber: (data: TelephoneFormData) => Promise<void>;
   initialData?: TelephoneFormData | null;
 }
 
 const TelephoneModal: React.FC<TelephoneModalProps> = ({
   isOpen,
   onClose,
-  onSubmit,
+  onCreateNumber,
   initialData,
 }) => {
   const {
@@ -46,6 +46,20 @@ const TelephoneModal: React.FC<TelephoneModalProps> = ({
     },
     shouldUnregister: true,
   });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const onSubmit = async (data: TelephoneFormData) => {
+    setIsSubmitting(true);
+    try {
+      await onCreateNumber(data);
+      reset();
+      onClose();
+    } catch (err) {
+      console.error("Erro ao criar numero:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     if (initialData) {
@@ -146,13 +160,8 @@ const TelephoneModal: React.FC<TelephoneModalProps> = ({
         </Box>
 
         <Button
-          onClick={handleSubmit((data) => {
-            if (onSubmit) {
-              onSubmit(data);
-              reset();
-              onClose();
-            }
-          })}
+          onClick={handleSubmit(onSubmit)}
+          disabled={isSubmitting}
           sx={{
             bgcolor: "customButton.gold",
             color: "customText.white",
@@ -161,7 +170,7 @@ const TelephoneModal: React.FC<TelephoneModalProps> = ({
             width: "100%",
           }}
         >
-          {initialData ? "Salvar alterações" : "Adicionar telefone"}
+          {isSubmitting ? "Adicionando..." : "Adicionar Telefone"}
         </Button>
       </Box>
     </Dialog>
