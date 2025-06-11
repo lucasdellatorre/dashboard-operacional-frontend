@@ -76,6 +76,7 @@ const SuspectsDetails = () => {
     deleteSuspectNumber,
     deleteSuspectEmail,
     createSuspectNumber,
+    updateSuspectEmail,
   } = useSuspectInfo(Number(window.location.pathname.split("/").pop()));
 
   const [loadingFields, setLoadingFields] = useState({
@@ -89,7 +90,7 @@ const SuspectsDetails = () => {
   const [loadingNumbersDelete, setLoadingNumbersDelete] =
     useState<boolean>(false);
   const [loadingEmailDelete, setLoadingEmailDelete] = useState<boolean>(false);
-
+  const [editingEmail, setEditingEmail] = useState<Email | null>(null);
   const [nickname, setNickname] = useState("");
   const [name, setName] = useState("");
   const [suspectCpf, setsuspectCpfSuspect] = useState("");
@@ -199,11 +200,22 @@ const SuspectsDetails = () => {
       label: "",
       iconAction: {
         icon: <EditIcon sx={{ fontSize: "1.2rem" }} />,
-        onClick: () => console.log("editar"),
+        onClick: (id: number) => handleEditEmail(id),
       },
     },
   ];
-
+  const handleEditEmail = (emailId: number) => {
+    const emailToEdit = suspect?.emails?.find((e) => e.id === emailId);
+    if (emailToEdit) {
+      setEditingEmail({
+        id: emailToEdit.id,
+        email: emailToEdit.email,
+        insertDate: emailToEdit.lastUpdateDate,
+        insertBy: emailToEdit.lastUpdateCpf,
+      });
+      setOpenEmailModal(true);
+    }
+  };
   const PhoneHeaderCells: readonly HeadCell<Phone>[] = [
     { id: "phone", label: "Celular" },
     { id: "insertDate", label: "Data de Inserção" },
@@ -243,22 +255,34 @@ const SuspectsDetails = () => {
       />
       <EmailModal
         isOpen={openEmailModal}
-        onClose={() => setOpenEmailModal(false)}
+        onClose={() => {
+          setOpenEmailModal(false);
+          setEditingEmail(null);
+        }}
+        initialData={editingEmail ? { email: editingEmail.email } : null}
         onCreateEmail={async (emailData) => {
           try {
-            await createSuspectEmail(emailData.email, cpf);
+            if (editingEmail) {
+              await updateSuspectEmail(editingEmail.id, cpf, emailData.email);
+            } else {
+              await createSuspectEmail(emailData.email, cpf);
+            }
+
             setOpenEmailModal(false);
+            setEditingEmail(null);
             setAlert({
               show: true,
               type: "success",
-              message: "Email Adicionado com sucesso",
+              message: editingEmail
+                ? "Email atualizado com sucesso"
+                : "Email adicionado com sucesso",
             });
           } catch (err) {
-            console.log("Erro ao adicionar email:", err);
+            console.log("Erro ao processar email:", err);
             setAlert({
               show: true,
               type: "error",
-              message: "Ocorreu um erro",
+              message: "Ocorreu um erro. Tente novamente.",
             });
           }
         }}

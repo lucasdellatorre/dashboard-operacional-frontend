@@ -36,6 +36,14 @@ interface CreateNumberResponse {
   numero: string;
 }
 
+interface SuspectEmail {
+  id: number;
+  suspeitoId: number;
+  email: string;
+  lastUpdateCpf: string;
+  lastUpdateDate: string;
+}
+
 export interface SuspectInfo {
   id: number;
   nome: string;
@@ -153,10 +161,12 @@ export const useSuspectInfo = (id: number) => {
   const createSuspectNumber = useCallback(
     async (number: string, userCpf: string): Promise<CreateNumberResponse> => {
       try {
-        const response = await api.post<CreateNumberResponse>(
-          `/api/suspeito/${id}/number`,
+        const numero = [Number(number)];
+        console.log("Número a ser criado:", numero);
+        const response = await api.patch<CreateNumberResponse>(
+          `/api/suspeito/${id}/numero`,
           {
-            number,
+            numerosIds: numero,
           },
           {
             headers: {
@@ -191,12 +201,46 @@ export const useSuspectInfo = (id: number) => {
     }
   };
 
+  async function updateSuspectEmail(
+    emailId: number,
+    userCpf: string,
+    email: string
+  ): Promise<ResponseApi<SuspectEmail>> {
+    try {
+      const cleanUserCpf = userCpf.replace(/\D/g, "");
+      const response = await api.put<SuspectEmail>(
+        `/api/suspeito/${id}/email/${emailId}`,
+        {
+          email: email,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            cpfUsuario: cleanUserCpf,
+          },
+        }
+      );
+      fetchSuspect();
+      return {
+        response: response.data,
+        isSuccess: true,
+      };
+    } catch (error) {
+      setError("Erro ao atualizar o email do suspeito.");
+      return {
+        response: undefined,
+        isSuccess: false,
+      };
+    }
+  }
+
   return {
     suspect,
     loading,
     error,
     updateSuspectDetails,
     createSuspectEmail,
+    updateSuspectEmail,
     createSuspectNumber,
     deleteSuspectNumber,
     deleteSuspectEmail,
