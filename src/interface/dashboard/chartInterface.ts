@@ -18,7 +18,7 @@ export interface ChartFilters {
 
 export enum MessageFilterGroup {
   Grupo = "Grupo",
-  Numero = "Numero",
+  Numero = "Número",
   Ambos = "Ambos"
 }
 

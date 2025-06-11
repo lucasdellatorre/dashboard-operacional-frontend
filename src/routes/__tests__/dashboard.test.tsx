@@ -4,13 +4,38 @@ import Dashboard from "../Dashboard";
 import { ThemeProvider } from "@mui/material/styles";
 import theme from "../../utils/theme";
 import { ApplicationProvider } from "../../context/AppContext";
+import { MemoryRouter } from "react-router-dom";
 
 class ResizeObserver {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
+  observe() { }
+  unobserve() { }
+  disconnect() { }
 }
 (globalThis as unknown).ResizeObserver = ResizeObserver;
+
+vi.mock("../../hooks/useContactMessages", () => ({
+  useContactMessages: () => ({
+    contactMessages: [{ key: "Contato A", value: 10 }],
+    isLoading: false,
+    error: null,
+  }),
+}));
+
+vi.mock("../../hooks/usePeriodMessages", () => ({
+  usePeriodMessages: () => ({
+    periodMessages: [{ key: "08:00", value: 5 }],
+    isLoading: false,
+    error: null,
+  }),
+}));
+
+vi.mock("../../hooks/useDayMessages", () => ({
+  useDayMessages: () => ({
+    messages: [{ key: "2023-01-01", value: 3 }],
+    isLoading: false,
+    error: null,
+  }),
+}));
 
 vi.mock("recharts", async () => {
   const actual = await vi.importActual<typeof import("recharts")>("recharts");
@@ -62,12 +87,14 @@ vi.mock("../../components/filters/ViewSelection", () => ({
 
 const renderWithTheme = (ui: React.ReactElement) => {
   return render(
-    <ApplicationProvider>
-      <ThemeProvider theme={theme}>{ui}</ThemeProvider>
-    </ApplicationProvider>
+    <MemoryRouter>
+      <ApplicationProvider>
+        <ThemeProvider theme={theme}>{ui}</ThemeProvider>
+      </ApplicationProvider>
+    </MemoryRouter>
   );
 };
- 
+
 describe("Dashboard Component", () => {
   beforeEach(() => {
     vi.resetAllMocks();
@@ -144,8 +171,8 @@ describe("Dashboard Component", () => {
 
   it("deve alterar a faixa horária inicial e final", () => {
     renderWithTheme(<Dashboard />);
-    const initialTimeInput = screen.getByLabelText(/faixa horária.*inicio/i);
-    const finalTimeInput = screen.getByLabelText(/faixa horária.*fim/i);
+    const initialTimeInput = screen.getByLabelText(/Faixa Horária.*Início/i);
+    const finalTimeInput = screen.getByLabelText(/Faixa Horária.*Fim/i);
 
     fireEvent.change(initialTimeInput, { target: { value: "08:00" } });
     fireEvent.change(finalTimeInput, { target: { value: "18:00" } });
