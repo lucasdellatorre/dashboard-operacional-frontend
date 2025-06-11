@@ -1,8 +1,12 @@
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import { Operation } from "../hooks/useOperations";
 import { Suspect, Numbers } from "../hooks/useSuspects";
 import { WorkSheet } from "../hooks/useWorksheets";
-import { ChartFilters, MessageFilterGroup, MessageFilterType } from "../interface/dashboard/chartInterface";
+import {
+  ChartFilters,
+  MessageFilterGroup,
+  MessageFilterType,
+} from "../interface/dashboard/chartInterface";
 import { FilterType } from "../enum/ViewSelectionFilterEnum";
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -41,7 +45,7 @@ export const ApplicationProvider = ({
   const [suspects, setSuspects] = useState<Suspect[]>([]);
   const [numbers, setNumbers] = useState<Numbers[]>([]);
   const [worksheets, setWorksheets] = useState<WorkSheet[]>([]);
-  console.log('suspects: ', worksheets)
+
   const [dashboardFilters, setDashboardFilters] = useState<ChartFilters>({
     filterType: FilterType.UNION,
     chart: FilterType.ALL,
@@ -63,6 +67,10 @@ export const ApplicationProvider = ({
     timeInitial: "",
     timeFinal: "",
   });
+
+  useEffect(() => {
+    setCpf(localStorage.getItem("cpf") ?? "")
+  }, []);
 
   return (
     <AppContext.Provider
