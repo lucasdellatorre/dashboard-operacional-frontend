@@ -11,7 +11,7 @@ import CloseIcon from "@mui/icons-material/Close";
 
 type Style = "white" | "gray";
 
-interface Option {
+export interface Option {
   id: string;
   label: string;
 }

@@ -33,7 +33,7 @@ export const useIPMessages = () => {
                     hora_inicio: filters.timeInitial || null,
                     hora_fim: filters.timeFinal || null,
                     operacoes: operations.map((o) => o.id),
-                    suspeitos: suspects.map((s) => s.cpf),
+                    suspeitos: suspects.map((s) => s.id),
                 };
 
                 const response = await api.get("/api/mensagens/ip", {

@@ -1,13 +1,29 @@
 import { useContext, useEffect, useState } from "react";
 import { AppContext } from "../context/AppContext";
-import { BarChartData } from "../components/dashboard/WebChart/BarChart";
 import { api } from "../server/service";
 import {
   MessageGroupToBackend,
   MessageTypeToBackend,
 } from "../interface/dashboard/chartInterface";
 
-export const usePeriodMessages = () => {
+export interface TeiaNode {
+  id: string;
+  label?: string;
+  group: number;
+}
+
+export interface TeiaLink {
+  source: string;
+  target: string;
+  value: number;
+}
+
+interface TeiaMessageCountResponse {
+  nodes: TeiaNode[];
+  links: TeiaLink[];
+}
+
+export const useTeiaMessageCount = () => {
   const {
     dashboardFilters: filters,
     numbers,
@@ -15,15 +31,16 @@ export const usePeriodMessages = () => {
     operations,
   } = useContext(AppContext);
 
-  const [data, setData] = useState<BarChartData[]>([]);
+  const [data, setData] = useState<TeiaMessageCountResponse>({ nodes: [], links: [] });
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    const fetchMessages = async () => {
+    const fetchTeiaData = async () => {
       try {
         setIsLoading(true);
         setError(null);
+        console.log('fetching teia data with filters:');
 
         const payload = {
           numeros: numbers.map((n) => n.numero),
@@ -37,27 +54,23 @@ export const usePeriodMessages = () => {
           suspeitos: suspects.map((s) => s.id),
         };
 
-        const response = await api.get("/api/mensagens/horario", {
-          params: payload,
+        const response = await api.get("/api/teia/message", { params: payload });
+
+        setData({
+          nodes: response.data?.nodes || [],
+          links: response.data?.links || [],
         });
 
-        const formatted: BarChartData[] = (response.data || []).map(
-          (item: any) => ({
-            key: item.periodo?.toString() || "desconhecido",
-            value: item.qtdMensagens ?? 0,
-          })
-        );
-
-        setData(formatted);
+        console.log('Teia data fetched successfully:', response.data);
       } catch (err: any) {
-        setData([]);
         setError(err);
+        setData({ nodes: [], links: [] });
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchMessages();
+    fetchTeiaData();
   }, [
     numbers,
     suspects,
@@ -71,7 +84,7 @@ export const usePeriodMessages = () => {
   ]);
 
   return {
-    periodMessages: data,
+    teiaData: data,
     isLoading,
     error,
   };
