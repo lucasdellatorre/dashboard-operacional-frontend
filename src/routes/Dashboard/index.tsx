@@ -23,6 +23,7 @@ import { useContactMessages } from "../../hooks/useContactMessages";
 import { useNavigate } from "react-router-dom";
 import { MessageFilterGroup, MessageFilterType } from "../../interface/dashboard/chartInterface";
 import { usePeriodMessages } from "../../hooks/usePeriodMessages";
+import { useDayMessages } from "../../hooks/useDayMessages";
 
 const menuItemStyles = {
   padding: "4px 16px",
@@ -88,16 +89,6 @@ const mensagensPorIP: BarChartData[] = [
   { key: "IP 7", value: 15 },
 ];
 
-const mensagensPorDia: BarChartData[] = [
-  { key: "Segunda", value: 50 },
-  { key: "Terça", value: 10 },
-  { key: "Quarta", value: 12 },
-  { key: "Quinta", value: 38 },
-  { key: "Sexta", value: 58 },
-  { key: "Sábado", value: 40 },
-  { key: "Domingo", value: 30 },
-];
-
 const options = [
   "Jorge",
   "Marcinho",
@@ -150,6 +141,12 @@ const Dashboard: React.FC = () => {
     error: errorPeriod,
   } = usePeriodMessages();
 
+  const {
+    messages: dayMessages,
+    isLoading: loadingDay,
+    error: errorDay,
+  } = useDayMessages();
+
 
   const chartConfigs = useMemo(() => [
     {
@@ -175,21 +172,23 @@ const Dashboard: React.FC = () => {
     },
     {
       type: FilterType.DATA,
-      data: mensagensPorDia,
+      data: dayMessages,
       title: "Mensagens por Dia",
       subtitle: "Número de",
       tooltipLabel: "Dias",
     },
-  ], [contactMessages, periodMessages]);
+  ], [contactMessages, periodMessages, dayMessages]);
 
   const chartArea = useMemo(() => {
     const renderChart = (cfg: ChartConfig) => {
       const isLoading =
         (cfg.type === FilterType.INTERACTIONS && loadingContact) ||
+        (cfg.type === FilterType.DATA && loadingDay) ||
         (cfg.type === FilterType.TIME && loadingPeriod);
 
       const hasError =
         (cfg.type === FilterType.INTERACTIONS && errorContact) ||
+        (cfg.type === FilterType.DATA && errorDay) ||
         (cfg.type === FilterType.TIME && errorPeriod);
 
       const isEmpty = cfg.data.length === 0;

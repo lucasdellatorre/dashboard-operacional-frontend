@@ -14,7 +14,7 @@ const renderEmailModal = (isOpen = true, initialData = null) => {
       <EmailModal
         isOpen={isOpen}
         onClose={mockOnClose}
-        onSubmit={mockOnSubmit}
+        onCreateEmail={mockOnSubmit}
         initialData={initialData}
       />
     </ThemeProvider>
@@ -22,9 +22,9 @@ const renderEmailModal = (isOpen = true, initialData = null) => {
 };
 
 describe("EmailModal Component", () => {
-  it('renderiza título "Adicionar Email"', () => {
+  it('renderiza o placeholder "Digite o email"', () => {
     renderEmailModal();
-    expect(screen.getByText("Adicionar Email")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Digite o email")).toBeInTheDocument();
   });
 
   it("exibe erro se email for deixado em branco", async () => {
