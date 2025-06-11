@@ -1,6 +1,6 @@
 import { Box, MenuItem, TextField, Typography, Collapse, IconButton } from "@mui/material";
 import React, { useState, useMemo, useContext, useEffect } from "react";
-import WebChart from "../../components/dashboard/WebChart/WebChart";
+import WebChart, { Data } from "../../components/dashboard/WebChart/WebChart";
 import MultiSelect, { Option } from "../../components/multiSelect";
 import { AppContext } from "../../context/AppContext";
 import { createWeb } from "../../controllers/webController";
@@ -11,7 +11,9 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { useNavigate } from "react-router-dom";
 import { TeiaLink, TeiaNode, useTeiaMessageCount } from "../../hooks/useTeiaMessageCount";
 import { FilterType } from "../../enum/ViewSelectionFilterEnum";
-import { MessageFilterGroup, MessageFilterType } from "../../interface/dashboard/chartInterface";
+import { graficFilters, MessageFilterGroup, MessageFilterType } from "../../interface/dashboard/chartInterface";
+import ViewSelectionFilter from "../../components/filters/ViewSelection";
+import { useSuspects } from "../../hooks/useSuspects";
 
 const menuItemStyles = {
   padding: "4px 16px",
@@ -63,12 +65,50 @@ const focusedTextFieldStyles = {
 
 const WebRoute: React.FC = () => {
   const {
-    webChartFilters: filters,
-    setWebChartFilters: setFilters,
+    dashboardFilters: filters,
+    setDashboardFilters: setFilters,
     operations,
-    numbers,
-    suspects
+    numbers: selectedNumbers,
+    setNumbers: setSelectedNumbers,
+    suspects: selectedSuspects,
+    setSuspects: setSelectedSuspects,
   } = useContext(AppContext);
+
+  const operationIds = useMemo(
+    () => operations.map((op) => op.id),
+    [operations]
+  );
+      const {
+        suspects,
+        numbers,
+        loading,
+        error: errorSuspects,
+      } = useSuspects({
+        searchTerm: "",
+        operationIds: operationIds,
+      });
+    
+    const suspectOptions: Option[] = useMemo(() => {
+      return suspects.map((suspect) => ({
+        id: suspect.id.toString(),
+        label: suspect.apelido,
+      }));
+    }, [suspects]);
+  
+    const numberOptions: Option[] = useMemo(() => {
+      return numbers.map((number) => ({
+        id: number.id.toString(),
+        label: number.numero,
+      }));
+    }, [numbers]);
+  
+    const selectedSuspectIds = useMemo(() => {
+      return selectedSuspects.map((suspect) => suspect.id.toString());
+    }, [selectedSuspects]);
+  
+    const selectedNumberIds = useMemo(() => {
+      return selectedNumbers.map((number) => number.id.toString());
+    }, [selectedNumbers]);
 
   const [expanded, setExpanded] = useState(true);
 
@@ -85,15 +125,6 @@ const WebRoute: React.FC = () => {
     isLoading,
     error,
   } = useTeiaMessageCount();
-
-  // Definir data inicial como 1 mês atrás
-  const oneMonthAgo = new Date();
-  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-  const [dateInitial, setDateInitial] = useState(oneMonthAgo.toISOString().split('T')[0]);
-  const [dateFinal, setDateFinal] = useState("");
-  const [timeInitial, setTimeInitial] = useState("00:00");
-  const [timeFinal, setTimeFinal] = useState("23:59");
-  const [selectedShift, setSelectedShift] = useState("Todos");
 
   const [nodes, setNodes] = useState<WebNode[]>([]);
   const [links, setLinks] = useState<WebLink[]>([]);
@@ -120,73 +151,6 @@ const WebRoute: React.FC = () => {
     setLinks(finalLinks);
   }, [teiaData]);
 
-  // Filtragem dos nós e links
-  const filteredData = useMemo(() => {
-    let filteredLinks = links;
-
-    // Filtro por datas
-    if (dateInitial || dateFinal) {
-      filteredLinks = filteredLinks.filter((link) => {
-        const linkDate = dayjs(link.date);
-        const afterInitial = dateInitial
-          ? linkDate.isAfter(dayjs(dateInitial)) ||
-          linkDate.isSame(dayjs(dateInitial))
-          : true;
-        const beforeFinal = dateFinal
-          ? linkDate.isBefore(dayjs(dateFinal)) ||
-          linkDate.isSame(dayjs(dateFinal))
-          : true;
-        return afterInitial && beforeFinal;
-      });
-    }
-
-    // Filtro por alvos selecionados
-    if (filters.options.length > 0) {
-      filteredLinks = filteredLinks.filter(
-        (link) =>
-          filters.options.includes(link.source) ||
-          filters.options.includes(link.target)
-      );
-    }
-
-    // Filtro por Grupo
-    if (filters.group !== MessageFilterGroup.Ambos) {
-      if (filters.group === MessageFilterGroup.Grupo) {
-        filteredLinks = filteredLinks.filter((link) => {
-          const sourceNode = nodes.find((n) => n.id === link.source);
-          const targetNode = nodes.find((n) => n.id === link.target);
-          return sourceNode?.group === 4 || targetNode?.group === 4;
-        });
-      } else if (filters.group === "Número") {
-        filteredLinks = filteredLinks.filter((link) => {
-          const sourceNode = nodes.find((n) => n.id === link.source);
-          const targetNode = nodes.find((n) => n.id === link.target);
-          return sourceNode?.group !== 4 && targetNode?.group !== 4;
-        });
-      }
-    }
-
-    // Filtro por Tipo
-    if (filters.type !== "Todos") {
-      filteredLinks = filteredLinks.filter((link) => {
-        // Aqui você deve implementar a lógica de filtro por tipo
-        // baseado nos dados reais que você recebe da API
-        return true; // Temporário até implementar a lógica real
-      });
-    }
-
-    // Agora, só exibe nós que participam de algum link visível
-    const nodeIds = new Set(filteredLinks.flatMap((l) => [l.source, l.target]));
-    const filteredNodes = nodes.filter((n) => nodeIds.has(n.id));
-
-    return { nodes: filteredNodes, links: filteredLinks };
-  }, [filters, dateInitial, dateFinal, nodes, links]);
-
-  const options: Option[] = nodes.map((node) => ({
-    id: node.id,
-    label: node.id,
-  }));
-
   return (
     <Box
       width="100%"
@@ -197,286 +161,185 @@ const WebRoute: React.FC = () => {
       padding="0"
     >
       <Box
-        display="flex"
-        flexDirection="column"
-        justifyContent="space-between"
+        display={"flex"}
+        flexDirection={"column"}
+        justifyContent={"space-between"}
         borderBottom={expanded ? "1px solid #e0e0e0" : "none"}
-        sx={{
-          transition: "all 0.3s ease-in-out",
-        }}
       >
         <Collapse in={expanded} timeout="auto">
           <Box
-            display="flex"
-            flexDirection="column"
-            gap="1.5rem"
-            px="1.5rem"
-            py="1rem"
             sx={{
-              transition: "all 0.3s ease-in-out",
+              width: "fit-content",
+              minWidth: "27rem",
+              px: "1rem",
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.5rem",
             }}
+          >
+            <Typography
+              fontFamily={"Inter, sans-serif"}
+              fontWeight={600}
+              fontSize={"1.25rem"}
+            >
+              Seleção de Alvos
+            </Typography>
+            <MultiSelect
+              style="gray"
+              placeholder="Selecione os nomes"
+              height="53px"
+              options={[...suspectOptions, ...numberOptions]}
+              selectedOptions={[...selectedSuspectIds, ...selectedNumberIds]}
+              onChange={(selected) => {
+                const selectedSuspects = suspects.filter((opt) =>
+                  selected.includes(opt.id.toString())
+                );
+                const selectedNumbers = numbers.filter((opt) =>
+                  selected.includes(opt.id.toString())
+                );
+                setSelectedSuspects(selectedSuspects);
+                setSelectedNumbers(selectedNumbers);
+              }}
+            />
+          </Box>
+
+          <Box
+            width={"100%"}
+            display={"flex"}
+            px={"1rem"}
+            py={"0.7rem"}
+            flexDirection={"row"}
+            justifyContent={"left"}
+            gap={"2.5rem"}
+            flexWrap={"wrap"}
+            flexGrow={1}
+            sx={{ alignItems: "center" }}
           >
             <Box
               sx={{
-                width: "fit-content",
-                minWidth: "25rem",
+                height: "fit-content",
                 display: "flex",
                 flexDirection: "column",
-                gap: "0.75rem",
+                flexWrap: "wrap",
+                justifyContent: "center",
+                gap: "0.5rem",
               }}
             >
               <Typography
                 fontFamily={"Inter, sans-serif"}
                 fontWeight={600}
                 fontSize={"1.25rem"}
-                color="text.primary"
               >
-                Seleção de Alvos
+                Seleção de Gráficos
               </Typography>
-              <MultiSelect
-                style="gray"
-                placeholder="Selecione os nomes"
-                height="53px"
-                options={options}
-                selectedOptions={filters.options}
-                onChange={(opts) =>
-                  setFilters({ ...filters, options: opts })
-                }
+              <ViewSelectionFilter
+                filters={graficFilters}
+                selectedFilter={filters.chart?.toString() || ""}
+                onChange={(val) => setFilters({ ...filters, chart: val })}
               />
             </Box>
+          </Box>
 
-            <Box width="100%" display="flex" flexDirection="column" gap="0.75rem">
-              <Typography
-                variant="caption"
-                fontSize={"14px"}
-                fontFamily="Inter, sans-serif"
-                fontWeight={600}
-                color="text.primary"
-              >
-                Filtrar por:
-              </Typography>
-
-              <Box
-                display="flex"
-                flexDirection="row"
-                flexWrap="wrap"
-                gap="2.5rem"
+          <Box
+            width={"100%"}
+            display={"flex"}
+            px={"1rem"}
+            py={"0.7rem"}
+            gap={"0.5rem"}
+            flexDirection={"column"}
+          >
+            <Typography
+              variant="caption"
+              fontFamily={"Inter, sans-serif"}
+              fontWeight={500}
+              fontSize={"14px"}
+            >
+              Filtrar por:
+            </Typography>
+            <Box
+              display={"flex"}
+              flexDirection={"row"}
+              gap={"2rem"}
+              flexWrap={"wrap"}
+            >
+              <TextField
+                select
+                variant="outlined"
+                label="Grupo"
+                value={filters.group}
+                onChange={(e) =>
+                  setFilters({ ...filters, group: e.target.value as MessageFilterGroup })
+                }
                 sx={{
-                  transition: "all 0.3s ease-in-out",
+                  ...focusedTextFieldStyles,
                 }}
               >
-                <TextField
-                  select
-                  label="Grupo"
-                  value={filters.group}
-                  onChange={(e) =>
-                    setFilters({
-                      ...filters,
-                      group: e.target.value as MessageFilterGroup,
-                    })
-                  }
-                  sx={{ ...focusedTextFieldStyles, backgroundColor: "transparent" }}
-                >
-                  {["Todos", "Grupo", "Número"].map((value) => (
-                    <MenuItem key={value} value={value} sx={menuItemStyles}>
-                      {value}
-                    </MenuItem>
-                  ))}
-                </TextField>
+                {Object.values(MessageFilterGroup).map((type) => (
+                  <MenuItem key={type} value={type} sx={menuItemStyles}>
+                    {type}
+                  </MenuItem>
+                ))}
+              </TextField>
 
-                <TextField
-                  select
-                  label="Tipo"
-                  value={filters.type}
-                  onChange={(e) =>
-                    setFilters({ ...filters, type: e.target.value as MessageFilterType })
-                  }
-                  sx={focusedTextFieldStyles}
-                >
-                  {["Todos", "Texto", "Vídeo", "Áudio"].map((value) => (
-                    <MenuItem key={value} value={value} sx={menuItemStyles}>
-                      {value}
-                    </MenuItem>
-                  ))}
-                </TextField>
-
-                <TextField
-                  select
-                  label="Turno"
-                  value={selectedShift}
-                  onChange={(e) => setSelectedShift(e.target.value)}
-                  sx={focusedTextFieldStyles}
-                >
-                  {["Todos", "Manhã", "Tarde", "Noite"].map((value) => (
-                    <MenuItem key={value} value={value} sx={menuItemStyles}>
-                      {value}
-                    </MenuItem>
-                  ))}
-                </TextField>
-
-                <TextField
-                  id="date-initial"
-                  InputLabelProps={{ shrink: true }}
-                  label="Data Inicial"
-                  type="date"
-                  value={dateInitial}
-                  onChange={(e) => setDateInitial(e.target.value)}
-                  sx={focusedTextFieldStyles}
-                />
-
-                <TextField
-                  id="date-final"
-                  InputLabelProps={{ shrink: true }}
-                  label="Data Final"
-                  type="date"
-                  value={dateFinal}
-                  onChange={(e) => setDateFinal(e.target.value)}
-                  sx={focusedTextFieldStyles}
-                />
-
-                <TextField
-                  id="time-initial"
-                  InputLabelProps={{ shrink: true }}
-                  label="Horário Inicial"
-                  type="time"
-                  value={timeInitial}
-                  onChange={(e) => setTimeInitial(e.target.value)}
-                  sx={focusedTextFieldStyles}
-                />
-
-                <TextField
-                  id="time-final"
-                  InputLabelProps={{ shrink: true }}
-                  label="Horário Final"
-                  type="time"
-                  value={timeFinal}
-                  onChange={(e) => setTimeFinal(e.target.value)}
-                  sx={focusedTextFieldStyles}
-                />
-              </Box>
-            </Box>
-
-            {/* Legenda dos Turnos */}
-            <Box
-              display="flex"
-              gap="1.5rem"
-              alignItems="center"
-              mt="0.5rem"
-              mb="1rem"
-              sx={{
-                transition: "all 0.3s ease-in-out",
-              }}
-            >
-              <Typography
-                variant="subtitle2"
-                fontFamily="Inter, sans-serif"
-                fontWeight={600}
-                fontSize="0.95rem"
-                color="text.primary"
+              <TextField
+                select
+                label="Tipo"
+                value={filters.type}
+                onChange={(e) =>
+                  setFilters({ ...filters, type: e.target.value as MessageFilterType })
+                }
+                sx={focusedTextFieldStyles}
               >
-                Legenda de Turnos:
-              </Typography>
-              <Box display="flex" gap="1rem" flexWrap="wrap">
-                <Box display="flex" alignItems="center" gap="0.5rem">
-                  <Box
-                    width="14px"
-                    height="14px"
-                    bgcolor="#000A2F"
-                    borderRadius="50%"
-                    sx={{
-                      transition: "all 0.3s ease-in-out",
-                      "&:hover": {
-                        transform: "scale(1.1)",
-                      },
-                    }}
-                  />
-                  <Typography variant="body2" fontSize="0.95rem" color="text.primary">
-                    Madrugada (00h-6h)
-                  </Typography>
-                </Box>
-                <Box display="flex" alignItems="center" gap="0.5rem">
-                  <Box
-                    width="14px"
-                    height="14px"
-                    bgcolor="#808CBF"
-                    borderRadius="50%"
-                    sx={{
-                      transition: "all 0.3s ease-in-out",
-                      "&:hover": {
-                        transform: "scale(1.1)",
-                      },
-                    }}
-                  />
-                  <Typography variant="body2" fontSize="0.95rem" color="text.primary">
-                    Manhã (6h-12h)
-                  </Typography>
-                </Box>
-                <Box display="flex" alignItems="center" gap="0.5rem">
-                  <Box
-                    width="14px"
-                    height="14px"
-                    bgcolor="#31438C"
-                    borderRadius="50%"
-                    sx={{
-                      transition: "all 0.3s ease-in-out",
-                      "&:hover": {
-                        transform: "scale(1.1)",
-                      },
-                    }}
-                  />
-                  <Typography variant="body2" fontSize="0.95rem" color="text.primary">
-                    Tarde (12h-18h)
-                  </Typography>
-                </Box>
-                <Box display="flex" alignItems="center" gap="0.5rem">
-                  <Box
-                    width="14px"
-                    height="14px"
-                    bgcolor="#0F1E55"
-                    borderRadius="50%"
-                    sx={{
-                      transition: "all 0.3s ease-in-out",
-                      "&:hover": {
-                        transform: "scale(1.1)",
-                      },
-                    }}
-                  />
-                  <Typography variant="body2" fontSize="0.95rem" color="text.primary">
-                    Noite (18h-00h)
-                  </Typography>
-                </Box>
-                <Box display="flex" alignItems="center" gap="0.5rem">
-                  <Box
-                    width="14px"
-                    height="14px"
-                    bgcolor="#D62727"
-                    borderRadius="50%"
-                    sx={{
-                      transition: "all 0.3s ease-in-out",
-                      "&:hover": {
-                        transform: "scale(1.1)",
-                      },
-                    }}
-                  />
-                  <Typography variant="body2" fontSize="0.95rem" color="text.primary">
-                    Alvos
-                  </Typography>
-                </Box>
-              </Box>
+                {Object.values(MessageFilterType).map((type) => (
+                  <MenuItem key={type} value={type} sx={menuItemStyles}>
+                    {type}
+                  </MenuItem>
+                ))}
+              </TextField>
+
+              <TextField
+                id="date-initial"
+                InputLabelProps={{ shrink: true }}
+                label="Data Inicial"
+                type="date"
+                value={filters.dateInitial}
+                onChange={(e) => setFilters({ ...filters, dateInitial: e.target.value })}
+                sx={focusedTextFieldStyles}
+              />
+
+              <TextField
+                id="date-final"
+                InputLabelProps={{ shrink: true }}
+                label="Data Final"
+                type="date"
+                value={filters.dateFinal}
+                onChange={(e) => setFilters({ ...filters, dateFinal: e.target.value })}
+                sx={focusedTextFieldStyles}
+              />
+
+              <TextField
+                id="initial-time"
+                InputLabelProps={{ shrink: true }}
+                label="Faixa Horária - Início"
+                type="time"
+                value={filters.timeInitial}
+                onChange={(e) => setFilters({ ...filters, timeInitial: e.target.value })}
+                sx={focusedTextFieldStyles}
+              />
+
+              <TextField
+                id="final-time"
+                InputLabelProps={{ shrink: true }}
+                label="Faixa Horária - Fim"
+                type="time"
+                value={filters.timeFinal}
+                onChange={(e) => setFilters({ ...filters, timeFinal: e.target.value })}
+                sx={focusedTextFieldStyles}
+              />
             </Box>
           </Box>
         </Collapse>
-        <IconButton
-          onClick={toggleExpanded}
-          size="small"
-          disableRipple
-          sx={{
-            transition: "all 0.3s ease-in-out",
-            "&:hover": {
-              transform: "scale(1.1)",
-            },
-          }}
-        >
+        <IconButton onClick={toggleExpanded} size="small" disableRipple>
           {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
         </IconButton>
       </Box>
@@ -497,7 +360,11 @@ const WebRoute: React.FC = () => {
           justifyContent="center"
           alignItems="center"
         >
-          <WebChart data={filteredData} />
+          <WebChart data={{
+            nodes: nodes as WebNode[],
+            links: links as WebLink[],
+          } as Data}
+        />
         </Box>
       </Box>
     </Box>
