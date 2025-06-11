@@ -21,6 +21,11 @@ function getTickValues(min: number, max: number, count: number) {
   return Array.from({ length: count }, (_, i) => Math.round(min + i * step));
 }
 
+function abbreviate(value: string): string {
+  if (value.length <= 12) return value;
+  return `${value.slice(0, 6)}…${value.slice(-4)}`;
+}
+
 const CustomTooltip = ({ active, payload, label, tooltipLabel }: any) => {
   if (active && payload && payload.length) {
     const color = payload[0].payload.fill;
@@ -76,7 +81,7 @@ const BarChartGeneric: React.FC<BarChartGenericProps> = ({
     <Paper
       sx={{
         width: "100%",
-        height: { xs: "300px", sm: expanded ? "450px" : "400px", md: expanded ? "500px" : "450px" },
+        height: { xs: "300px", sm: expanded ? "450px" : "400px", md: expanded ? "500px" : "550px" },
         p: { xs: 2, sm: 3 },
         borderRadius: "1.5rem",
         boxShadow: "0 0.25rem 1rem rgba(0,0,0,0.1)",
@@ -133,11 +138,27 @@ const BarChartGeneric: React.FC<BarChartGenericProps> = ({
             <BarChart data={chartData} margin={{ top: 5, bottom: 5, left: 5, right: 5 }}>
               <XAxis
                 dataKey="name"
-                tick={{ fill: theme.palette.customText.lightGrey, ...textStyles.bodyMedium }}
-                height={75}
-                interval={0}
+                height={100}
                 angle={-45}
+                interval={0}
                 textAnchor="end"
+                tick={({ x, y, payload }) => (
+                  <g transform={`translate(${x},${y})`}>
+                    <title>{payload.value}</title> {/* Tooltip nativo SVG */}
+                    <text
+                      x={0}
+                      y={10}
+                      transform="rotate(-45)"
+                      textAnchor="end"
+                      fill={theme.palette.customText.lightGrey}
+                      style={textStyles.bodyMedium as React.CSSProperties}
+                    >
+                      {payload.value.length > 20
+                        ? `${payload.value.slice(0, 6)}…${payload.value.slice(-4)}`
+                        : payload.value}
+                    </text>
+                  </g>
+                )}
               />
               <YAxis
                 tick={{ fill: theme.palette.customText.lightGrey, ...textStyles.bodyMedium }}
