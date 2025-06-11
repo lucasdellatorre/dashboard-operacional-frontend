@@ -1,13 +1,17 @@
 import { Box, MenuItem, TextField, Typography, Collapse, IconButton } from "@mui/material";
 import React, { useState, useMemo, useContext, useEffect } from "react";
 import WebChart from "../../components/dashboard/WebChart/WebChart";
-import MultiSelect from "../../components/multiSelect";
+import MultiSelect, { Option } from "../../components/multiSelect";
 import { AppContext } from "../../context/AppContext";
 import { createWeb } from "../../controllers/webController";
 import { WebLink, WebNode } from "../../interface/web/webInterface";
 import dayjs from "dayjs";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import { useNavigate } from "react-router-dom";
+import { TeiaLink, TeiaNode, useTeiaMessageCount } from "../../hooks/useTeiaMessageCount";
+import { FilterType } from "../../enum/ViewSelectionFilterEnum";
+import { MessageFilterGroup, MessageFilterType } from "../../interface/dashboard/chartInterface";
 
 const menuItemStyles = {
   padding: "4px 16px",
@@ -58,11 +62,30 @@ const focusedTextFieldStyles = {
 };
 
 const WebRoute: React.FC = () => {
-  const { operations, suspects, numbers, webChartFilters, setWebChartFilters } =
-    useContext(AppContext);
-  
+  const {
+    webChartFilters: filters,
+    setWebChartFilters: setFilters,
+    operations,
+    numbers,
+    suspects
+  } = useContext(AppContext);
+
   const [expanded, setExpanded] = useState(true);
-  
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!operations[0] && !numbers[0] && !suspects[0]) {
+      navigate("/operacoes");
+    }
+  }, [operations, numbers, suspects, navigate])
+
+  const {
+    teiaData,
+    isLoading,
+    error,
+  } = useTeiaMessageCount();
+
   // Definir data inicial como 1 mês atrás
   const oneMonthAgo = new Date();
   oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
@@ -78,60 +101,24 @@ const WebRoute: React.FC = () => {
   const toggleExpanded = () => {
     setExpanded(!expanded);
   };
-
-  async function handleWebChart() {
-    await createWeb({
-      operationId: operations.map((op) => op.id),
-      targetId: numbers.map((num) => num.id),
-      suspectId: suspects.map((suspect) => suspect.id),
-    }).then((response) => {
-      const newNodes = [...response.nodes];
-
-      // Map through links and create missing target nodes
-      response.links.forEach((link) => {
-        const targetExists = newNodes.some((node) => node.id === link.target);
-        if (!targetExists) {
-          newNodes.push({
-            id: link.target,
-            group: 6, // Grupo para interceptações
-          });
-        }
-      });
-
-      // Padronizar grupos dos nós por turno
-      newNodes.forEach((node) => {
-        // Alvos
-        if (node.id.toLowerCase().includes("alvo")) {
-          node.group = 4;
-        } else if (node.id.match(/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/)) {
-          // IPs: classificar pelo turno predominante dos links
-          const relatedLinks = response.links.filter(l => l.source === node.id || l.target === node.id);
-          const hourCounts = [0, 0, 0, 0, 0]; // [manhã, tarde, noite, alvo, madrugada]
-          relatedLinks.forEach(link => {
-            if (link.date) {
-              const hour = new Date(link.date).getHours();
-              if (hour >= 0 && hour < 6) hourCounts[4]++; // Madrugada
-              else if (hour >= 6 && hour < 12) hourCounts[0]++; // Manhã
-              else if (hour >= 12 && hour < 18) hourCounts[1]++; // Tarde
-              else hourCounts[2]++; // Noite
-            }
-          });
-          // Descobrir o turno predominante
-          const maxIdx = hourCounts.indexOf(Math.max(...hourCounts));
-          node.group = [1,2,3,4,5][maxIdx];
-          // Se não houver links com data, default manhã
-          if (hourCounts.every(c => c === 0)) node.group = 1;
-        }
-      });
-
-      setNodes(newNodes);
-      setLinks(response.links);
-    });
-  }
-
   useEffect(() => {
-    handleWebChart();
-  }, []);
+    if (!teiaData) return;
+
+    const rawNodes = teiaData.nodes;
+    const rawLinks = teiaData.links;
+
+    const knownNodeIds = new Set(rawNodes.map((n) => n.id));
+    const allTargetIds = rawLinks.map((l) => l.target);
+    const missingTargetNodes = allTargetIds
+      .filter((id) => !knownNodeIds.has(id))
+      .map((id) => ({ id, group: 6 }));
+
+    const finalNodes: TeiaNode[] = [...rawNodes, ...missingTargetNodes];
+    const finalLinks: TeiaLink[] = rawLinks;
+
+    setNodes(finalNodes);
+    setLinks(finalLinks);
+  }, [teiaData]);
 
   // Filtragem dos nós e links
   const filteredData = useMemo(() => {
@@ -143,34 +130,34 @@ const WebRoute: React.FC = () => {
         const linkDate = dayjs(link.date);
         const afterInitial = dateInitial
           ? linkDate.isAfter(dayjs(dateInitial)) ||
-            linkDate.isSame(dayjs(dateInitial))
+          linkDate.isSame(dayjs(dateInitial))
           : true;
         const beforeFinal = dateFinal
           ? linkDate.isBefore(dayjs(dateFinal)) ||
-            linkDate.isSame(dayjs(dateFinal))
+          linkDate.isSame(dayjs(dateFinal))
           : true;
         return afterInitial && beforeFinal;
       });
     }
 
     // Filtro por alvos selecionados
-    if (webChartFilters.options.length > 0) {
+    if (filters.options.length > 0) {
       filteredLinks = filteredLinks.filter(
         (link) =>
-          webChartFilters.options.includes(link.source) ||
-          webChartFilters.options.includes(link.target)
+          filters.options.includes(link.source) ||
+          filters.options.includes(link.target)
       );
     }
 
     // Filtro por Grupo
-    if (webChartFilters.group !== "Todos") {
-      if (webChartFilters.group === "Grupo") {
+    if (filters.group !== MessageFilterGroup.Ambos) {
+      if (filters.group === MessageFilterGroup.Grupo) {
         filteredLinks = filteredLinks.filter((link) => {
           const sourceNode = nodes.find((n) => n.id === link.source);
           const targetNode = nodes.find((n) => n.id === link.target);
           return sourceNode?.group === 4 || targetNode?.group === 4;
         });
-      } else if (webChartFilters.group === "Número") {
+      } else if (filters.group === "Número") {
         filteredLinks = filteredLinks.filter((link) => {
           const sourceNode = nodes.find((n) => n.id === link.source);
           const targetNode = nodes.find((n) => n.id === link.target);
@@ -180,26 +167,11 @@ const WebRoute: React.FC = () => {
     }
 
     // Filtro por Tipo
-    if (webChartFilters.type !== "Todos") {
+    if (filters.type !== "Todos") {
       filteredLinks = filteredLinks.filter((link) => {
         // Aqui você deve implementar a lógica de filtro por tipo
         // baseado nos dados reais que você recebe da API
         return true; // Temporário até implementar a lógica real
-      });
-    }
-
-    // Filtro de Simetria
-    if (webChartFilters.symmetry !== "Todos") {
-      filteredLinks = filteredLinks.filter((link) => {
-        const sourceNode = nodes.find((n) => n.id === link.source);
-        const targetNode = nodes.find((n) => n.id === link.target);
-        if (!sourceNode || !targetNode) return false;
-        if (webChartFilters.symmetry === "Simétricos") {
-          return sourceNode.group === targetNode.group;
-        } else if (webChartFilters.symmetry === "Assimétricos") {
-          return sourceNode.group !== targetNode.group;
-        }
-        return true;
       });
     }
 
@@ -208,9 +180,12 @@ const WebRoute: React.FC = () => {
     const filteredNodes = nodes.filter((n) => nodeIds.has(n.id));
 
     return { nodes: filteredNodes, links: filteredLinks };
-  }, [webChartFilters, dateInitial, dateFinal, nodes, links]);
+  }, [filters, dateInitial, dateFinal, nodes, links]);
 
-  const options = nodes.map((node) => node.id);
+  const options: Option[] = nodes.map((node) => ({
+    id: node.id,
+    label: node.id,
+  }));
 
   return (
     <Box
@@ -231,10 +206,10 @@ const WebRoute: React.FC = () => {
         }}
       >
         <Collapse in={expanded} timeout="auto">
-          <Box 
-            display="flex" 
-            flexDirection="column" 
-            gap="1.5rem" 
+          <Box
+            display="flex"
+            flexDirection="column"
+            gap="1.5rem"
             px="1.5rem"
             py="1rem"
             sx={{
@@ -263,9 +238,9 @@ const WebRoute: React.FC = () => {
                 placeholder="Selecione os nomes"
                 height="53px"
                 options={options}
-                selectedOptions={webChartFilters.options}
+                selectedOptions={filters.options}
                 onChange={(opts) =>
-                  setWebChartFilters({ ...webChartFilters, options: opts })
+                  setFilters({ ...filters, options: opts })
                 }
               />
             </Box>
@@ -281,10 +256,10 @@ const WebRoute: React.FC = () => {
                 Filtrar por:
               </Typography>
 
-              <Box 
-                display="flex" 
-                flexDirection="row" 
-                flexWrap="wrap" 
+              <Box
+                display="flex"
+                flexDirection="row"
+                flexWrap="wrap"
                 gap="2.5rem"
                 sx={{
                   transition: "all 0.3s ease-in-out",
@@ -293,11 +268,11 @@ const WebRoute: React.FC = () => {
                 <TextField
                   select
                   label="Grupo"
-                  value={webChartFilters.group}
+                  value={filters.group}
                   onChange={(e) =>
-                    setWebChartFilters({
-                      ...webChartFilters,
-                      group: e.target.value,
+                    setFilters({
+                      ...filters,
+                      group: e.target.value as MessageFilterGroup,
                     })
                   }
                   sx={{ ...focusedTextFieldStyles, backgroundColor: "transparent" }}
@@ -312,9 +287,9 @@ const WebRoute: React.FC = () => {
                 <TextField
                   select
                   label="Tipo"
-                  value={webChartFilters.type}
+                  value={filters.type}
                   onChange={(e) =>
-                    setWebChartFilters({ ...webChartFilters, type: e.target.value })
+                    setFilters({ ...filters, type: e.target.value as MessageFilterType })
                   }
                   sx={focusedTextFieldStyles}
                 >
@@ -491,9 +466,9 @@ const WebRoute: React.FC = () => {
             </Box>
           </Box>
         </Collapse>
-        <IconButton 
-          onClick={toggleExpanded} 
-          size="small" 
+        <IconButton
+          onClick={toggleExpanded}
+          size="small"
           disableRipple
           sx={{
             transition: "all 0.3s ease-in-out",
