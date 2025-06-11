@@ -24,6 +24,7 @@ import { useNavigate } from "react-router-dom";
 import { MessageFilterGroup, MessageFilterType } from "../../interface/dashboard/chartInterface";
 import { usePeriodMessages } from "../../hooks/usePeriodMessages";
 import { useDayMessages } from "../../hooks/useDayMessages";
+import { useIPMessages } from "../../hooks/useIPMessages";
 
 const menuItemStyles = {
   padding: "4px 16px",
@@ -77,16 +78,6 @@ const graficFilters = [
   { value: FilterType.IP, label: "IPs" },
   { value: FilterType.TIME, label: "Horário" },
   { value: FilterType.DATA, label: "Data" },
-];
-
-const mensagensPorIP: BarChartData[] = [
-  { key: "IP 1", value: 55 },
-  { key: "IP 2", value: 22 },
-  { key: "IP 3", value: 40 },
-  { key: "IP 4", value: 17 },
-  { key: "IP 5", value: 50 },
-  { key: "IP 6", value: 2 },
-  { key: "IP 7", value: 15 },
 ];
 
 const options = [
@@ -147,6 +138,11 @@ const Dashboard: React.FC = () => {
     error: errorDay,
   } = useDayMessages();
 
+  const {
+    messages: iPMessages,
+    isLoading: loadingIp,
+    error: errorIp,
+  } = useIPMessages();
 
   const chartConfigs = useMemo(() => [
     {
@@ -158,7 +154,7 @@ const Dashboard: React.FC = () => {
     },
     {
       type: FilterType.IP,
-      data: mensagensPorIP,
+      data: iPMessages,
       title: "Mensagens por IP",
       subtitle: "Número de",
       tooltipLabel: "IP",
@@ -177,18 +173,20 @@ const Dashboard: React.FC = () => {
       subtitle: "Número de",
       tooltipLabel: "Dias",
     },
-  ], [contactMessages, periodMessages, dayMessages]);
+  ], [contactMessages, periodMessages, dayMessages, iPMessages]);
 
   const chartArea = useMemo(() => {
     const renderChart = (cfg: ChartConfig) => {
       const isLoading =
         (cfg.type === FilterType.INTERACTIONS && loadingContact) ||
         (cfg.type === FilterType.DATA && loadingDay) ||
+        (cfg.type === FilterType.IP && loadingIp) ||
         (cfg.type === FilterType.TIME && loadingPeriod);
 
       const hasError =
         (cfg.type === FilterType.INTERACTIONS && errorContact) ||
         (cfg.type === FilterType.DATA && errorDay) ||
+        (cfg.type === FilterType.IP && errorIp) ||
         (cfg.type === FilterType.TIME && errorPeriod);
 
       const isEmpty = cfg.data.length === 0;
@@ -301,15 +299,7 @@ const Dashboard: React.FC = () => {
 
     const cfg = chartConfigs.find((c) => c.type === filters.chart);
     return cfg ? renderChart(cfg) : null;
-  }, [
-    filters.chart,
-    chartConfigs,
-    loadingContact,
-    loadingPeriod,
-    errorContact,
-    errorPeriod,
-    setFilters,
-  ]);
+  }, [filters, chartConfigs, loadingContact, loadingDay, loadingIp, loadingPeriod, errorContact, errorDay, errorIp, errorPeriod, setFilters]);
 
 
   return (
