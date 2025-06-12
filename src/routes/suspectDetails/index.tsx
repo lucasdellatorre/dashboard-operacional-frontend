@@ -20,6 +20,7 @@ import EditableMultilineField from "../../components/editableMultilineField";
 import { useSuspectInfo } from "../../hooks/useSuspectInfo";
 import TelephoneModal from "../../components/modal/createTelephoneModal";
 import { AppContext } from "../../context/AppContext";
+import { useSuspectNumbers } from "../../hooks/useSuspectsNumbers";
 
 interface Email extends GenericData {
   email: string;
@@ -78,6 +79,8 @@ const SuspectsDetails = () => {
     createSuspectNumber,
     updateSuspectEmail,
   } = useSuspectInfo(Number(window.location.pathname.split("/").pop()));
+
+  const { suspectsNumbers } = useSuspectNumbers();
 
   const [loadingFields, setLoadingFields] = useState({
     nickname: false,
@@ -236,7 +239,8 @@ const SuspectsDetails = () => {
         onClose={() => setOpenTelephoneModal(false)}
         onCreateNumber={async (numberData) => {
           try {
-            await createSuspectNumber(numberData.telephone, cpf);
+            const numbers = numberData.telephone.map((tel) => Number(tel));
+            await createSuspectNumber(numbers, cpf);
             setOpenTelephoneModal(false);
             setAlert({
               show: true,
@@ -252,6 +256,7 @@ const SuspectsDetails = () => {
             });
           }
         }}
+        suspectsNumbers={suspectsNumbers}
       />
       <EmailModal
         isOpen={openEmailModal}

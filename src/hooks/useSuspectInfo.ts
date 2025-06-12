@@ -159,30 +159,30 @@ export const useSuspectInfo = (id: number) => {
     }
   };
   const createSuspectNumber = useCallback(
-    async (number: string, userCpf: string): Promise<CreateNumberResponse> => {
+    async (
+      numbers: number[],
+      userCpf: string
+    ): Promise<CreateNumberResponse> => {
       try {
-        const numero = [Number(number)];
-        console.log("Número a ser criado:", numero);
+        const cleanUserCpf = userCpf.replace(/\D/g, "");
         const response = await api.patch<CreateNumberResponse>(
           `/api/suspeito/${id}/numero`,
           {
-            numerosIds: numero,
+            numerosIds: numbers,
           },
           {
             headers: {
-              "Content-Type": "application/json",
-              cpfUsuario: userCpf,
+              cpfUsuario: cleanUserCpf,
             },
           }
         );
-        fetchSuspect();
+        await fetchSuspect();
         return response.data;
       } catch (err) {
-        console.log("Erro ao criar Numero", err);
-        throw new Error("Erro ao criar número ao alvo");
+        throw new Error("Erro ao criar números do suspeito");
       }
     },
-    []
+    [id, fetchSuspect]
   );
 
   const deleteSuspectNumber = async (
