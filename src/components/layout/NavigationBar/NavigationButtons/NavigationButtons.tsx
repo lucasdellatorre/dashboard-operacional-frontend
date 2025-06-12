@@ -18,12 +18,14 @@ interface NavigationButtonsProps {
   isCollapsed: boolean;
   onToggle: () => void;
   logout: () => void;
+  exportAnalysis?: () => void;
 }
 
 const NavigationButtons: React.FC<NavigationButtonsProps> = ({
   isCollapsed,
   onToggle,
   logout,
+  exportAnalysis,
 }) => {
   const location = useLocation();
   const isActive = (path: string): boolean => location.pathname === path;
@@ -99,7 +101,7 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
             label="Exportar Análise"
             isCollapsed={isCollapsed}
             isActive={false}
-            onClick={() => {}}
+            onClick={exportAnalysis}
             isUpload={true}
           />
         )}

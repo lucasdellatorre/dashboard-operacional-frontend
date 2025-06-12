@@ -12,16 +12,19 @@ import React, { useContext, useEffect, useMemo, useState } from "react";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import BarChartGeneric, {
-  BarChartData,
-} from "../../components/dashboard/WebChart/BarChart";
+import BarChartGeneric from "../../components/dashboard/WebChart/BarChart";
 import { FilterType } from "../../enum/ViewSelectionFilterEnum";
 import ViewSelectionFilter from "../../components/filters/ViewSelection";
 import MultiSelect, { Option } from "../../components/multiSelect";
 import { AppContext } from "../../context/AppContext";
 import { useContactMessages } from "../../hooks/useContactMessages";
 import { useNavigate } from "react-router-dom";
-import { ChartConfig, graficFilters, MessageFilterGroup, MessageFilterType } from "../../interface/dashboard/chartInterface";
+import {
+  ChartConfig,
+  graficFilters,
+  MessageFilterGroup,
+  MessageFilterType,
+} from "../../interface/dashboard/chartInterface";
 import { usePeriodMessages } from "../../hooks/usePeriodMessages";
 import { useDayMessages } from "../../hooks/useDayMessages";
 import { useIPMessages } from "../../hooks/useIPMessages";
@@ -88,15 +91,10 @@ const Dashboard: React.FC = () => {
     () => operations.map((op) => op.id),
     [operations]
   );
-    const {
-      suspects,
-      numbers,
-      loading,
-      error,
-    } = useSuspects({
-      searchTerm: "",
-      operationIds: operationIds,
-    });
+  const { suspects, numbers, loading, error } = useSuspects({
+    searchTerm: "",
+    operationIds: operationIds,
+  });
 
   const [expanded, setExpanded] = useState(true);
 
@@ -128,7 +126,7 @@ const Dashboard: React.FC = () => {
     if (!operations[0] && !selectedNumbers[0] && !suspects[0]) {
       navigate("/operacoes");
     }
-  }, [operations, selectedNumbers, suspects, navigate])
+  }, [operations, selectedNumbers, suspects, navigate]);
 
   const toggleExpanded = () => {
     setExpanded(!expanded);
@@ -158,36 +156,39 @@ const Dashboard: React.FC = () => {
     error: errorIp,
   } = useIPMessages();
 
-  const chartConfigs = useMemo(() => [
-    {
-      type: FilterType.INTERACTIONS,
-      data: contactMessages,
-      title: "Mensagens por Contato",
-      subtitle: "Número de",
-      tooltipLabel: "Contato",
-    },
-    {
-      type: FilterType.IP,
-      data: iPMessages,
-      title: "Mensagens por IP",
-      subtitle: "Número de",
-      tooltipLabel: "IP",
-    },
-    {
-      type: FilterType.TIME,
-      data: periodMessages,
-      title: "Mensagens por Horário",
-      subtitle: "Número de",
-      tooltipLabel: "Período",
-    },
-    {
-      type: FilterType.DATA,
-      data: dayMessages,
-      title: "Mensagens por Dia",
-      subtitle: "Número de",
-      tooltipLabel: "Dias",
-    },
-  ], [contactMessages, periodMessages, dayMessages, iPMessages]);
+  const chartConfigs = useMemo(
+    () => [
+      {
+        type: FilterType.INTERACTIONS,
+        data: contactMessages,
+        title: "Mensagens por Contato",
+        subtitle: "Número de",
+        tooltipLabel: "Contato",
+      },
+      {
+        type: FilterType.IP,
+        data: iPMessages,
+        title: "Mensagens por IP",
+        subtitle: "Número de",
+        tooltipLabel: "IP",
+      },
+      {
+        type: FilterType.TIME,
+        data: periodMessages,
+        title: "Mensagens por Horário",
+        subtitle: "Número de",
+        tooltipLabel: "Período",
+      },
+      {
+        type: FilterType.DATA,
+        data: dayMessages,
+        title: "Mensagens por Dia",
+        subtitle: "Número de",
+        tooltipLabel: "Dias",
+      },
+    ],
+    [contactMessages, periodMessages, dayMessages, iPMessages]
+  );
 
   const chartArea = useMemo(() => {
     const renderChart = (cfg: ChartConfig) => {
@@ -313,15 +314,26 @@ const Dashboard: React.FC = () => {
 
     const cfg = chartConfigs.find((c) => c.type === filters.chart);
     return cfg ? renderChart(cfg) : null;
-  }, [filters, chartConfigs, loadingContact, loadingDay, loadingIp, loadingPeriod, errorContact, errorDay, errorIp, errorPeriod, setFilters]);
-
+  }, [
+    filters,
+    chartConfigs,
+    loadingContact,
+    loadingDay,
+    loadingIp,
+    loadingPeriod,
+    errorContact,
+    errorDay,
+    errorIp,
+    errorPeriod,
+    setFilters,
+  ]);
 
   return (
     <Box
       bgcolor={"#F8F8F8"}
       width={"100%"}
       minHeight="100vh"
-      display={"flex"}  
+      display={"flex"}
       flexDirection={"column"}
       alignItems={"stretch"}
       justifyContent={"flex-start"}
@@ -436,7 +448,10 @@ const Dashboard: React.FC = () => {
                 label="Grupo"
                 value={filters.group}
                 onChange={(e) =>
-                  setFilters({ ...filters, group: e.target.value as MessageFilterGroup })
+                  setFilters({
+                    ...filters,
+                    group: e.target.value as MessageFilterGroup,
+                  })
                 }
                 sx={{
                   ...focusedTextFieldStyles,
@@ -454,7 +469,10 @@ const Dashboard: React.FC = () => {
                 label="Tipo"
                 value={filters.type}
                 onChange={(e) =>
-                  setFilters({ ...filters, type: e.target.value as MessageFilterType })
+                  setFilters({
+                    ...filters,
+                    type: e.target.value as MessageFilterType,
+                  })
                 }
                 sx={focusedTextFieldStyles}
               >
@@ -471,7 +489,9 @@ const Dashboard: React.FC = () => {
                 label="Data Inicial"
                 type="date"
                 value={filters.dateInitial}
-                onChange={(e) => setFilters({ ...filters, dateInitial: e.target.value })}
+                onChange={(e) =>
+                  setFilters({ ...filters, dateInitial: e.target.value })
+                }
                 sx={focusedTextFieldStyles}
               />
 
@@ -481,7 +501,9 @@ const Dashboard: React.FC = () => {
                 label="Data Final"
                 type="date"
                 value={filters.dateFinal}
-                onChange={(e) => setFilters({ ...filters, dateFinal: e.target.value })}
+                onChange={(e) =>
+                  setFilters({ ...filters, dateFinal: e.target.value })
+                }
                 sx={focusedTextFieldStyles}
               />
 
@@ -491,7 +513,9 @@ const Dashboard: React.FC = () => {
                 label="Faixa Horária - Início"
                 type="time"
                 value={filters.timeInitial}
-                onChange={(e) => setFilters({ ...filters, timeInitial: e.target.value })}
+                onChange={(e) =>
+                  setFilters({ ...filters, timeInitial: e.target.value })
+                }
                 sx={focusedTextFieldStyles}
               />
 
@@ -501,7 +525,9 @@ const Dashboard: React.FC = () => {
                 label="Faixa Horária - Fim"
                 type="time"
                 value={filters.timeFinal}
-                onChange={(e) => setFilters({ ...filters, timeFinal: e.target.value })}
+                onChange={(e) =>
+                  setFilters({ ...filters, timeFinal: e.target.value })
+                }
                 sx={focusedTextFieldStyles}
               />
             </Box>
