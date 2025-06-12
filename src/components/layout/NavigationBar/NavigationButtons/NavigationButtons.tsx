@@ -10,6 +10,7 @@ import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import NavigationButton from "./NavigationButton/NavigationButton";
 import ToggleButton from "../ToggleButton/ToggleButton";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { useContext } from "react";
 import { AppContext } from "../../../../context/AppContext";
 
@@ -92,6 +93,17 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
       </Box>
 
       <Box>
+        {hasTargets && (
+          <NavigationButton
+            icon={<CloudUploadIcon />}
+            label="Exportar Análise"
+            isCollapsed={isCollapsed}
+            isActive={false}
+            onClick={() => {}}
+            isUpload={true}
+          />
+        )}
+
         <NavigationButton
           icon={<LogoutIcon />}
           label="Logout"
