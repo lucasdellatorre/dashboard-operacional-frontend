@@ -32,7 +32,10 @@ export const useTeiaMessageCount = () => {
     operations,
   } = useContext(AppContext);
 
-  const [data, setData] = useState<TeiaMessageCountResponse>({ nodes: [], links: [] });
+  const [data, setData] = useState<TeiaMessageCountResponse>({
+    nodes: [],
+    links: [],
+  });
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -54,15 +57,16 @@ export const useTeiaMessageCount = () => {
           operacoes: operations.map((o) => o.id),
           suspeitos: suspects.map((s) => s.id),
         };
-
-        const response = await api.get("/api/teia/message", { params: payload });
+        const response = await api.get("/api/teia/message", {
+          params: payload,
+        });
 
         setData({
           nodes: response.data?.nodes ?? [],
           links: response.data?.links ?? [],
         });
 
-        console.log('Teia data fetched successfully:', response.data);
+        console.log("Teia data fetched successfully:", response.data);
       } catch (err: any) {
         setError(err);
         setData({ nodes: [], links: [] });

@@ -1,10 +1,15 @@
 import { Box, MenuItem, TextField, Typography, Collapse, IconButton } from "@mui/material";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useContext, useEffect } from "react";
 import WebChart from "../../components/dashboard/WebChart/WebChart";
 import MultiSelect from "../../components/multiSelect";
 import dayjs from "dayjs";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import { AppContext } from "../../context/AppContext";
+import { WebLink, WebNode } from "../../interface/web/webInterface";
+import { useNavigate } from "react-router-dom";
+import { useTeiaIp } from "../../hooks/useTeiaIp";
+import { MessageFilterGroup, MessageFilterType } from "../../interface/dashboard/chartInterface";
 
 const menuItemStyles = {
   padding: "4px 16px",
@@ -52,304 +57,113 @@ const focusedTextFieldStyles = {
   },
 };
 
-const mockData = {
-  nodes: [
-    // IPs - Grupo 1 (Azul Claro) - Turno da Manhã
-    { id: "192.168.1.100", group: 1 },
-    { id: "192.168.1.101", group: 1 },
-    { id: "192.168.1.102", group: 1 },
-    { id: "192.168.1.103", group: 1 },
 
-    // IPs - Grupo 2 (Verde Claro) - Turno da Tarde
-    { id: "10.0.0.50", group: 2 },
-    { id: "10.0.0.51", group: 2 },
-    { id: "10.0.0.52", group: 2 },
-    { id: "10.0.0.53", group: 2 },
-
-    // IPs - Grupo 3 (Roxo Claro) - Turno da Noite
-    { id: "172.16.0.25", group: 3 },
-    { id: "172.16.0.26", group: 3 },
-    { id: "172.16.0.27", group: 3 },
-    { id: "172.16.0.28", group: 3 },
-
-    // Alvos (Grupo 4 - Vermelho) - Destaque
-    { id: "Alvo 1", group: 4 },
-    { id: "Alvo 2", group: 4 },
-    { id: "Alvo 3", group: 4 },
-    { id: "Alvo 4", group: 4 },
-    { id: "Alvo 5", group: 4 },
-    { id: "Alvo 6", group: 4 },
-  ],
-  links: [
-    // Exemplo de datas fictícias para cada link
-    {
-      source: "192.168.1.100",
-      target: "Alvo 1",
-      value: 450,
-      date: "2024-06-01",
+const options: typeof Option[] = [];
+/*
+ex:
+{
+      "id": 249793,
+      "internalTicketNumber": "2817461",
+      "ip": "2803:6084:18c4:5c38:900e:1f4a:300:0",
+      "versao": "NA",
+      "numeroId": 596
     },
-    {
-      source: "192.168.1.100",
-      target: "Alvo 2",
-      value: 320,
-      date: "2024-06-02",
-    },
-    {
-      source: "192.168.1.101",
-      target: "Alvo 2",
-      value: 390,
-      date: "2024-06-03",
-    },
-    {
-      source: "192.168.1.102",
-      target: "Alvo 3",
-      value: 280,
-      date: "2024-06-04",
-    },
-    {
-      source: "192.168.1.103",
-      target: "Alvo 4",
-      value: 510,
-      date: "2024-06-05",
-    },
-    {
-      source: "192.168.1.100",
-      target: "Alvo 5",
-      value: 420,
-      date: "2024-06-06",
-    },
-    { source: "10.0.0.50", target: "Alvo 1", value: 290, date: "2024-06-01" },
-    { source: "10.0.0.51", target: "Alvo 3", value: 280, date: "2024-06-02" },
-    { source: "10.0.0.52", target: "Alvo 4", value: 510, date: "2024-06-03" },
-    { source: "10.0.0.53", target: "Alvo 6", value: 380, date: "2024-06-04" },
-    { source: "10.0.0.50", target: "Alvo 2", value: 290, date: "2024-06-05" },
-    { source: "172.16.0.25", target: "Alvo 3", value: 220, date: "2024-06-06" },
-    { source: "172.16.0.26", target: "Alvo 4", value: 310, date: "2024-06-01" },
-    { source: "172.16.0.27", target: "Alvo 1", value: 180, date: "2024-06-02" },
-    { source: "172.16.0.28", target: "Alvo 5", value: 420, date: "2024-06-03" },
-    { source: "172.16.0.25", target: "Alvo 6", value: 390, date: "2024-06-04" },
-    {
-      source: "192.168.1.100",
-      target: "192.168.1.101",
-      value: 150,
-      date: "2024-06-05",
-    },
-    {
-      source: "192.168.1.101",
-      target: "192.168.1.102",
-      value: 200,
-      date: "2024-06-06",
-    },
-    {
-      source: "192.168.1.102",
-      target: "192.168.1.103",
-      value: 180,
-      date: "2024-06-01",
-    },
-    {
-      source: "10.0.0.50",
-      target: "10.0.0.51",
-      value: 200,
-      date: "2024-06-02",
-    },
-    {
-      source: "10.0.0.51",
-      target: "10.0.0.52",
-      value: 190,
-      date: "2024-06-03",
-    },
-    {
-      source: "10.0.0.52",
-      target: "10.0.0.53",
-      value: 170,
-      date: "2024-06-04",
-    },
-    {
-      source: "172.16.0.25",
-      target: "172.16.0.26",
-      value: 180,
-      date: "2024-06-05",
-    },
-    {
-      source: "172.16.0.26",
-      target: "172.16.0.27",
-      value: 190,
-      date: "2024-06-06",
-    },
-    {
-      source: "172.16.0.27",
-      target: "172.16.0.28",
-      value: 200,
-      date: "2024-06-01",
-    },
-    {
-      source: "192.168.1.100",
-      target: "10.0.0.50",
-      value: 420,
-      date: "2024-06-02",
-    },
-    {
-      source: "10.0.0.51",
-      target: "172.16.0.25",
-      value: 290,
-      date: "2024-06-03",
-    },
-    {
-      source: "172.16.0.26",
-      target: "192.168.1.101",
-      value: 310,
-      date: "2024-06-04",
-    },
-    {
-      source: "192.168.1.102",
-      target: "10.0.0.52",
-      value: 380,
-      date: "2024-06-05",
-    },
-    {
-      source: "10.0.0.53",
-      target: "172.16.0.27",
-      value: 290,
-      date: "2024-06-06",
-    },
-    {
-      source: "172.16.0.28",
-      target: "192.168.1.103",
-      value: 310,
-      date: "2024-06-01",
-    },
-    {
-      source: "192.168.1.101",
-      target: "Alvo 1",
-      value: 380,
-      date: "2024-06-02",
-    },
-    { source: "10.0.0.50", target: "Alvo 3", value: 290, date: "2024-06-03" },
-    { source: "172.16.0.25", target: "Alvo 2", value: 310, date: "2024-06-04" },
-    {
-      source: "192.168.1.102",
-      target: "Alvo 5",
-      value: 320,
-      date: "2024-06-05",
-    },
-    { source: "10.0.0.51", target: "Alvo 4", value: 350, date: "2024-06-06" },
-    { source: "172.16.0.26", target: "Alvo 6", value: 270, date: "2024-06-01" },
-  ],
-};
-
-const options = mockData.nodes
-  .filter((x) => x.group === 1)
-  .map((node) => node.id);
-
+*/
 const NetworkWebRoute: React.FC = () => {
-  const [expanded, setExpanded] = useState(true);
-  const [selectedType, setSelectedType] = useState("IP");
-  const [selectedGroup, setSelectedGroup] = useState("Ambos");
-  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
-  const [selectedShift, setSelectedShift] = useState("Todos");
-  
-  // Definir data inicial como 1 mês atrás
-  const oneMonthAgo = new Date();
-  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-  const [dateInitial, setDateInitial] = useState(oneMonthAgo.toISOString().split('T')[0]);
-  const [dateFinal, setDateFinal] = useState("");
-  const [timeInitial, setTimeInitial] = useState("00:00");
-  const [timeFinal, setTimeFinal] = useState("23:59");
+  const {
+    webChartFilters: filters,
+    setWebChartFilters: setFilters,
+    operations,
+    numbers,
+    suspects,
+  } = useContext(AppContext);
 
+  const [expanded, setExpanded] = useState(true);
+
+  // const navigate = useNavigate();
+
+  // useEffect(() => {
+  //   if (!operations[0] && !numbers[0] && !suspects[0]) {
+  //     navigate("/operacoes");
+  //   }
+  // }, [operations, numbers, suspects, navigate]);
+
+  const { teiaData } = useTeiaIp();
+  const [nodes, setNodes] = useState<WebNode[]>([]);
+  const [links, setLinks] = useState<WebLink[]>([]);
   const toggleExpanded = () => {
     setExpanded(!expanded);
   };
 
   // Filtragem dos nós e links
-  const filteredData = useMemo(() => {
-    let nodes = mockData.nodes;
-    let links = mockData.links;
+  // const filteredData = useMemo(() => {
+  //   let nodes = mockData.nodes;
+  //   let links = mockData.links;
 
-    // Filtro por datas
-    if (dateInitial || dateFinal) {
-      links = links.filter((link) => {
-        const linkDate = dayjs(link.date);
-        const afterInitial = dateInitial
-          ? linkDate.isAfter(dayjs(dateInitial)) ||
-            linkDate.isSame(dayjs(dateInitial))
-          : true;
-        const beforeFinal = dateFinal
-          ? linkDate.isBefore(dayjs(dateFinal)) ||
-            linkDate.isSame(dayjs(dateFinal))
-          : true;
-        return afterInitial && beforeFinal;
-      });
-      // Só mantém nós conectados
-      const nodeIds = new Set(links.flatMap((l) => [l.source, l.target]));
-      nodes = nodes.filter((n) => nodeIds.has(n.id));
-    }
+  //   // Filtro por datas
+  //   if (dateInitial || dateFinal) {
+  //     links = links.filter((link) => {
+  //       const linkDate = dayjs(link.date);
+  //       const afterInitial = dateInitial
+  //         ? linkDate.isAfter(dayjs(dateInitial)) ||
+  //           linkDate.isSame(dayjs(dateInitial))
+  //         : true;
+  //       const beforeFinal = dateFinal
+  //         ? linkDate.isBefore(dayjs(dateFinal)) ||
+  //           linkDate.isSame(dayjs(dateFinal))
+  //         : true;
+  //       return afterInitial && beforeFinal;
+  //     });
+  //     // Só mantém nós conectados
+  //     const nodeIds = new Set(links.flatMap((l) => [l.source, l.target]));
+  //     nodes = nodes.filter((n) => nodeIds.has(n.id));
+  //   }
 
-    // Filtro por IPs selecionados
-    if (selectedOptions.length > 0) {
-      nodes = nodes.filter(
-        (node) => selectedOptions.includes(node.id) || node.group === 4 // Sempre mostrar alvos
-      );
-      const nodeIds = nodes.map((n) => n.id);
-      links = links.filter(
-        (link) => nodeIds.includes(link.source) && nodeIds.includes(link.target)
-      );
-    }
+  //   // Filtro por IPs selecionados
+  //   if (selectedOptions.length > 0) {
+  //     nodes = nodes.filter(
+  //       (node) => selectedOptions.includes(node.id) || node.group === 4 // Sempre mostrar alvos
+  //     );
+  //     const nodeIds = nodes.map((n) => n.id);
+  //     links = links.filter(
+  //       (link) => nodeIds.includes(link.source) && nodeIds.includes(link.target)
+  //     );
+  //   }
 
-    // Filtro por Grupo
-    if (selectedGroup !== "Ambos") {
-      if (selectedGroup === "IP") {
-        nodes = nodes.filter((node) => node.group !== 4);
-      } else if (selectedGroup === "Interlocutor") {
-        nodes = nodes.filter((node) => node.group === 4);
-      }
-      const nodeIds = nodes.map((n) => n.id);
-      links = links.filter(
-        (link) => nodeIds.includes(link.source) && nodeIds.includes(link.target)
-      );
-    }
+  //   // Filtro por Grupo
+  //   if (selectedGroup !== "Ambos") {
+  //     if (selectedGroup === "IP") {
+  //       nodes = nodes.filter((node) => node.group !== 4);
+  //     } else if (selectedGroup === "Interlocutor") {
+  //       nodes = nodes.filter((node) => node.group === 4);
+  //     }
+  //     const nodeIds = nodes.map((n) => n.id);
+  //     links = links.filter(
+  //       (link) => nodeIds.includes(link.source) && nodeIds.includes(link.target)
+  //     );
+  //   }
 
-    // Filtro por Tipo (apenas exemplo, pois não há campo de tipo real)
-    if (selectedType !== "Todos") {
-      if (selectedType === "IP") {
-        nodes = nodes.filter((node) => node.group !== 4);
-      } else if (selectedType === "Interlocutor") {
-        nodes = nodes.filter((node) => node.group === 4);
-      }
-      const nodeIds = nodes.map((n) => n.id);
-      links = links.filter(
-        (link) => nodeIds.includes(link.source) && nodeIds.includes(link.target)
-      );
-    }
+  //   // Filtro por Tipo (apenas exemplo, pois não há campo de tipo real)
+  //   if (selectedType !== "Todos") {
+  //     if (selectedType === "IP") {
+  //       nodes = nodes.filter((node) => node.group !== 4);
+  //     } else if (selectedType === "Interlocutor") {
+  //       nodes = nodes.filter((node) => node.group === 4);
+  //     }
+  //     const nodeIds = nodes.map((n) => n.id);
+  //     links = links.filter(
+  //       (link) => nodeIds.includes(link.source) && nodeIds.includes(link.target)
+  //     );
+  //   }
 
-    // Filtro de Turno
-    if (selectedShift !== "Todos") {
-      links = links.filter((link) => {
-        const sourceNode = nodes.find((n) => n.id === link.source);
-        const targetNode = nodes.find((n) => n.id === link.target);
-        if (!sourceNode || !targetNode) return false;
-        if (selectedShift === "Manhã") {
-          return sourceNode.group === 1 && targetNode.group === 1;
-        } else if (selectedShift === "Tarde") {
-          return sourceNode.group === 2 && targetNode.group === 2;
-        } else if (selectedShift === "Noite") {
-          return sourceNode.group === 3 && targetNode.group === 3;
-        }
-        return true;
-      });
-      // Só mantém nós conectados
-      const nodeIds = new Set(links.flatMap((l) => [l.source, l.target]));
-      nodes = nodes.filter((n) => nodeIds.has(n.id));
-    }
-
-    return { nodes, links };
-  }, [
-    selectedOptions,
-    selectedGroup,
-    selectedType,
-    selectedShift,
-    dateInitial,
-    dateFinal,
-  ]);
+  //   return { nodes, links };
+  // }, [
+  //   selectedOptions,
+  //   selectedGroup,
+  //   selectedType,
+  //   dateInitial,
+  //   dateFinal,
+  // ]);
 
   return (
     <Box
@@ -375,7 +189,7 @@ const NetworkWebRoute: React.FC = () => {
             flexDirection="column" 
             gap="1.5rem" 
             px="1.5rem"
-            py="1rem"
+            pt="1rem"
             sx={{
               transition: "all 0.3s ease-in-out",
             }}
@@ -402,8 +216,8 @@ const NetworkWebRoute: React.FC = () => {
                 placeholder="Selecione os IPs"
                 height="53px"
                 options={options}
-                selectedOptions={selectedOptions}
-                onChange={setSelectedOptions}
+                selectedOptions={[]}
+                onChange={() => {}}
               />
             </Box>
 
@@ -430,8 +244,8 @@ const NetworkWebRoute: React.FC = () => {
                 <TextField
                   select
                   label="Grupo"
-                  value={selectedGroup}
-                  onChange={(e) => setSelectedGroup(e.target.value)}
+                  value={filters.group}
+                  onChange={(e) => setFilters({ ...filters, group: e.target.value as MessageFilterGroup })}
                   sx={{ ...focusedTextFieldStyles, backgroundColor: "transparent" }}
                 >
                   {["IP", "Interlocutor", "Ambos"].map((value) => (
@@ -444,8 +258,8 @@ const NetworkWebRoute: React.FC = () => {
                 <TextField
                   select
                   label="Tipo"
-                  value={selectedType}
-                  onChange={(e) => setSelectedType(e.target.value)}
+                  value={filters.type}
+                  onChange={(e) => setFilters({ ...filters, type: e.target.value as MessageFilterType })}
                   sx={focusedTextFieldStyles}
                 >
                   <MenuItem value="IP" sx={menuItemStyles}>
@@ -460,26 +274,12 @@ const NetworkWebRoute: React.FC = () => {
                 </TextField>
 
                 <TextField
-                  select
-                  label="Turno"
-                  value={selectedShift}
-                  onChange={(e) => setSelectedShift(e.target.value)}
-                  sx={focusedTextFieldStyles}
-                >
-                  {["Todos", "Manhã", "Tarde", "Noite"].map((value) => (
-                    <MenuItem key={value} value={value} sx={menuItemStyles}>
-                      {value}
-                    </MenuItem>
-                  ))}
-                </TextField>
-
-                <TextField
                   id="date-initial"
                   InputLabelProps={{ shrink: true }}
                   label="Data Inicial"
                   type="date"
-                  value={dateInitial}
-                  onChange={(e) => setDateInitial(e.target.value)}
+                  value={filters.dateInitial}
+                  onChange={(e) => setFilters({ ...filters, dateInitial: e.target.value })}
                   sx={focusedTextFieldStyles}
                 />
 
@@ -488,8 +288,8 @@ const NetworkWebRoute: React.FC = () => {
                   InputLabelProps={{ shrink: true }}
                   label="Data Final"
                   type="date"
-                  value={dateFinal}
-                  onChange={(e) => setDateFinal(e.target.value)}
+                  value={filters.dateFinal}
+                  onChange={(e) => setFilters({ ...filters, dateFinal: e.target.value })}
                   sx={focusedTextFieldStyles}
                 />
 
@@ -498,8 +298,8 @@ const NetworkWebRoute: React.FC = () => {
                   InputLabelProps={{ shrink: true }}
                   label="Horário Inicial"
                   type="time"
-                  value={timeInitial}
-                  onChange={(e) => setTimeInitial(e.target.value)}
+                  value={filters.timeInitial}
+                  onChange={(e) => setFilters({ ...filters, timeInitial: e.target.value })}
                   sx={focusedTextFieldStyles}
                 />
 
@@ -508,8 +308,8 @@ const NetworkWebRoute: React.FC = () => {
                   InputLabelProps={{ shrink: true }}
                   label="Horário Final"
                   type="time"
-                  value={timeFinal}
-                  onChange={(e) => setTimeFinal(e.target.value)}
+                  value={filters.timeFinal}
+                  onChange={(e) => setFilters({ ...filters, timeFinal: e.target.value })}
                   sx={focusedTextFieldStyles}
                 />
               </Box>
@@ -521,7 +321,6 @@ const NetworkWebRoute: React.FC = () => {
               gap="1.5rem"
               alignItems="center"
               mt="0.5rem"
-              mb="1rem"
               sx={{
                 transition: "all 0.3s ease-in-out",
               }}
@@ -629,12 +428,6 @@ const NetworkWebRoute: React.FC = () => {
           onClick={toggleExpanded} 
           size="small" 
           disableRipple
-          sx={{
-            transition: "all 0.3s ease-in-out",
-            "&:hover": {
-              transform: "scale(1.1)",
-            },
-          }}
         >
           {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
         </IconButton>
@@ -657,7 +450,7 @@ const NetworkWebRoute: React.FC = () => {
           justifyContent="center"
           alignItems="center"
         >
-          <WebChart data={filteredData} />
+          <WebChart data={teiaData} />
         </Box>
       </Box>
     </Box>
