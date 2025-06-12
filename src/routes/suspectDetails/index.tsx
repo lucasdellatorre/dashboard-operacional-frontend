@@ -11,16 +11,16 @@ import {
   Skeleton,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
-import Collapse from "@mui/material/Collapse";
 import GenericTable from "../../components/Table/Table";
 import { GenericData, HeadCell } from "../../interface/table/tableInterface";
 import EmailModal from "../../components/modal/createEmailModal";
 import EditableField from "../../components/editableField";
-import { useEffect, useState } from "react";
-import { isValidCPF } from "../../utils/validationUtils";
+import { useContext, useEffect, useState } from "react";
 import EditableMultilineField from "../../components/editableMultilineField";
 import { useSuspectInfo } from "../../hooks/useSuspectInfo";
 import TelephoneModal from "../../components/modal/createTelephoneModal";
+import { AppContext } from "../../context/AppContext";
+import { useSuspectNumbers } from "../../hooks/useSuspectsNumbers";
 
 interface Email extends GenericData {
   email: string;
@@ -37,7 +37,7 @@ interface Ips extends GenericData {
   ocorrencias: number;
 }
 
-const formatCPF = (value: string): string => {
+const formatsuspectCpf = (value: string): string => {
   if (!value) return "";
   const numericValue = value.replace(/\D/g, "").slice(0, 11);
   return numericValue
@@ -66,22 +66,37 @@ const SuspectsDetails = () => {
       color: "inherit !important",
     },
   };
-  const { suspect, loading, error, updateSuspectDetails } = useSuspectInfo(
-    Number(window.location.pathname.split("/").pop())
-  );
+  const { cpf } = useContext(AppContext);
+
+  const {
+    suspect,
+    loading,
+    error,
+    updateSuspectDetails,
+    createSuspectEmail,
+    deleteSuspectNumber,
+    deleteSuspectEmail,
+    createSuspectNumber,
+    updateSuspectEmail,
+  } = useSuspectInfo(Number(window.location.pathname.split("/").pop()));
+
+  const { suspectsNumbers } = useSuspectNumbers();
 
   const [loadingFields, setLoadingFields] = useState({
     nickname: false,
     name: false,
-    cpf: false,
+    suspectCpf: false,
     notes: false,
     relevante: false,
   });
 
+  const [loadingNumbersDelete, setLoadingNumbersDelete] =
+    useState<boolean>(false);
+  const [loadingEmailDelete, setLoadingEmailDelete] = useState<boolean>(false);
+  const [editingEmail, setEditingEmail] = useState<Email | null>(null);
   const [nickname, setNickname] = useState("");
   const [name, setName] = useState("");
-  const [cpf, setCpf] = useState("");
-  const [cpfError, setCpfError] = useState("");
+  const [suspectCpf, setsuspectCpfSuspect] = useState("");
   const [notes, setNotes] = useState("");
   const [relevante, setRelevante] = useState<boolean>(false);
   const [alert, setAlert] = useState({
@@ -103,7 +118,7 @@ const SuspectsDetails = () => {
     if (suspect) {
       setNickname(suspect.apelido);
       setName(suspect.nome);
-      setCpf(formatCPF(suspect.cpf));
+      setsuspectCpfSuspect(formatsuspectCpf(suspect.cpf));
       setNotes(suspect.anotacoes);
       setRelevante(suspect.relevante);
     }
@@ -112,22 +127,23 @@ const SuspectsDetails = () => {
   async function updateField(field: string, value: string | boolean) {
     setLoadingFields((prev) => ({ ...prev, [field]: true }));
 
-    const fieldMapping: Record<string, string> = {
-      nickname: "apelido",
-      name: "nome",
-      cpf: "cpf",
-      notes: "anotacoes",
-      relevante: "relevante",
-    };
-
-    const values = {
-      [fieldMapping[field]]: value || null,
+    const allValues = {
+      apelido: field === "nickname" ? value : nickname || null,
+      nome: field === "name" ? value : name || null,
+      suspectCpf:
+        field === "suspectCpf"
+          ? typeof value === "string"
+            ? value.replace(/\D/g, "")
+            : suspectCpf.replace(/\D/g, "")
+          : suspectCpf.replace(/\D/g, "") || null,
+      anotacoes: field === "notes" ? value : notes || null,
+      relevante: field === "relevante" ? value : relevante,
     };
 
     try {
       const { isSuccess, errorMessage } = await updateSuspectDetails(
         suspect?.id.toString() || "",
-        values
+        allValues
       );
 
       if (isSuccess) {
@@ -144,6 +160,7 @@ const SuspectsDetails = () => {
         });
       }
     } catch (error) {
+      console.log("Erro ao atualizar campo:", error);
       setAlert({
         show: true,
         type: "error",
@@ -162,10 +179,9 @@ const SuspectsDetails = () => {
     setName(newValue);
   };
 
-  const handleCpfChange = (newValue: string) => {
-    const formatted = formatCPF(newValue);
-    setCpf(formatted);
-    setCpfError(isValidCPF(formatted) ? "" : "CPF inválido");
+  const handlesuspectCpfChange = (newValue: string) => {
+    const formatted = formatsuspectCpf(newValue);
+    setsuspectCpfSuspect(formatted);
   };
 
   const handleNotesChange = (newValue: string) => {
@@ -187,11 +203,24 @@ const SuspectsDetails = () => {
       label: "",
       iconAction: {
         icon: <EditIcon sx={{ fontSize: "1.2rem" }} />,
-        onClick: () => console.log("editar"),
+        onClick: (id: number) => {
+          handleEditEmail(id);
+        },
       },
     },
   ];
-
+  const handleEditEmail = (emailId: number) => {
+    const emailToEdit = suspect?.emails?.find((e) => e.id === emailId);
+    if (emailToEdit) {
+      setEditingEmail({
+        id: emailToEdit.id,
+        email: emailToEdit.email,
+        insertDate: emailToEdit.lastUpdateDate,
+        insertBy: emailToEdit.lastUpdateCpf,
+      });
+      setOpenEmailModal(true);
+    }
+  };
   const PhoneHeaderCells: readonly HeadCell<Phone>[] = [
     { id: "phone", label: "Celular" },
     { id: "insertDate", label: "Data de Inserção" },
@@ -205,26 +234,68 @@ const SuspectsDetails = () => {
   const [openTelephoneModal, setOpenTelephoneModal] = useState(false);
   const [openEmailModal, setOpenEmailModal] = useState(false);
 
-  function criarEditarTelephone() {
-    //TODO: create or edit email integrated with backend
-    setOpenEmailModal(false);
-  }
-  function criarEditarEmail() {
-    //TODO: create or edit email integrated with backend
-    setOpenEmailModal(false);
-  }
-
   return (
     <>
       <TelephoneModal
         isOpen={openTelephoneModal}
         onClose={() => setOpenTelephoneModal(false)}
-        onSubmit={criarEditarTelephone}
+        onCreateNumber={async (numberData) => {
+          try {
+            const numbers = numberData.telephone.map((tel) => Number(tel));
+            await createSuspectNumber(numbers, cpf);
+            setOpenTelephoneModal(false);
+            setAlert({
+              show: true,
+              type: "success",
+              message: "Telefone Adicionado com sucesso",
+            });
+          } catch (err) {
+            console.log("Erro ao adicionar numero:", err);
+            setAlert({
+              show: true,
+              type: "error",
+              message: "Ocorreu um erro. Tente novamente.",
+            });
+          }
+        }}
+        suspectsNumbers={suspectsNumbers}
       />
       <EmailModal
+        isEditing={!!editingEmail}
         isOpen={openEmailModal}
-        onClose={() => setOpenEmailModal(false)}
-        onSubmit={criarEditarEmail}
+        onClose={() => {
+          setOpenEmailModal(false);
+          setTimeout(() => {
+            setEditingEmail(null);
+          }, 300);
+        }}
+        initialData={editingEmail ? { email: editingEmail.email } : null}
+        onCreateEmail={async (emailData) => {
+          try {
+            if (editingEmail) {
+              await updateSuspectEmail(editingEmail.id, cpf, emailData.email);
+            } else {
+              await createSuspectEmail(emailData.email, cpf);
+            }
+
+            setOpenEmailModal(false);
+            setEditingEmail(null);
+            setAlert({
+              show: true,
+              type: "success",
+              message: editingEmail
+                ? "Email atualizado com sucesso"
+                : "Email adicionado com sucesso",
+            });
+          } catch (err) {
+            console.log("Erro ao processar email:", err);
+            setAlert({
+              show: true,
+              type: "error",
+              message: "Ocorreu um erro. Tente novamente.",
+            });
+          }
+        }}
       />
       {alert.show && (
         <Alert
@@ -240,16 +311,14 @@ const SuspectsDetails = () => {
             fontWeight: 500,
             backgroundColor: (theme) =>
               alert.type === "success"
-                ? alpha(theme.palette.success.light, 0.2)
+                ? alpha(theme.palette.success.light, 1)
                 : alert.type === "error"
-                ? alpha(theme.palette.error.light, 0.2)
-                : alpha(theme.palette.info.light, 0.2),
-            color: (theme) =>
-              alert.type === "success"
-                ? theme.palette.success.dark
-                : alert.type === "error"
-                ? theme.palette.error.dark
-                : theme.palette.info.dark,
+                ? alpha(theme.palette.error.light, 1)
+                : alpha(theme.palette.info.light, 1),
+            color: "#ffffff",
+            "& .MuiAlert-icon": {
+              color: "white",
+            },
           }}
         >
           {alert.message}
@@ -341,16 +410,13 @@ const SuspectsDetails = () => {
                     />
                     <EditableField
                       label="CPF"
-                      value={cpf}
-                      onChange={handleCpfChange}
-                      onConfirm={(newValue) => updateField("cpf", newValue)}
-                      loading={loadingFields.cpf}
+                      value={suspectCpf}
+                      onChange={handlesuspectCpfChange}
+                      onConfirm={(newValue) =>
+                        updateField("suspectCpf", newValue)
+                      }
+                      loading={loadingFields.suspectCpf}
                     />
-                    {cpfError && (
-                      <Typography fontSize="0.875rem" color="error">
-                        {cpfError}
-                      </Typography>
-                    )}
                   </>
                 )}
               </Box>
@@ -422,7 +488,7 @@ const SuspectsDetails = () => {
             )}
             {!loading && (
               <p style={{ fontSize: "0.775rem", color: "#666" }}>
-                *Para editar os inputs, clique no botão de lapis
+                *Para editar os campos, clique no botão de lapis
               </p>
             )}
 
@@ -447,11 +513,13 @@ const SuspectsDetails = () => {
                   onDelete={() => {}}
                   allowSelection={false}
                   headerCollor="white"
+                  showDeleteButton={false}
                 />
 
                 <GenericTable
-                  rows={(suspect.celulares || []).map((c, idx) => ({
-                    id: idx,
+                  isDeleting={loadingNumbersDelete}
+                  rows={(suspect.celulares || []).map((c) => ({
+                    id: c.id,
                     phone: c.numero,
                     insertDate: c.lastUpdateDate,
                     insertBy: c.lastUpdateCpf,
@@ -468,13 +536,42 @@ const SuspectsDetails = () => {
                   onSelectionChange={() => {}}
                   initialSelected={[]}
                   noDataMessage="Nenhum celular encontrado para este suspeito"
-                  onDelete={() => {}}
+                  onDelete={async (selectedIds) => {
+                    if (suspect.celulares.length <= 1) {
+                      setAlert({
+                        show: true,
+                        type: "error",
+                        message: "O suspeito deve ter pelo menos um número.",
+                      });
+                    }
+                    try {
+                      setLoadingNumbersDelete(true);
+                      for (const id of selectedIds) {
+                        await deleteSuspectNumber(id);
+                      }
+                      setAlert({
+                        show: true,
+                        type: "success",
+                        message: "Número deletado com sucesso",
+                      });
+                      setLoadingNumbersDelete(false);
+                    } catch (err) {
+                      setLoadingNumbersDelete(false);
+                      console.log("Erro ao deletar numero:", err);
+                      setAlert({
+                        show: true,
+                        type: "error",
+                        message: "Ocorreu um erro. Tente novamente.",
+                      });
+                    }
+                  }}
                   headerCollor="white"
                 />
 
                 <GenericTable
-                  rows={(suspect.emails || []).map((e, idx) => ({
-                    id: idx,
+                  isDeleting={loadingEmailDelete}
+                  rows={(suspect.emails || []).map((e) => ({
+                    id: e.id,
                     email: e.email,
                     insertDate: e.lastUpdateDate,
                     insertBy: e.lastUpdateCpf,
@@ -491,7 +588,28 @@ const SuspectsDetails = () => {
                   onSelectionChange={() => {}}
                   initialSelected={[]}
                   noDataMessage="Nenhum email encontrado para este suspeito"
-                  onDelete={() => {}}
+                  onDelete={async (selectedIds) => {
+                    try {
+                      setLoadingEmailDelete(true);
+                      for (const id of selectedIds) {
+                        await deleteSuspectEmail(id);
+                      }
+                      setAlert({
+                        show: true,
+                        type: "success",
+                        message: "Email deletado com sucesso",
+                      });
+                      setLoadingEmailDelete(false);
+                    } catch (err) {
+                      setLoadingEmailDelete(false);
+                      console.log("Erro ao deletar email:", err);
+                      setAlert({
+                        show: true,
+                        type: "error",
+                        message: "Ocorreu um erro. Tente novamente.",
+                      });
+                    }
+                  }}
                   headerCollor="white"
                 />
               </Box>

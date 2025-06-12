@@ -1,8 +1,12 @@
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import { Operation } from "../hooks/useOperations";
 import { Suspect, Numbers } from "../hooks/useSuspects";
 import { WorkSheet } from "../hooks/useWorksheets";
-import { ChartFilters } from "../interface/dashboard/chartInterface";
+import {
+  ChartFilters,
+  MessageFilterGroup,
+  MessageFilterType,
+} from "../interface/dashboard/chartInterface";
 import { FilterType } from "../enum/ViewSelectionFilterEnum";
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -45,18 +49,33 @@ export const ApplicationProvider = ({
   const [dashboardFilters, setDashboardFilters] = useState<ChartFilters>({
     filterType: FilterType.UNION,
     chart: FilterType.ALL,
-    type: "Texto",
-    group: "Ambos",
+    type: MessageFilterType.Texto,
+    group: MessageFilterGroup.Ambos,
     options: [] as string[],
-    symmetry: "Ambos",
+    dateInitial: "",
+    dateFinal: "",
+    timeInitial: "",
+    timeFinal: "",
   });
 
+  const today = new Date();
+  const oneMonthAgo = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+  const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+
   const [webChartFilters, setWebChartFilters] = useState<ChartFilters>({
-    type: "Texto",
-    group: "Ambos",
+    type: MessageFilterType.Todos,
+    chart: FilterType.INTERACTIONS,
+    group: MessageFilterGroup.Ambos,
     options: [] as string[],
-    symmetry: "Ambos",
+    dateInitial: oneMonthAgo.toISOString().split("T")[0],
+    dateFinal: tomorrow.toISOString().split("T")[0],
+    timeInitial: "00:00",
+    timeFinal: "23:59",
   });
+
+  useEffect(() => {
+    setCpf(localStorage.getItem("cpf") ?? "")
+  }, []);
 
   return (
     <AppContext.Provider

@@ -9,6 +9,7 @@ interface NavigationButtonProps {
   isCollapsed: boolean;
   isActive: boolean;
   onClick?: (e: React.MouseEvent) => void;
+  isUpload?: boolean;
 }
 
 const NavigationButton: React.FC<NavigationButtonProps> = ({
@@ -18,6 +19,7 @@ const NavigationButton: React.FC<NavigationButtonProps> = ({
   isCollapsed,
   isActive,
   onClick,
+  isUpload = false,
 }) => {
   const ButtonContent = (
     <Box
@@ -45,9 +47,16 @@ const NavigationButton: React.FC<NavigationButtonProps> = ({
     >
       {icon}
       {!isCollapsed && (
-        <Typography sx={{ ...textStyles.navigationBarTitle }}>
-          {label}
-        </Typography>
+        <Box>
+          <Typography sx={{ ...textStyles.navigationBarTitle }}>
+            {label}
+          </Typography>
+          {isUpload && (
+            <Typography sx={{ color: "#B0B0B0", fontSize: "0.8rem" }}>
+              Clique aqui para exportar o relatório com a análise
+            </Typography>
+          )}
+        </Box>
       )}
     </Box>
   );

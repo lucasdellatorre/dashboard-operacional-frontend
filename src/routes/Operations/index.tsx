@@ -1,5 +1,12 @@
-import { Box, Button, CircularProgress, Typography } from "@mui/material";
-import React, { useCallback, useContext, useState } from "react";
+import {
+  Alert,
+  alpha,
+  Box,
+  Button,
+  CircularProgress,
+  Typography,
+} from "@mui/material";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import GenericTable from "../../components/operationSuspectTable/table";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useHeaderInput } from "../../hooks/useHeaderInput";
@@ -30,6 +37,20 @@ const Operations: React.FC = () => {
     operations.map((op) => op.id)
   );
   const [selectedItems, setSelectedItems] = useState<Operation[]>(operations);
+  const [alert, setAlert] = useState({
+    show: false,
+    message: "",
+    type: "info" as "error" | "warning" | "info" | "success",
+  });
+
+  useEffect(() => {
+    if (alert.show) {
+      const timer = setTimeout(() => {
+        setAlert({ ...alert, show: false });
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [alert]);
 
   const handleSelectionChange = useCallback(
     (ids: readonly number[], items: Operation[]) => {
@@ -62,6 +83,33 @@ const Operations: React.FC = () => {
 
   return (
     <Box p={3} sx={{ fontFamily: "Inter, sans-serif" }}>
+      {alert.show && (
+        <Alert
+          severity={alert.type}
+          onClose={() => setAlert({ ...alert, show: false })}
+          sx={{
+            position: "fixed",
+            top: 16,
+            left: "calc(50% + 1px)",
+            zIndex: 9999,
+            borderRadius: 2,
+            boxShadow: 3,
+            fontWeight: 500,
+            backgroundColor: (theme) =>
+              alert.type === "success"
+                ? alpha(theme.palette.success.light, 1)
+                : alert.type === "error"
+                ? alpha(theme.palette.error.light, 1)
+                : alpha(theme.palette.info.light, 1),
+            color: "#ffffff",
+            "& .MuiAlert-icon": {
+              color: "white",
+            },
+          }}
+        >
+          {alert.message}
+        </Alert>
+      )}
       <Box display="flex" justifyContent="space-between" alignItems="baseline">
         <Typography variant="h5" color="#000000" mb={4} fontWeight={700}>
           Selecione uma operação para iniciar a investigação
@@ -131,9 +179,19 @@ const Operations: React.FC = () => {
           try {
             await createOperation(operationData.operationName);
             setOpenModal(false);
+            setAlert({
+              show: true,
+              type: "success",
+              message: "Operação criada com sucesso",
+            });
             fetchOperations();
           } catch (err) {
-            console.error("Erro ao criar operação:", err);
+            console.log("Erro ao criar operação:", err);
+            setAlert({
+              show: true,
+              type: "error",
+              message: "Ocorreu um erro ao criar a operação. Tente novamente.",
+            });
           }
         }}
       />

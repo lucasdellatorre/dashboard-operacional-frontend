@@ -20,15 +20,16 @@ export const useSuspectNumbers = () => {
       try {
         setLoading(true);
         const response = await api.get<SuspectNumber[]>(
-          `/api/alvos?showSuspects=false`
+          `/api/alvos?showSuspects=true`
         );
-        const result = response.data.map((item) => ({
-          id: item.id.toString(),
-          label: item.value,
-        }));
+        const result = response.data
+          .filter((item) => /^\d+$/.test(item.value))
+          .map((item) => ({
+            id: item.id.toString(),
+            label: item.value,
+          }));
         setSuspectsNumbers(result);
       } catch (err) {
-        console.error("Erro ao buscar numeros", err);
         setError("Não foi possível carregar os numeros.");
       } finally {
         setLoading(false);

@@ -113,7 +113,6 @@ export const useWorksheets = ({ searchTerm }: UseWorksheetsProps) => {
           fetchSheetsAgain();
         }
       } catch (error) {
-        console.error("Erro ao consultar progresso do job:", error);
         errorCount += 1;
 
         if (errorCount >= MAX_ERRORS) {
@@ -174,7 +173,7 @@ export const useWorksheets = ({ searchTerm }: UseWorksheetsProps) => {
         return [...prev, ...newUploads];
       });
     } catch (err) {
-      console.error("Erro ao buscar jobs pendentes:", err);
+      // Se ocorrer um erro ao buscar os jobs pendentes, não faz nada
     }
   }
 

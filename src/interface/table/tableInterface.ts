@@ -38,6 +38,7 @@ export interface GenericTableProps<T extends GenericData> {
   defaultCollapsed?: boolean;
   renderCell?: (id: keyof T, row: T) => React.ReactNode;
   showDeleteButton?: boolean;
+  isDeleting?: boolean;
 }
 
 export interface EnhancedTableHeadProps<T extends GenericData> {

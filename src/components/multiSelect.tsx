@@ -11,14 +11,14 @@ import CloseIcon from "@mui/icons-material/Close";
 
 type Style = "white" | "gray";
 
-interface Option {
+export interface Option {
   id: string;
   label: string;
 }
 
 interface MultiSelectProps {
   options: Option[];
-  selectedOptions: string[]; // Apenas os IDs selecionados
+  selectedOptions: string[] | number[]; // Apenas os IDs selecionados
   onChange: (selected: string[]) => void;
   height?: string;
   placeholder: string;
@@ -33,7 +33,9 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   height = "auto",
   placeholder,
 }) => {
-  const selectedObjects = options.filter((opt) => selectedOptions.includes(opt.id));
+  const selectedObjects = options.filter((opt) =>
+    selectedOptions.includes(opt.id)
+  );
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -74,7 +76,13 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
           ))
         }
         renderOption={(props, option, { selected }) => (
-          <li {...props}>
+          <li
+            {...props}
+            style={{
+              ...props.style,
+              backgroundColor: "transparent",
+            }}
+          >
             <Checkbox
               checked={selected}
               size="small"
@@ -99,23 +107,30 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
             placeholder={selectedOptions.length === 0 ? placeholder : ""}
             fullWidth
             sx={{
+              "&:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: "customButton.lightGray",
+              },
+              "& label.Mui-focused": {
+                color: "inherit",
+              },
+              "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
+                {
+                  borderColor: "customButton.lightGray",
+                  borderWidth: "1px",
+                },
               "& .MuiOutlinedInput-root": {
-                padding: "8px 14px",
                 minHeight: height,
                 display: "flex",
                 alignItems: "center",
-              },
-              "& .MuiOutlinedInput-notchedOutline": {
-                borderColor: "rgba(0, 0, 0, 0.23)",
-              },
-              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: "rgba(0, 0, 0, 0.23)",
-              },
-              "&:hover .MuiOutlinedInput-notchedOutline": {
-                borderColor: "rgba(0, 0, 0, 0.23)",
-              },
-              "& .MuiInputBase-input::placeholder": {
-                color: style === "white" ? "#a2a2a2" : "black",
+                "&:hover fieldset": {
+                  borderColor: "customButton.lightGray",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "customButton.lightGray",
+                },
+                "& input": {
+                  outline: "none",
+                },
               },
             }}
           />

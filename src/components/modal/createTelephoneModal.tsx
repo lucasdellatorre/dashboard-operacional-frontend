@@ -1,22 +1,15 @@
-import {
-  Box,
-  Button,
-  Dialog,
-  IconButton,
-  TextField,
-  Typography,
-} from "@mui/material";
-import React, { useEffect } from "react";
+import { Box, Button, Dialog, IconButton, Typography } from "@mui/material";
+import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CloseIcon from "@mui/icons-material/Close";
 import { z } from "zod";
+import MultiSelect from "../multiSelect";
 
 const telephoneModalSchema = z.object({
   telephone: z
-    .string({ required_error: "Telefone é obrigatório" })
-    .min(6, "Número muito curto")
-    .max(15, "Número muito longo"),
+    .array(z.string())
+    .nonempty("Pelo menos um telefone é obrigatório"),
 });
 
 type TelephoneFormData = z.infer<typeof telephoneModalSchema>;
@@ -24,15 +17,17 @@ type TelephoneFormData = z.infer<typeof telephoneModalSchema>;
 interface TelephoneModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: TelephoneFormData) => void;
+  onCreateNumber: (data: TelephoneFormData) => Promise<void>;
   initialData?: TelephoneFormData | null;
+  suspectsNumbers: { id: string; label: string }[];
 }
 
 const TelephoneModal: React.FC<TelephoneModalProps> = ({
   isOpen,
   onClose,
-  onSubmit,
+  onCreateNumber,
   initialData,
+  suspectsNumbers,
 }) => {
   const {
     control,
@@ -42,16 +37,31 @@ const TelephoneModal: React.FC<TelephoneModalProps> = ({
   } = useForm<TelephoneFormData>({
     resolver: zodResolver(telephoneModalSchema),
     defaultValues: {
-      telephone: initialData ? initialData.telephone : "",
+      telephone: initialData ? initialData.telephone : [],
     },
     shouldUnregister: true,
   });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const onSubmit = async (data: TelephoneFormData) => {
+    setIsSubmitting(true);
+    try {
+      await onCreateNumber(data);
+      reset();
+      onClose();
+    } catch (err) {
+      console.error("Erro ao criar numero:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     if (initialData) {
       reset(initialData);
     } else {
-      reset({ telephone: "" });
+      reset({ telephone: [] });
     }
   }, [initialData, reset]);
 
@@ -92,7 +102,7 @@ const TelephoneModal: React.FC<TelephoneModalProps> = ({
         mb="0.8rem"
       >
         <Typography sx={{ fontWeight: "900", fontSize: "1.2rem" }}>
-          {initialData ? "Editar Telefone" : "Adicionar Telefone"}
+          {initialData ? "Editar Telefones" : "Adicionar Telefones"}
         </Typography>
       </Box>
 
@@ -109,32 +119,19 @@ const TelephoneModal: React.FC<TelephoneModalProps> = ({
           gap="0.3rem"
         >
           <Typography sx={{ fontWeight: "800", fontSize: "1rem" }}>
-            Telefone*
+            Telefones*
           </Typography>
           <Controller
             control={control}
             name="telephone"
             render={({ field }) => (
-              <TextField
-                {...field}
-                onBlur={field.onBlur}
-                placeholder="Digite o telefone"
-                variant="outlined"
-                InputProps={{
-                  sx: {
-                    height: "3.5rem",
-                    "& .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "rgba(0, 0, 0, 0.23)",
-                    },
-                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "rgba(0, 0, 0, 0.23)",
-                      borderWidth: "1px",
-                    },
-                    "&:hover .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "rgba(0, 0, 0, 0.23)",
-                    },
-                  },
-                }}
+              <MultiSelect
+                style="white"
+                placeholder="Selecione os números"
+                height="3.5rem"
+                options={suspectsNumbers}
+                selectedOptions={field.value ?? []}
+                onChange={field.onChange}
               />
             )}
           />
@@ -146,13 +143,8 @@ const TelephoneModal: React.FC<TelephoneModalProps> = ({
         </Box>
 
         <Button
-          onClick={handleSubmit((data) => {
-            if (onSubmit) {
-              onSubmit(data);
-              reset();
-              onClose();
-            }
-          })}
+          onClick={handleSubmit(onSubmit)}
+          disabled={isSubmitting}
           sx={{
             bgcolor: "customButton.gold",
             color: "customText.white",
@@ -161,7 +153,7 @@ const TelephoneModal: React.FC<TelephoneModalProps> = ({
             width: "100%",
           }}
         >
-          {initialData ? "Salvar alterações" : "Adicionar telefone"}
+          {isSubmitting ? "Adicionando..." : "Adicionar Telefones"}
         </Button>
       </Box>
     </Dialog>

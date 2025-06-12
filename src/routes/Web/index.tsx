@@ -1,10 +1,32 @@
-import { Box, MenuItem, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  MenuItem,
+  TextField,
+  Typography,
+  Collapse,
+  IconButton,
+} from "@mui/material";
 import React, { useState, useMemo, useContext, useEffect } from "react";
-import WebChart from "../../components/dashboard/WebChart/WebChart";
-import MultiSelect from "../../components/multiSelect";
+import WebChart, { Data } from "../../components/dashboard/WebChart/WebChart";
+import MultiSelect, { Option } from "../../components/multiSelect";
 import { AppContext } from "../../context/AppContext";
-import { createWeb } from "../../controllers/webController";
 import { WebLink, WebNode } from "../../interface/web/webInterface";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import { useNavigate } from "react-router-dom";
+import {
+  TeiaLink,
+  TeiaNode,
+  useTeiaMessageCount,
+} from "../../hooks/useTeiaMessageCount";
+import {
+  MessageFilterGroup,
+  MessageFilterType,
+} from "../../interface/dashboard/chartInterface";
+import { FilterType } from "../../enum/ViewSelectionFilterEnum";
+import ViewSelectionFilter from "../../components/filters/ViewSelection";
+import { useTeiaIp } from "../../hooks/useTeiaIp";
+import { useSuspects } from "../../hooks/useSuspects";
 
 const menuItemStyles = {
   padding: "4px 16px",
@@ -38,7 +60,6 @@ const focusedTextFieldStyles = {
     borderColor: "customButton.lightGray",
     borderWidth: "1px",
   },
-
   "& .MuiOutlinedInput-root": {
     "&:hover fieldset": {
       borderColor: "customButton.lightGray",
@@ -49,127 +70,131 @@ const focusedTextFieldStyles = {
     "& input": {
       outline: "none",
     },
+    "& .MuiOutlinedInput-notchedOutline": {
+      borderColor: "rgba(0, 0, 0, 0.23)",
+    },
   },
 };
 
+const graficFilters = [
+  { value: FilterType.INTERACTIONS, label: "Mensagens" },
+  { value: FilterType.IP, label: "IPs" },
+];
+
+interface Suspect {
+  id: number;
+  apelido: string;
+}
+
+interface Number {
+  id: number;
+  numero: string;
+}
+
 const WebRoute: React.FC = () => {
-  const { operations, suspects, numbers, webChartFilters, setWebChartFilters } =
-    useContext(AppContext);
-  const [dateInitial, setDateInitial] = useState("");
-  const [dateFinal, setDateFinal] = useState("");
+  const {
+    dashboardFilters: filters,
+    setDashboardFilters: setFilters,
+    operations,
+    numbers: selectedNumbers,
+    setNumbers: setSelectedNumbers,
+    suspects: selectedSuspects,
+    setSuspects: setSelectedSuspects,
+  } = useContext(AppContext);
+
+  const operationIds = useMemo(
+    () => operations.map((op) => op.id),
+    [operations]
+  );
+  const { suspects, numbers } = useSuspects({
+    searchTerm: "",
+    operationIds: operationIds,
+  });
+
+  const suspectOptions: Option[] = useMemo(() => {
+    return suspects.map((suspect: Suspect) => ({
+      id: suspect.id.toString(),
+      label: suspect.apelido,
+    }));
+  }, [suspects]);
+
+  const numberOptions: Option[] = useMemo(() => {
+    return numbers.map((number: Number) => ({
+      id: number.id.toString(),
+      label: number.numero,
+    }));
+  }, [numbers]);
+
+  const selectedSuspectIds = useMemo(() => {
+    return selectedSuspects.map((suspect) => suspect.id.toString());
+  }, [selectedSuspects]);
+
+  const selectedNumberIds = useMemo(() => {
+    return selectedNumbers.map((number) => number.id.toString());
+  }, [selectedNumbers]);
+
+  const [expanded, setExpanded] = useState(true);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!operations[0] && !numbers[0] && !suspects[0]) {
+      navigate("/operacoes");
+    }
+  }, [operations, numbers, suspects, navigate]);
+
+  const { teiaData } = useTeiaMessageCount();
+  const { teiaData: teiaIpData } = useTeiaIp();
 
   const [nodes, setNodes] = useState<WebNode[]>([]);
   const [links, setLinks] = useState<WebLink[]>([]);
+  const [ipOptions, setIpOptions] = useState<Option[]>([]);
+  const toggleExpanded = () => {
+    setExpanded(!expanded);
+  };
+  useEffect(() => {
+    if (!teiaData && filters.chart === FilterType.INTERACTIONS) return;
+    if (!teiaIpData && filters.chart === FilterType.IP) return;
 
-  async function handleWebChart() {
-    await createWeb({
-      operationId: operations.map((op) => op.id),
-      targetId: numbers.map((num) => num.id),
-      suspectId: suspects.map((suspect) => suspect.id),
-    }).then((response) => {
-      const newNodes = [...response.nodes];
+    const rawNodes =
+      filters.chart === FilterType.INTERACTIONS
+        ? teiaData.nodes
+        : teiaIpData.nodes;
+    const rawLinks =
+      filters.chart === FilterType.INTERACTIONS
+        ? teiaData.links
+        : teiaIpData.links;
 
-      // Map through links and create missing target nodes
-      response.links.forEach((link) => {
-        const targetExists = newNodes.some((node) => node.id === link.target);
-        if (!targetExists) {
-          newNodes.push({
-            id: link.target,
-            group: 6,
-          });
-        }
-      });
+    const knownNodeIds = new Set(rawNodes.map((n) => n.id));
+    const allTargetIds = rawLinks.map((l) => l.target);
+    const missingTargetNodes = allTargetIds
+      .filter((id) => !knownNodeIds.has(id))
+      .map((id) => ({ id, group: 6 }));
 
-      setNodes(newNodes);
-      setLinks(response.links);
+    const finalNodes: TeiaNode[] = [...rawNodes, ...missingTargetNodes];
+    const finalLinks: TeiaLink[] = rawLinks;
+
+    setNodes(finalNodes);
+    setLinks(finalLinks);
+  }, [teiaData, teiaIpData, filters.chart]);
+
+  const handleWebChange = (val: FilterType) => {
+    setFilters({
+      ...filters,
+      chart: val,
+      group: MessageFilterGroup.Ambos,
+      type: MessageFilterType.Todos,
     });
-  }
+  };
 
   useEffect(() => {
-    handleWebChart();
-  }, []);
-
-  // Filtragem dos nós e links
-  // TODO: Remover mockData, usar nodes e links do handleWebChart, adicionar datas
-  const mockData = {
-    nodes: [{ id: "Alvo 1", group: 3 }],
-    links: [
-      { source: "Alvo 1", target: "Marinho", value: 342, date: "2024-06-01" },
-    ],
-  };
-  const options = mockData.nodes
-    .filter((x) => x.group === 3)
-    .map((node) => node.id);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const filteredData = useMemo(() => {
-    let filteredLinks = mockData.links;
-
-    // Filtro por datas
-    // if (dateInitial || dateFinal) {
-    //   filteredLinks = filteredLinks.filter((link) => {
-    //     const linkDate = dayjs(link.date);
-    //     const afterInitial = dateInitial
-    //       ? linkDate.isAfter(dayjs(dateInitial)) ||
-    //         linkDate.isSame(dayjs(dateInitial))
-    //       : true;
-    //     const beforeFinal = dateFinal
-    //       ? linkDate.isBefore(dayjs(dateFinal)) ||
-    //         linkDate.isSame(dayjs(dateFinal))
-    //       : true;
-    //     return afterInitial && beforeFinal;
-    //   });
-    // }
-
-    // Filtro por alvos selecionados
-    if (webChartFilters.options.length > 0) {
-      filteredLinks = filteredLinks.filter(
-        (link) =>
-          webChartFilters.options.includes(link.source) ||
-          webChartFilters.options.includes(link.target)
-      );
+    if (filters.chart === FilterType.IP) {
+      setIpOptions(nodes.map((node) => ({
+        id: node.id.toString(),
+        label: node.id,
+      })) ?? []);
     }
-
-    // Filtro por Grupo
-    if (webChartFilters.group !== "Ambos") {
-      if (webChartFilters.group === "Grupo") {
-        filteredLinks = filteredLinks.filter((link) => {
-          const sourceNode = mockData.nodes.find((n) => n.id === link.source);
-          const targetNode = mockData.nodes.find((n) => n.id === link.target);
-          return sourceNode?.group === 4 || targetNode?.group === 4;
-        });
-      } else if (webChartFilters.group === "Número") {
-        filteredLinks = filteredLinks.filter((link) => {
-          const sourceNode = mockData.nodes.find((n) => n.id === link.source);
-          const targetNode = mockData.nodes.find((n) => n.id === link.target);
-          return sourceNode?.group !== 4 && targetNode?.group !== 4;
-        });
-      }
-    }
-
-    // Filtro de Simetria
-    if (webChartFilters.symmetry !== "Ambos") {
-      filteredLinks = filteredLinks.filter((link) => {
-        const sourceNode = mockData.nodes.find((n) => n.id === link.source);
-        const targetNode = mockData.nodes.find((n) => n.id === link.target);
-        if (!sourceNode || !targetNode) return false;
-        if (webChartFilters.symmetry === "Simétricos") {
-          return sourceNode.group === targetNode.group;
-        } else if (webChartFilters.symmetry === "Assimétricos") {
-          return sourceNode.group !== targetNode.group;
-        }
-        return true;
-      });
-    }
-
-    // Filtro por Tipo (apenas exemplo, pois não há campo de tipo real)
-    // Aqui não há campo real, então não filtra nada
-
-    // Agora, só exibe nós que participam de algum link visível
-    const nodeIds = new Set(filteredLinks.flatMap((l) => [l.source, l.target]));
-    const filteredNodes = nodes.filter((n) => nodeIds.has(n.id));
-
-    return { nodes: filteredNodes, links: filteredLinks };
-  }, [webChartFilters, dateInitial, dateFinal]);
+  }, [nodes, filters.chart]);
 
   return (
     <Box
@@ -178,13 +203,65 @@ const WebRoute: React.FC = () => {
       height="100vh"
       display="flex"
       flexDirection="column"
-      padding="1rem 0 0 0"
+      padding="0"
     >
-      <Box display="flex" flexDirection="column" gap="1rem" px="1rem">
-        <Box
+      <Box
+        display={"flex"}
+        flexDirection={"column"}
+        justifyContent={"space-between"}
+        borderBottom={expanded ? "1px solid #e0e0e0" : "none"}
+      >
+        <Collapse in={expanded} timeout="auto">
+          {filters.chart === FilterType.INTERACTIONS ? <Box
+            display="flex"
+            flexDirection="column"
+            gap="1rem"
+            px="1rem"
+            pt="1rem"
+            sx={{
+              width: "fit-content",
+              minWidth: "27rem",
+              px: "1rem",
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.5rem",
+            }}
+          >
+            <Typography
+              fontFamily={"Inter, sans-serif"}
+              fontWeight={600}
+              fontSize={"1.25rem"}
+            >
+              Seleção de Alvos
+            </Typography>
+            <MultiSelect
+              style="gray"
+              placeholder={"Selecione os nomes"}
+              height="53px"
+              options={[...suspectOptions, ...numberOptions]}
+              selectedOptions={[...selectedSuspectIds, ...selectedNumberIds]}
+              onChange={(selected) => {
+                const selectedSuspects = suspects.filter((opt: Suspect) =>
+                  selected.includes(opt.id.toString())
+                );
+                const selectedNumbers = numbers.filter((opt: Number) =>
+                  selected.includes(opt.id.toString())
+                );
+                setSelectedSuspects(selectedSuspects);
+                setSelectedNumbers(selectedNumbers);
+              }}
+            />
+          </Box> : 
+          <Box
+          display="flex"
+          flexDirection="column"
+          gap="1rem"
+          px="1rem"
+          pt="1rem"
           sx={{
             width: "fit-content",
-            minWidth: "25rem",
+            minWidth: "27rem",
+            px: "1rem",
             display: "flex",
             flexDirection: "column",
             gap: "0.5rem",
@@ -195,166 +272,246 @@ const WebRoute: React.FC = () => {
             fontWeight={600}
             fontSize={"1.25rem"}
           >
-            Seleção de Alvos
+            Seleção de IPs
           </Typography>
           <MultiSelect
             style="gray"
-            placeholder="Selecione os nomes"
+            placeholder={"Selecione os IPs"}
             height="53px"
-            options={options}
-            selectedOptions={webChartFilters.options}
-            onChange={(opts) =>
-              setWebChartFilters({ ...webChartFilters, options: opts })
-            }
+            options={ipOptions}
+            selectedOptions={filters.options}
+            onChange={(selected) => {
+              setFilters({
+                ...filters,
+                options: selected,
+              });
+            }}
           />
         </Box>
+              
+          }
 
-        <Box width="100%" display="flex" flexDirection="column" gap="0.5rem">
-          <Typography
-            variant="caption"
-            fontSize={"14px"}
-            fontFamily="Inter, sans-serif"
-            fontWeight={600}
+          <Box
+            width={"100%"}
+            display={"flex"}
+            px={"1rem"}
+            py={"0.7rem"}
+            flexDirection={"row"}
+            justifyContent={"left"}
+            gap={"1rem"}
+            flexWrap={"wrap"}
+            flexGrow={1}
+            sx={{ alignItems: "center" }}
           >
-            Filtrar por:
-          </Typography>
-
-          <Box display="flex" flexDirection="row" flexWrap="wrap" gap="2rem">
-            <TextField
-              select
-              label="Grupo"
-              value={webChartFilters.group}
-              onChange={(e) =>
-                setWebChartFilters({
-                  ...webChartFilters,
-                  group: e.target.value,
-                })
-              }
-              sx={{ ...focusedTextFieldStyles, backgroundColor: "transparent" }}
+            <Box
+              sx={{
+                height: "fit-content",
+                display: "flex",
+                flexDirection: "column",
+                flexWrap: "wrap",
+                justifyContent: "center",
+                gap: "0.5rem",
+              }}
             >
-              {["Grupo", "Número", "Ambos"].map((value) => (
-                <MenuItem key={value} value={value} sx={menuItemStyles}>
-                  {value}
-                </MenuItem>
-              ))}
-            </TextField>
-
-            <TextField
-              select
-              label="Tipo"
-              value={webChartFilters.type}
-              onChange={(e) =>
-                setWebChartFilters({ ...webChartFilters, type: e.target.value })
-              }
-              sx={focusedTextFieldStyles}
-            >
-              <MenuItem value="Texto" sx={menuItemStyles}>
-                Texto
-              </MenuItem>
-              <MenuItem
-                value="Vídeo"
-                sx={{
-                  ...menuItemStyles,
-                }}
+              <Typography
+                fontFamily={"Inter, sans-serif"}
+                fontWeight={600}
+                fontSize={"1.25rem"}
               >
-                Vídeo
-              </MenuItem>
-              <MenuItem value="Todos" sx={menuItemStyles}>
-                Todos
-              </MenuItem>
-            </TextField>
-
-            <TextField
-              select
-              label="Simetria"
-              value={webChartFilters.symmetry}
-              onChange={(e) =>
-                setWebChartFilters({
-                  ...webChartFilters,
-                  symmetry: e.target.value,
-                })
-              }
-              sx={{ ...focusedTextFieldStyles, minWidth: "8rem" }}
+                Seleção de Gráficos
+              </Typography>
+              <ViewSelectionFilter
+                filters={graficFilters}
+                selectedFilter={filters.chart?.toString() ?? ""}
+                onChange={(val: FilterType) => handleWebChange(val)}
+              />
+            </Box>
+            <Box
+              width="100%"
+              display="flex"
+              flexDirection="column"
+              gap="0.75rem"
             >
-              {["Simétricos", "Assimétricos", "Ambos"].map((value) => (
-                <MenuItem key={value} value={value} sx={menuItemStyles}>
-                  {value}
-                </MenuItem>
-              ))}
-            </TextField>
+              <Typography>Filtrar por:</Typography>
+              <Box
+                display={"flex"}
+                flexDirection={"row"}
+                gap={"2rem"}
+                flexWrap={"wrap"}
+              >
+                <TextField
+                  select
+                  label="Grupo"
+                  value={filters.group}
+                  onChange={(e) =>
+                    setFilters({
+                      ...filters,
+                      group: e.target.value as MessageFilterGroup,
+                    })
+                  }
+                  sx={{
+                    ...focusedTextFieldStyles,
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  {filters.chart === FilterType.INTERACTIONS
+                    ? ["Ambos", "Grupo", "Número"].map((value) => (
+                        <MenuItem key={value} value={value} sx={menuItemStyles}>
+                          {value}
+                        </MenuItem>
+                      ))
+                    : ["Ambos", "IP", "Interlocutor"].map((value) => (
+                        <MenuItem key={value} value={value} sx={menuItemStyles}>
+                          {value}
+                        </MenuItem>
+                      ))}
+                </TextField>
 
-            <TextField
-              id="date-initial"
-              InputLabelProps={{ shrink: true }}
-              label="Data Inicial"
-              type="date"
-              value={dateInitial}
-              onChange={(e) => setDateInitial(e.target.value)}
-              sx={{ ...focusedTextFieldStyles, minWidth: "8rem" }}
-            />
+                <TextField
+                  select
+                  label="Tipo"
+                  value={filters.type}
+                  onChange={(e) =>
+                    setFilters({
+                      ...filters,
+                      type: e.target.value as MessageFilterType,
+                    })
+                  }
+                  sx={focusedTextFieldStyles}
+                >
+                  {filters.chart === FilterType.INTERACTIONS
+                    ? ["Todos", "Texto", "Vídeo", "Áudio"].map((value) => (
+                        <MenuItem key={value} value={value} sx={menuItemStyles}>
+                          {value}
+                        </MenuItem>
+                      ))
+                    : ["Todos", "IP", "Interlocutor"].map((value) => (
+                        <MenuItem key={value} value={value} sx={menuItemStyles}>
+                          {value}
+                        </MenuItem>
+                      ))}
+                </TextField>
 
-            <TextField
-              id="date-final"
-              InputLabelProps={{ shrink: true }}
-              label="Data Final"
-              type="date"
-              value={dateFinal}
-              onChange={(e) => setDateFinal(e.target.value)}
-              sx={{ ...focusedTextFieldStyles, minWidth: "8rem" }}
-            />
-          </Box>
-        </Box>
+                <TextField
+                  id="date-initial"
+                  InputLabelProps={{ shrink: true }}
+                  label="Data Inicial"
+                  type="date"
+                  value={filters.dateInitial}
+                  onChange={(e) =>
+                    setFilters({ ...filters, dateInitial: e.target.value })
+                  }
+                  sx={focusedTextFieldStyles}
+                />
 
-        {/* Legenda dos Turnos */}
-        <Box
-          display="flex"
-          gap="1rem"
-          alignItems="center"
-          mt="0.2rem"
-          mb="0.8rem"
-        >
-          <Typography
-            variant="subtitle2"
-            fontFamily="Inter, sans-serif"
-            fontWeight={600}
-            fontSize="0.95rem"
-          >
-            Legenda de Turnos:
-          </Typography>
-          <Box display="flex" alignItems="center" gap="0.3rem">
+                <TextField
+                  id="date-final"
+                  InputLabelProps={{ shrink: true }}
+                  label="Data Final"
+                  type="date"
+                  value={filters.dateFinal}
+                  onChange={(e) =>
+                    setFilters({ ...filters, dateFinal: e.target.value })
+                  }
+                  sx={focusedTextFieldStyles}
+                />
+
+                <TextField
+                  id="time-initial"
+                  InputLabelProps={{ shrink: true }}
+                  label="Horário Inicial"
+                  type="time"
+                  value={filters.timeInitial}
+                  onChange={(e) =>
+                    setFilters({ ...filters, timeInitial: e.target.value })
+                  }
+                  sx={focusedTextFieldStyles}
+                />
+
+                <TextField
+                  id="time-final"
+                  InputLabelProps={{ shrink: true }}
+                  label="Horário Final"
+                  type="time"
+                  value={filters.timeFinal}
+                  onChange={(e) =>
+                    setFilters({ ...filters, timeFinal: e.target.value })
+                  }
+                  sx={focusedTextFieldStyles}
+                />
+              </Box>
+            </Box>
+
+            {/* Legenda dos Turnos */}
             <Box
-              width="14px"
-              height="14px"
-              bgcolor="#D62727"
-              borderRadius="50%"
-            />
-            <Typography variant="body2" fontSize="0.95rem">
-              Alvos
-            </Typography>
+              display="flex"
+              gap="1.5rem"
+              alignItems="center"
+              mt="0.5rem"
+              sx={{
+                transition: "all 0.3s ease-in-out",
+              }}
+            >
+              <Typography
+                variant="subtitle2"
+                fontFamily="Inter, sans-serif"
+                fontWeight={600}
+                fontSize="0.95rem"
+                color="text.primary"
+              >
+                Legenda de Turnos:
+              </Typography>
+              <Box display="flex" gap="1rem" flexWrap="wrap">
+                <Box display="flex" alignItems="center" gap="0.5rem">
+                  <Box
+                    width="14px"
+                    height="14px"
+                    bgcolor="#D62727"
+                    borderRadius="50%"
+                    sx={{
+                      transition: "all 0.3s ease-in-out",
+                      "&:hover": {
+                        transform: "scale(1.1)",
+                      },
+                    }}
+                  />
+                  <Typography
+                    variant="body2"
+                    fontSize="0.95rem"
+                    color="text.primary"
+                  >
+                    Alvos
+                  </Typography>
+                </Box>
+
+                <Box display="flex" alignItems="center" gap="0.5rem">
+                  <Box
+                    width="14px"
+                    height="14px"
+                    bgcolor="#FFD700"
+                    borderRadius="50%"
+                    sx={{
+                      transition: "all 0.3s ease-in-out",
+                      "&:hover": {
+                        transform: "scale(1.1)",
+                      },
+                    }}
+                  />
+                  <Typography
+                    variant="body2"
+                    fontSize="0.95rem"
+                    color="text.primary"
+                  >
+                    Suspeitos
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
           </Box>
-          <Box display="flex" alignItems="center" gap="0.3rem">
-            <Box
-              width="14px"
-              height="14px"
-              bgcolor="#FFA000"
-              borderRadius="50%"
-            />
-            <Typography variant="body2" fontSize="0.95rem">
-              Suspeitos
-            </Typography>
-          </Box>
-          <Box display="flex" alignItems="center" gap="0.3rem">
-            <Box
-              width="14px"
-              height="14px"
-              bgcolor="#757575"
-              borderRadius="50%"
-            />
-            <Typography variant="body2" fontSize="0.95rem">
-              Interceptações
-            </Typography>
-          </Box>
-        </Box>
+        </Collapse>
+        <IconButton onClick={toggleExpanded} size="small" disableRipple>
+          {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+        </IconButton>
       </Box>
 
       <Box
@@ -373,7 +530,14 @@ const WebRoute: React.FC = () => {
           justifyContent="center"
           alignItems="center"
         >
-          <WebChart data={{ nodes: nodes, links: links }} />
+          <WebChart
+            data={
+              {
+                nodes: nodes,
+                links: links,
+              } as Data
+            }
+          />
         </Box>
       </Box>
     </Box>

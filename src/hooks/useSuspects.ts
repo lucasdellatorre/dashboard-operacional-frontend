@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect, useCallback } from "react";
 import { normalizeString } from "../utils/formatUtils";
 import { api } from "../server/service";
 import { GenericData } from "../interface/table/tableInterface";
+import { ResponseApi } from "../interface/responseInterface";
 
 export interface SuspectOperation {
   id: number;
@@ -75,10 +76,7 @@ export const useSuspects = ({ searchTerm, operationIds }: UseSuspectsProps) => {
         );
         return response.data;
       } catch (err) {
-        console.error("Erro ao criar suspeito:", err);
-
         const message = "Erro ao criar suspeito";
-
         throw new Error(message);
       }
     },
@@ -90,12 +88,10 @@ export const useSuspects = ({ searchTerm, operationIds }: UseSuspectsProps) => {
     setError(null);
 
     const url = `/api/numeros/operacao/${operationIds.join(",")}`;
-
     api
       .get<SuspectList>(url)
       .then(({ data }) => setData(data))
       .catch((err) => {
-        console.error("Erro ao carregar alvos:", err);
         setError("Não foi possível carregar os alvos.");
       })
       .finally(() => setLoading(false));
@@ -103,7 +99,7 @@ export const useSuspects = ({ searchTerm, operationIds }: UseSuspectsProps) => {
 
   useEffect(() => {
     fetchSuspects();
-  }, [operationIds, fetchSuspects]);
+  }, [operationIds]);
 
   const suspects: Suspect[] = useMemo(() => {
     const search = normalizeString(searchTerm.trim());
@@ -147,9 +143,24 @@ export const useSuspects = ({ searchTerm, operationIds }: UseSuspectsProps) => {
       }));
   }, [searchTerm, data.numeros]);
 
+  const deleteSuspect = async (id: number): Promise<ResponseApi<void>> => {
+    try {
+      await api.delete(`/api/suspeito/${id}`);
+
+      fetchSuspects();
+      return {
+        isSuccess: true,
+      };
+    } catch (error) {
+      console.log("Erro ao deletar um alvo", error);
+      throw new Error("Erro ao deletar um alvo");
+    }
+  };
+
   return {
     fetchSuspects,
     createSuspect,
+    deleteSuspect,
     suspects,
     numbers,
     loading,

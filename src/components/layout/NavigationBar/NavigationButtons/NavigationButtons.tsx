@@ -10,6 +10,7 @@ import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import NavigationButton from "./NavigationButton/NavigationButton";
 import ToggleButton from "../ToggleButton/ToggleButton";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { useContext } from "react";
 import { AppContext } from "../../../../context/AppContext";
 
@@ -17,12 +18,14 @@ interface NavigationButtonsProps {
   isCollapsed: boolean;
   onToggle: () => void;
   logout: () => void;
+  exportAnalysis?: () => void;
 }
 
 const NavigationButtons: React.FC<NavigationButtonsProps> = ({
   isCollapsed,
   onToggle,
   logout,
+  exportAnalysis,
 }) => {
   const location = useLocation();
   const isActive = (path: string): boolean => location.pathname === path;
@@ -92,6 +95,17 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
       </Box>
 
       <Box>
+        {hasTargets && (
+          <NavigationButton
+            icon={<CloudUploadIcon />}
+            label="Exportar Análise"
+            isCollapsed={isCollapsed}
+            isActive={false}
+            onClick={exportAnalysis}
+            isUpload={true}
+          />
+        )}
+
         <NavigationButton
           icon={<LogoutIcon />}
           label="Logout"

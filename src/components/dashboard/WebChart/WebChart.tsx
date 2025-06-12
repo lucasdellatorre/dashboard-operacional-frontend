@@ -1,36 +1,33 @@
 import * as d3 from "d3";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 interface Node extends d3.SimulationNodeDatum {
   id: string;
   group: number;
+  suspeitoId?: string;
 }
 
 interface Link extends d3.SimulationLinkDatum<Node> {
   value: number;
 }
 
-interface Data {
+export interface Data {
   links: Link[];
   nodes: Node[];
 }
 
 interface WebChartInterface {
   data: Data;
-  isIp?: boolean;
 }
-
-// example of data:
-// {
-//   links: [
-//     { source: "Alvo", target: "Intercpt 2", value: 50 },
-//     { source: "Alvo", target: "Intercpt 3", value: 100 },
-//   ],
-//   nodes: [{ id: "Alvo", group: 1 }, { id: "Intercpt 2", group: 2 }]
-// }
 
 const Chart: React.FC<WebChartInterface> = ({ data }) => {
   const svgRef = useRef<SVGSVGElement>(null);
+  const [tooltip, setTooltip] = useState<{ display: boolean; value: number; x: number; y: number }>({
+    display: false,
+    value: 0,
+    x: 0,
+    y: 0
+  });
 
   useEffect(() => {
     if (!svgRef.current) return;
@@ -42,47 +39,14 @@ const Chart: React.FC<WebChartInterface> = ({ data }) => {
     const width = svgContainer ? svgContainer.clientWidth : 928;
     const height = svgContainer ? svgContainer.clientHeight : 600;
 
-    const color = d3
-      .scaleOrdinal<number, string>()
-      .domain([1, 2, 3, 4, 5, 6, 7])
-      .range([
-        "#FFB74D", // 6h-12h
-        "#4A90E2", // 12h-18h
-        "#1A237E", // 18h-00h
-        "#0D0221", // 00h-6h
-        "#D62727", // Targets
-        "#757575", // Intercepts
-        "#FFA000", // Suspects
-      ]);
-
-    const links = data.links.map((d) => ({ ...d }));
-    const nodes = data.nodes.map((d) => ({ ...d }));
-
-    // Sort links by value to identify top 5 and next 10
-    const sortedLinks = [...links].sort(
-      (a, b) => (b.value || 0) - (a.value || 0)
-    );
-    const top5Values = new Set(
-      sortedLinks.slice(0, 5).map((link) => link.value)
-    );
-    const next10Values = new Set(
-      sortedLinks.slice(5, 15).map((link) => link.value)
-    );
-
-    const simulation = d3
-      .forceSimulation<Node>(nodes)
-      .force(
-        "link",
-        d3
-          .forceLink<Node, Link>(links)
-          .id((d) => d.id)
-          .distance(100)
-      )
-      .force("charge", d3.forceManyBody().strength(-2000))
-      .force("center", d3.forceCenter(width / 2, height / 2))
-      .force("x", d3.forceX(width / 2).strength(0.1)) // Força para manter nodos no centro X
-      .force("y", d3.forceY(height / 2).strength(0.1)) // Força para manter nodos no centro Y
-      .force("collision", d3.forceCollide().radius(30));
+    // TODO: unify colors
+    const groupColorMap: Record<number, string> = {
+      1: "#FFD700", // Manhã
+      2: "#FFD700", // Tarde
+      3: "#FFD700", // Noite
+      4: "#D62727", // Alvos
+      5: "#FFD700", // Madrugada
+    };
 
     const svg = d3
       .select(svgRef.current)
@@ -107,17 +71,57 @@ const Chart: React.FC<WebChartInterface> = ({ data }) => {
         })
     );
 
+    const links = data.links.map((d) => ({ ...d }));
+    const nodes = data.nodes.map((d) => ({ ...d }));
+
+    // Sort links by value to identify top 5 and next 10
+    const sortedLinks = [...links].sort(
+      (a, b) => (b.value || 0) - (a.value || 0)
+    );
+    const top10Values = new Set(
+      sortedLinks.slice(0, 10).map((link) => link.value)
+    );
+    const next10Values = new Set(
+      sortedLinks.slice(10, 20).map((link) => link.value)
+    );
+
+    const simulation = d3
+      .forceSimulation<Node>(nodes)
+      .force(
+        "link",
+        d3
+          .forceLink<Node, Link>(links)
+          .id((d) => d.id)
+          .distance(100)
+      )
+      .force("charge", d3.forceManyBody().strength(-2500))
+      .force("center", d3.forceCenter(width / 2, height / 2))
+      .force("x", d3.forceX(width / 2).strength(0.1))
+      .force("y", d3.forceY(height / 2).strength(0.1))
+      .force("collision", d3.forceCollide().radius(30));
+
     const link = g
       .append("g")
       .attr("stroke-opacity", 0.6)
       .selectAll<SVGLineElement, Link>("line")
       .data(links)
       .join("line")
-      .attr("stroke-width", (d) => Math.sqrt(d.value) / 2)
+      .attr("stroke-width", (d) => Math.sqrt(d.value))
       .attr("stroke", (d) => {
-        if (top5Values.has(d.value)) return "#ff4d4d"; // Red for top 5
-        if (next10Values.has(d.value)) return "#FFA000"; // Yellow for next 10
+        if (links.length >= 15 && top10Values.has(d.value)) return "#FF4D4D"; // Red for top 10
+        if (links.length >= 25 && next10Values.has(d.value)) return "#FFA000"; // Yellow for next 10
         return "#999"; // Default gray for the rest
+      })
+      .on("mouseover", (event, d) => {
+        setTooltip({
+          display: true,
+          value: d.value,
+          x: event.pageX,
+          y: event.pageY,
+        });
+      })
+      .on("mouseout", () => {
+        setTooltip((prevState) => ({ ...prevState, display: false }));
       });
 
     const node = g
@@ -128,10 +132,16 @@ const Chart: React.FC<WebChartInterface> = ({ data }) => {
       .data(nodes)
       .join("circle")
       .attr("r", 15)
-      .attr("fill", (d) => color(d.group))
-      .style("cursor", "pointer")
+      .attr("fill", (d) => groupColorMap[d.group] || "#757575")
+      .style("cursor", (d) =>
+        d.group !== 6 && window.location.pathname === "/teia"
+          ? "pointer"
+          : "default"
+      )
       .on("dblclick", (_event, d) => {
-        window.open(`/node/${d.id}`, "_blank");
+        if (d.group !== 6 && window.location.pathname === "/teia") {
+          window.open(`/dashboard/detalhesSuspeito/${d.suspeitoId}`, "_blank");
+        }
       });
 
     const nodeText = g
@@ -143,7 +153,7 @@ const Chart: React.FC<WebChartInterface> = ({ data }) => {
       .attr("fill", "#fff")
       .attr("text-anchor", "middle")
       .attr("dy", "-2em")
-      .attr("font-size", "14px"); // Aumentando o tamanho da fonte
+      .attr("font-size", "14px");
 
     node.call(
       d3
@@ -160,9 +170,9 @@ const Chart: React.FC<WebChartInterface> = ({ data }) => {
         .attr("x2", (d) => (d.target as Node).x || 0)
         .attr("y2", (d) => (d.target as Node).y || 0);
 
-      node.attr("cx", (d) => d.x || 0).attr("cy", (d) => d.y || 0); // Node position
+      node.attr("cx", (d) => d.x || 0).attr("cy", (d) => d.y || 0);
 
-      nodeText.attr("x", (d) => d.x || 0).attr("y", (d) => d.y || 0); // Node text
+      nodeText.attr("x", (d) => d.x || 0).attr("y", (d) => d.y || 0);
     }
 
     function dragstarted(event: d3.D3DragEvent<SVGCircleElement, Node, Node>) {
@@ -189,7 +199,27 @@ const Chart: React.FC<WebChartInterface> = ({ data }) => {
     };
   }, [data]);
 
-  return <svg ref={svgRef} />;
+  return (
+    <>
+      <svg ref={svgRef} />
+      {tooltip.display && (
+        <div
+          style={{
+            position: "absolute",
+            top: tooltip.y + 10,
+            left: tooltip.x + 10,
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            color: "white",
+            padding: "5px",
+            borderRadius: "3px",
+            pointerEvents: "none",
+          }}
+        >
+          Value: {tooltip.value}
+        </div>
+      )}
+    </>
+  );
 };
 
 export default Chart;
