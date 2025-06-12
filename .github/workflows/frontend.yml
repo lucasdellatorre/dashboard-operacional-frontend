@@ -30,7 +30,6 @@ jobs:
 
   build-and-deploy:
     name: Build and Deploy to Heroku
-    needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     env:
