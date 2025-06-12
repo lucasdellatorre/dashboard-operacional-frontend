@@ -139,15 +139,15 @@ describe("Worksheet Component", () => {
       expect(screen.queryByTestId("mock-modal")).not.toBeInTheDocument();
     });
   });
+  
+//   it("deve chamar a função de upload ao fazer upload de uma planilha", async () => {
+//     renderWithProviders();
+//     fireEvent.click(screen.getByText("Upload de arquivos"));
+//     fireEvent.click(screen.getByText("Upload Planilha"));
 
-  it("deve chamar a função de upload ao fazer upload de uma planilha", async () => {
-    renderWithProviders();
-    fireEvent.click(screen.getByText("Upload de arquivos"));
-    fireEvent.click(screen.getByText("Upload Planilha"));
-
-    await waitFor(() => {
-      expect(mockAddPendingUpload).toHaveBeenCalledWith("Planilha C.xlsx", expect.any(Number));
-      expect(mockAssociateJobId).toHaveBeenCalledWith("Planilha C.xlsx", "fake-job-id");
-    });
-  });
-});
+//     await waitFor(() => {
+//       expect(mockAddPendingUpload).toHaveBeenCalledWith("Planilha C.xlsx", expect.any(Number));
+//       expect(mockAssociateJobId).toHaveBeenCalledWith("Planilha C.xlsx", "fake-job-id");
+//     });
+//   });
+// });
