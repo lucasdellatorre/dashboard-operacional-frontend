@@ -1,17 +1,29 @@
-import { Box, MenuItem, TextField, Typography, Collapse, IconButton } from "@mui/material";
+import {
+  Box,
+  MenuItem,
+  TextField,
+  Typography,
+  Collapse,
+  IconButton,
+} from "@mui/material";
 import React, { useState, useMemo, useContext, useEffect } from "react";
 import WebChart from "../../components/dashboard/WebChart/WebChart";
 import MultiSelect, { Option } from "../../components/multiSelect";
 import { AppContext } from "../../context/AppContext";
-import { createWeb } from "../../controllers/webController";
 import { WebLink, WebNode } from "../../interface/web/webInterface";
 import dayjs from "dayjs";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { useNavigate } from "react-router-dom";
-import { TeiaLink, TeiaNode, useTeiaMessageCount } from "../../hooks/useTeiaMessageCount";
-import { FilterType } from "../../enum/ViewSelectionFilterEnum";
-import { MessageFilterGroup, MessageFilterType } from "../../interface/dashboard/chartInterface";
+import {
+  TeiaLink,
+  TeiaNode,
+  useTeiaMessageCount,
+} from "../../hooks/useTeiaMessageCount";
+import {
+  MessageFilterGroup,
+  MessageFilterType,
+} from "../../interface/dashboard/chartInterface";
 
 const menuItemStyles = {
   padding: "4px 16px",
@@ -67,7 +79,7 @@ const WebRoute: React.FC = () => {
     setWebChartFilters: setFilters,
     operations,
     numbers,
-    suspects
+    suspects,
   } = useContext(AppContext);
 
   const [expanded, setExpanded] = useState(true);
@@ -78,22 +90,9 @@ const WebRoute: React.FC = () => {
     if (!operations[0] && !numbers[0] && !suspects[0]) {
       navigate("/operacoes");
     }
-  }, [operations, numbers, suspects, navigate])
+  }, [operations, numbers, suspects, navigate]);
 
-  const {
-    teiaData,
-    isLoading,
-    error,
-  } = useTeiaMessageCount();
-
-  // Definir data inicial como 1 mês atrás
-  const oneMonthAgo = new Date();
-  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-  const [dateInitial, setDateInitial] = useState(oneMonthAgo.toISOString().split('T')[0]);
-  const [dateFinal, setDateFinal] = useState("");
-  const [timeInitial, setTimeInitial] = useState("00:00");
-  const [timeFinal, setTimeFinal] = useState("23:59");
-  const [selectedShift, setSelectedShift] = useState("Todos");
+  const { teiaData } = useTeiaMessageCount();
 
   const [nodes, setNodes] = useState<WebNode[]>([]);
   const [links, setLinks] = useState<WebLink[]>([]);
@@ -125,16 +124,16 @@ const WebRoute: React.FC = () => {
     let filteredLinks = links;
 
     // Filtro por datas
-    if (dateInitial || dateFinal) {
+    if (filters.dateInitial || filters.dateFinal) {
       filteredLinks = filteredLinks.filter((link) => {
         const linkDate = dayjs(link.date);
-        const afterInitial = dateInitial
-          ? linkDate.isAfter(dayjs(dateInitial)) ||
-          linkDate.isSame(dayjs(dateInitial))
+        const afterInitial = filters.dateInitial
+          ? linkDate.isAfter(dayjs(filters.dateInitial)) ||
+            linkDate.isSame(dayjs(filters.dateInitial))
           : true;
-        const beforeFinal = dateFinal
-          ? linkDate.isBefore(dayjs(dateFinal)) ||
-          linkDate.isSame(dayjs(dateFinal))
+        const beforeFinal = filters.dateFinal
+          ? linkDate.isBefore(dayjs(filters.dateFinal)) ||
+            linkDate.isSame(dayjs(filters.dateFinal))
           : true;
         return afterInitial && beforeFinal;
       });
@@ -166,21 +165,12 @@ const WebRoute: React.FC = () => {
       }
     }
 
-    // Filtro por Tipo
-    if (filters.type !== "Todos") {
-      filteredLinks = filteredLinks.filter((link) => {
-        // Aqui você deve implementar a lógica de filtro por tipo
-        // baseado nos dados reais que você recebe da API
-        return true; // Temporário até implementar a lógica real
-      });
-    }
-
     // Agora, só exibe nós que participam de algum link visível
     const nodeIds = new Set(filteredLinks.flatMap((l) => [l.source, l.target]));
     const filteredNodes = nodes.filter((n) => nodeIds.has(n.id));
 
     return { nodes: filteredNodes, links: filteredLinks };
-  }, [filters, dateInitial, dateFinal, nodes, links]);
+  }, [filters, nodes, links]);
 
   const options: Option[] = nodes.map((node) => ({
     id: node.id,
@@ -211,7 +201,7 @@ const WebRoute: React.FC = () => {
             flexDirection="column"
             gap="1.5rem"
             px="1.5rem"
-            py="1rem"
+            pt="1rem"
             sx={{
               transition: "all 0.3s ease-in-out",
             }}
@@ -239,13 +229,16 @@ const WebRoute: React.FC = () => {
                 height="53px"
                 options={options}
                 selectedOptions={filters.options}
-                onChange={(opts) =>
-                  setFilters({ ...filters, options: opts })
-                }
+                onChange={(opts) => setFilters({ ...filters, options: opts })}
               />
             </Box>
 
-            <Box width="100%" display="flex" flexDirection="column" gap="0.75rem">
+            <Box
+              width="100%"
+              display="flex"
+              flexDirection="column"
+              gap="0.75rem"
+            >
               <Typography
                 variant="caption"
                 fontSize={"14px"}
@@ -275,9 +268,12 @@ const WebRoute: React.FC = () => {
                       group: e.target.value as MessageFilterGroup,
                     })
                   }
-                  sx={{ ...focusedTextFieldStyles, backgroundColor: "transparent" }}
+                  sx={{
+                    ...focusedTextFieldStyles,
+                    backgroundColor: "transparent",
+                  }}
                 >
-                  {["Todos", "Grupo", "Número"].map((value) => (
+                  {["Ambos", "Grupo", "Número"].map((value) => (
                     <MenuItem key={value} value={value} sx={menuItemStyles}>
                       {value}
                     </MenuItem>
@@ -289,7 +285,10 @@ const WebRoute: React.FC = () => {
                   label="Tipo"
                   value={filters.type}
                   onChange={(e) =>
-                    setFilters({ ...filters, type: e.target.value as MessageFilterType })
+                    setFilters({
+                      ...filters,
+                      type: e.target.value as MessageFilterType,
+                    })
                   }
                   sx={focusedTextFieldStyles}
                 >
@@ -300,27 +299,14 @@ const WebRoute: React.FC = () => {
                   ))}
                 </TextField>
 
-                <TextField
-                  select
-                  label="Turno"
-                  value={selectedShift}
-                  onChange={(e) => setSelectedShift(e.target.value)}
-                  sx={focusedTextFieldStyles}
-                >
-                  {["Todos", "Manhã", "Tarde", "Noite"].map((value) => (
-                    <MenuItem key={value} value={value} sx={menuItemStyles}>
-                      {value}
-                    </MenuItem>
-                  ))}
-                </TextField>
 
                 <TextField
                   id="date-initial"
                   InputLabelProps={{ shrink: true }}
                   label="Data Inicial"
                   type="date"
-                  value={dateInitial}
-                  onChange={(e) => setDateInitial(e.target.value)}
+                  value={filters.dateInitial}
+                  onChange={(e) => setFilters({ ...filters, dateInitial: e.target.value })}
                   sx={focusedTextFieldStyles}
                 />
 
@@ -329,8 +315,8 @@ const WebRoute: React.FC = () => {
                   InputLabelProps={{ shrink: true }}
                   label="Data Final"
                   type="date"
-                  value={dateFinal}
-                  onChange={(e) => setDateFinal(e.target.value)}
+                  value={filters.dateFinal}
+                  onChange={(e) => setFilters({ ...filters, dateFinal: e.target.value })}
                   sx={focusedTextFieldStyles}
                 />
 
@@ -339,8 +325,8 @@ const WebRoute: React.FC = () => {
                   InputLabelProps={{ shrink: true }}
                   label="Horário Inicial"
                   type="time"
-                  value={timeInitial}
-                  onChange={(e) => setTimeInitial(e.target.value)}
+                  value={filters.timeInitial}
+                  onChange={(e) => setFilters({ ...filters, timeInitial: e.target.value })}
                   sx={focusedTextFieldStyles}
                 />
 
@@ -349,8 +335,8 @@ const WebRoute: React.FC = () => {
                   InputLabelProps={{ shrink: true }}
                   label="Horário Final"
                   type="time"
-                  value={timeFinal}
-                  onChange={(e) => setTimeFinal(e.target.value)}
+                  value={filters.timeFinal}
+                  onChange={(e) => setFilters({ ...filters, timeFinal: e.target.value })}
                   sx={focusedTextFieldStyles}
                 />
               </Box>
@@ -362,7 +348,6 @@ const WebRoute: React.FC = () => {
               gap="1.5rem"
               alignItems="center"
               mt="0.5rem"
-              mb="1rem"
               sx={{
                 transition: "all 0.3s ease-in-out",
               }}
@@ -390,7 +375,11 @@ const WebRoute: React.FC = () => {
                       },
                     }}
                   />
-                  <Typography variant="body2" fontSize="0.95rem" color="text.primary">
+                  <Typography
+                    variant="body2"
+                    fontSize="0.95rem"
+                    color="text.primary"
+                  >
                     Madrugada (00h-6h)
                   </Typography>
                 </Box>
@@ -407,7 +396,11 @@ const WebRoute: React.FC = () => {
                       },
                     }}
                   />
-                  <Typography variant="body2" fontSize="0.95rem" color="text.primary">
+                  <Typography
+                    variant="body2"
+                    fontSize="0.95rem"
+                    color="text.primary"
+                  >
                     Manhã (6h-12h)
                   </Typography>
                 </Box>
@@ -424,7 +417,11 @@ const WebRoute: React.FC = () => {
                       },
                     }}
                   />
-                  <Typography variant="body2" fontSize="0.95rem" color="text.primary">
+                  <Typography
+                    variant="body2"
+                    fontSize="0.95rem"
+                    color="text.primary"
+                  >
                     Tarde (12h-18h)
                   </Typography>
                 </Box>
@@ -441,7 +438,11 @@ const WebRoute: React.FC = () => {
                       },
                     }}
                   />
-                  <Typography variant="body2" fontSize="0.95rem" color="text.primary">
+                  <Typography
+                    variant="body2"
+                    fontSize="0.95rem"
+                    color="text.primary"
+                  >
                     Noite (18h-00h)
                   </Typography>
                 </Box>
@@ -458,7 +459,11 @@ const WebRoute: React.FC = () => {
                       },
                     }}
                   />
-                  <Typography variant="body2" fontSize="0.95rem" color="text.primary">
+                  <Typography
+                    variant="body2"
+                    fontSize="0.95rem"
+                    color="text.primary"
+                  >
                     Alvos
                   </Typography>
                 </Box>
@@ -470,12 +475,6 @@ const WebRoute: React.FC = () => {
           onClick={toggleExpanded}
           size="small"
           disableRipple
-          sx={{
-            transition: "all 0.3s ease-in-out",
-            "&:hover": {
-              transform: "scale(1.1)",
-            },
-          }}
         >
           {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
         </IconButton>

@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from "react";
 interface Node extends d3.SimulationNodeDatum {
   id: string;
   group: number;
+  suspeitoId?: string;
 }
 
 interface Link extends d3.SimulationLinkDatum<Node> {
@@ -17,17 +18,7 @@ interface Data {
 
 interface WebChartInterface {
   data: Data;
-  isIp?: boolean;
 }
-
-// example of data:
-// {
-//   links: [
-//     { source: "Alvo", target: "Intercpt 2", value: 50 },
-//     { source: "Alvo", target: "Intercpt 3", value: 100 },
-//   ],
-//   nodes: [{ id: "Alvo", group: 1 }, { id: "Intercpt 2", group: 2 }]
-// }
 
 const Chart: React.FC<WebChartInterface> = ({ data }) => {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -81,11 +72,11 @@ const Chart: React.FC<WebChartInterface> = ({ data }) => {
     const sortedLinks = [...links].sort(
       (a, b) => (b.value || 0) - (a.value || 0)
     );
-    const top5Values = new Set(
-      sortedLinks.slice(0, 5).map((link) => link.value)
+    const top10Values = new Set(
+      sortedLinks.slice(0, 10).map((link) => link.value)
     );
     const next10Values = new Set(
-      sortedLinks.slice(5, 15).map((link) => link.value)
+      sortedLinks.slice(10, 20).map((link) => link.value)
     );
 
     const simulation = d3
@@ -97,7 +88,7 @@ const Chart: React.FC<WebChartInterface> = ({ data }) => {
           .id((d) => d.id)
           .distance(100)
       )
-      .force("charge", d3.forceManyBody().strength(-2000))
+      .force("charge", d3.forceManyBody().strength(-2500))
       .force("center", d3.forceCenter(width / 2, height / 2))
       .force("x", d3.forceX(width / 2).strength(0.1))
       .force("y", d3.forceY(height / 2).strength(0.1))
@@ -109,10 +100,10 @@ const Chart: React.FC<WebChartInterface> = ({ data }) => {
       .selectAll<SVGLineElement, Link>("line")
       .data(links)
       .join("line")
-      .attr("stroke-width", (d) => Math.sqrt(d.value) / 2)
+      .attr("stroke-width", (d) => Math.sqrt(d.value))
       .attr("stroke", (d) => {
-        if (top5Values.has(d.value)) return "#ff4d4d"; // Red for top 5
-        if (next10Values.has(d.value)) return "#FFA000"; // Yellow for next 10
+        if (links.length >= 15 && top10Values.has(d.value)) return "#FF4D4D"; // Red for top 10
+        if (links.length >= 25 && next10Values.has(d.value)) return "#FFA000"; // Yellow for next 10
         return "#999"; // Default gray for the rest
       });
 
@@ -125,9 +116,11 @@ const Chart: React.FC<WebChartInterface> = ({ data }) => {
       .join("circle")
       .attr("r", 15)
       .attr("fill", (d) => groupColorMap[d.group] || "#757575")
-      .style("cursor", "pointer")
+      .style("cursor", (d) => (d.group !== 6 && window.location.pathname === "/teia") ? "pointer" : "default")
       .on("dblclick", (_event, d) => {
-        window.open(`/node/${d.id}`, "_blank");
+        if (d.group !== 6 && window.location.pathname === "/teia") {
+          window.open(`/dashboard/detalhesSuspeito/${d.suspeitoId}`, "_blank");
+        }	
       });
 
     const nodeText = g

@@ -58,14 +58,18 @@ export const ApplicationProvider = ({
     timeFinal: "",
   });
 
+  const today = new Date();
+  const oneMonthAgo = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+  const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+
   const [webChartFilters, setWebChartFilters] = useState<ChartFilters>({
     type: MessageFilterType.Todos,
     group: MessageFilterGroup.Ambos,
     options: [] as string[],
-    dateInitial: "",
-    dateFinal: "",
-    timeInitial: "",
-    timeFinal: "",
+    dateInitial: oneMonthAgo.toISOString().split("T")[0],
+    dateFinal: tomorrow.toISOString().split("T")[0],
+    timeInitial: "23:59",
+    timeFinal: "00:00",
   });
 
   useEffect(() => {

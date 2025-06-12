@@ -10,6 +10,7 @@ export interface TeiaNode {
   id: string;
   label?: string;
   group: number;
+  suspeitoId?: string;
 }
 
 export interface TeiaLink {
@@ -46,10 +47,10 @@ export const useTeiaMessageCount = () => {
           numeros: numbers.map((n) => n.numero),
           grupo: MessageGroupToBackend[filters.group],
           tipo: MessageTypeToBackend[filters.type],
-          data_inicial: filters.dateInitial || null,
-          data_final: filters.dateFinal || null,
-          hora_inicio: filters.timeInitial || null,
-          hora_fim: filters.timeFinal || null,
+          data_inicial: filters.dateInitial ?? null,
+          data_final: filters.dateFinal ?? null,
+          hora_inicio: filters.timeInitial ?? null,
+          hora_fim: filters.timeFinal ?? null,
           operacoes: operations.map((o) => o.id),
           suspeitos: suspects.map((s) => s.id),
         };
@@ -57,8 +58,8 @@ export const useTeiaMessageCount = () => {
         const response = await api.get("/api/teia/message", { params: payload });
 
         setData({
-          nodes: response.data?.nodes || [],
-          links: response.data?.links || [],
+          nodes: response.data?.nodes ?? [],
+          links: response.data?.links ?? [],
         });
 
         console.log('Teia data fetched successfully:', response.data);
