@@ -22,10 +22,12 @@ export const useSuspectNumbers = () => {
         const response = await api.get<SuspectNumber[]>(
           `/api/alvos?showSuspects=true`
         );
-        const result = response.data.map((item) => ({
-          id: item.id.toString(),
-          label: item.value,
-        }));
+        const result = response.data
+          .filter((item) => /^\d+$/.test(item.value))
+          .map((item) => ({
+            id: item.id.toString(),
+            label: item.value,
+          }));
         setSuspectsNumbers(result);
       } catch (err) {
         setError("Não foi possível carregar os numeros.");
