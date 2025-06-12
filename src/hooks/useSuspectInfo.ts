@@ -165,13 +165,14 @@ export const useSuspectInfo = (id: number) => {
     ): Promise<CreateNumberResponse> => {
       try {
         const cleanUserCpf = userCpf.replace(/\D/g, "");
-        const response = await api.patch<CreateNumberResponse>(
+        const response = await api.post<CreateNumberResponse>(
           `/api/suspeito/${id}/numero`,
           {
             numerosIds: numbers,
           },
           {
             headers: {
+              "Content-Type": "application/json",
               cpfUsuario: cleanUserCpf,
             },
           }

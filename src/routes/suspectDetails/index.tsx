@@ -203,7 +203,9 @@ const SuspectsDetails = () => {
       label: "",
       iconAction: {
         icon: <EditIcon sx={{ fontSize: "1.2rem" }} />,
-        onClick: (id: number) => handleEditEmail(id),
+        onClick: (id: number) => {
+          handleEditEmail(id);
+        },
       },
     },
   ];
@@ -259,10 +261,13 @@ const SuspectsDetails = () => {
         suspectsNumbers={suspectsNumbers}
       />
       <EmailModal
+        isEditing={!!editingEmail}
         isOpen={openEmailModal}
         onClose={() => {
           setOpenEmailModal(false);
-          setEditingEmail(null);
+          setTimeout(() => {
+            setEditingEmail(null);
+          }, 300);
         }}
         initialData={editingEmail ? { email: editingEmail.email } : null}
         onCreateEmail={async (emailData) => {
