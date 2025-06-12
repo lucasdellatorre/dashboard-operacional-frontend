@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 interface Node extends d3.SimulationNodeDatum {
   id: string;
@@ -11,7 +11,7 @@ interface Link extends d3.SimulationLinkDatum<Node> {
   value: number;
 }
 
-interface Data {
+export interface Data {
   links: Link[];
   nodes: Node[];
 }
@@ -22,6 +22,12 @@ interface WebChartInterface {
 
 const Chart: React.FC<WebChartInterface> = ({ data }) => {
   const svgRef = useRef<SVGSVGElement>(null);
+  const [tooltip, setTooltip] = useState<{ display: boolean; value: number; x: number; y: number }>({
+    display: false,
+    value: 0,
+    x: 0,
+    y: 0
+  });
 
   useEffect(() => {
     if (!svgRef.current) return;
@@ -105,6 +111,17 @@ const Chart: React.FC<WebChartInterface> = ({ data }) => {
         if (links.length >= 15 && top10Values.has(d.value)) return "#FF4D4D"; // Red for top 10
         if (links.length >= 25 && next10Values.has(d.value)) return "#FFA000"; // Yellow for next 10
         return "#999"; // Default gray for the rest
+      })
+      .on("mouseover", (event, d) => {
+        setTooltip({
+          display: true,
+          value: d.value,
+          x: event.pageX,
+          y: event.pageY,
+        });
+      })
+      .on("mouseout", () => {
+        setTooltip((prevState) => ({ ...prevState, display: false }));
       });
 
     const node = g
@@ -178,7 +195,27 @@ const Chart: React.FC<WebChartInterface> = ({ data }) => {
     };
   }, [data]);
 
-  return <svg ref={svgRef} />;
+  return (
+    <>
+      <svg ref={svgRef} />
+      {tooltip.display && (
+        <div
+          style={{
+            position: "absolute",
+            top: tooltip.y + 10,
+            left: tooltip.x + 10,
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            color: "white",
+            padding: "5px",
+            borderRadius: "3px",
+            pointerEvents: "none",
+          }}
+        >
+          Value: {tooltip.value}
+        </div>
+      )}
+    </>
+  );
 };
 
 export default Chart;

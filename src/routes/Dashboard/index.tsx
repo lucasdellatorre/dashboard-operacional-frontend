@@ -17,14 +17,15 @@ import BarChartGeneric, {
 } from "../../components/dashboard/WebChart/BarChart";
 import { FilterType } from "../../enum/ViewSelectionFilterEnum";
 import ViewSelectionFilter from "../../components/filters/ViewSelection";
-import MultiSelect from "../../components/multiSelect";
+import MultiSelect, { Option } from "../../components/multiSelect";
 import { AppContext } from "../../context/AppContext";
 import { useContactMessages } from "../../hooks/useContactMessages";
 import { useNavigate } from "react-router-dom";
-import { MessageFilterGroup, MessageFilterType } from "../../interface/dashboard/chartInterface";
+import { ChartConfig, graficFilters, MessageFilterGroup, MessageFilterType } from "../../interface/dashboard/chartInterface";
 import { usePeriodMessages } from "../../hooks/usePeriodMessages";
 import { useDayMessages } from "../../hooks/useDayMessages";
 import { useIPMessages } from "../../hooks/useIPMessages";
+import { useSuspects } from "../../hooks/useSuspects";
 
 const menuItemStyles = {
   padding: "4px 16px",
@@ -72,49 +73,62 @@ const focusedTextFieldStyles = {
   },
 };
 
-const graficFilters = [
-  { value: FilterType.ALL, label: "Todos" },
-  { value: FilterType.INTERACTIONS, label: "Interações" },
-  { value: FilterType.IP, label: "IPs" },
-  { value: FilterType.TIME, label: "Horário" },
-  { value: FilterType.DATA, label: "Data" },
-];
-
-const options = [
-  "Jorge",
-  "Marcinho",
-  "Rogerinho",
-  "51 91234-5678",
-  "51 91234-5679",
-  "51 91234-5680",
-];
-
-interface ChartConfig {
-  type: FilterType;
-  data: BarChartData[];
-  title: string;
-  subtitle: string;
-  tooltipLabel: string;
-}
-
 const Dashboard: React.FC = () => {
   const {
     dashboardFilters: filters,
     setDashboardFilters: setFilters,
     operations,
-    numbers,
-    suspects
+    numbers: selectedNumbers,
+    setNumbers: setSelectedNumbers,
+    suspects: selectedSuspects,
+    setSuspects: setSelectedSuspects,
   } = useContext(AppContext);
 
+  const operationIds = useMemo(
+    () => operations.map((op) => op.id),
+    [operations]
+  );
+    const {
+      suspects,
+      numbers,
+      loading,
+      error,
+    } = useSuspects({
+      searchTerm: "",
+      operationIds: operationIds,
+    });
+
   const [expanded, setExpanded] = useState(true);
+
+  const suspectOptions: Option[] = useMemo(() => {
+    return suspects.map((suspect) => ({
+      id: suspect.id.toString(),
+      label: suspect.apelido,
+    }));
+  }, [suspects]);
+
+  const numberOptions: Option[] = useMemo(() => {
+    return numbers.map((number) => ({
+      id: number.id.toString(),
+      label: number.numero,
+    }));
+  }, [numbers]);
+
+  const selectedSuspectIds = useMemo(() => {
+    return selectedSuspects.map((suspect) => suspect.id.toString());
+  }, [selectedSuspects]);
+
+  const selectedNumberIds = useMemo(() => {
+    return selectedNumbers.map((number) => number.id.toString());
+  }, [selectedNumbers]);
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!operations[0] && !numbers[0] && !suspects[0]) {
+    if (!operations[0] && !selectedNumbers[0] && !suspects[0]) {
       navigate("/operacoes");
     }
-  }, [operations, numbers, suspects, navigate])
+  }, [operations, selectedNumbers, suspects, navigate])
 
   const toggleExpanded = () => {
     setExpanded(!expanded);
@@ -307,7 +321,7 @@ const Dashboard: React.FC = () => {
       bgcolor={"#F8F8F8"}
       width={"100%"}
       minHeight="100vh"
-      display={"flex"}
+      display={"flex"}  
       flexDirection={"column"}
       alignItems={"stretch"}
       justifyContent={"flex-start"}
@@ -342,12 +356,18 @@ const Dashboard: React.FC = () => {
               style="gray"
               placeholder="Selecione os nomes"
               height="53px"
-              options={options.map((option) => ({
-                id: option,
-                label: option,
-              }))}
-              selectedOptions={filters.options}
-              onChange={(opts) => setFilters({ ...filters, options: opts })}
+              options={[...suspectOptions, ...numberOptions]}
+              selectedOptions={[...selectedSuspectIds, ...selectedNumberIds]}
+              onChange={(selected) => {
+                const selectedSuspects = suspects.filter((opt) =>
+                  selected.includes(opt.id.toString())
+                );
+                const selectedNumbers = numbers.filter((opt) =>
+                  selected.includes(opt.id.toString())
+                );
+                setSelectedSuspects(selectedSuspects);
+                setSelectedNumbers(selectedNumbers);
+              }}
             />
           </Box>
 

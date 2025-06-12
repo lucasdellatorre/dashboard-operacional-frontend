@@ -88,7 +88,6 @@ export const useSuspects = ({ searchTerm, operationIds }: UseSuspectsProps) => {
     setError(null);
 
     const url = `/api/numeros/operacao/${operationIds.join(",")}`;
-
     api
       .get<SuspectList>(url)
       .then(({ data }) => setData(data))
@@ -100,7 +99,7 @@ export const useSuspects = ({ searchTerm, operationIds }: UseSuspectsProps) => {
 
   useEffect(() => {
     fetchSuspects();
-  }, [operationIds, fetchSuspects]);
+  }, [operationIds]);
 
   const suspects: Suspect[] = useMemo(() => {
     const search = normalizeString(searchTerm.trim());

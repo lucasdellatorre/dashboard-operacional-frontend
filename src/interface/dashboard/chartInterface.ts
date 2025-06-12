@@ -1,9 +1,9 @@
+import { BarChartData } from "../../components/dashboard/WebChart/BarChart";
 import { FilterType } from "../../enum/ViewSelectionFilterEnum";
 
 export interface ChartInformation {
   name: string;
 }
-
 export interface ChartFilters {
   filterType?: FilterType;
   chart?: FilterType;
@@ -16,6 +16,21 @@ export interface ChartFilters {
   timeFinal: string;         // Ex: "18:00"
 }
 
+export const graficFilters = [
+  { value: FilterType.ALL, label: "Todos" },
+  { value: FilterType.INTERACTIONS, label: "Interações" },
+  { value: FilterType.IP, label: "IPs" },
+  { value: FilterType.TIME, label: "Horário" },
+  { value: FilterType.DATA, label: "Data" },
+];
+
+export interface ChartConfig {
+  type: FilterType;
+  data: BarChartData[];
+  title: string;
+  subtitle: string;
+  tooltipLabel: string;
+}
 export enum MessageFilterGroup {
   Grupo = "Grupo",
   Numero = "Número",
