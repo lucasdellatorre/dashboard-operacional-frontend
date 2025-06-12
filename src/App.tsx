@@ -4,7 +4,6 @@ import Dashboard from "./routes/Dashboard";
 import Login from "./routes/Login";
 import Suspects from "./routes/Suspects";
 import WebChart from "./routes/Web";
-import NetworkChart from "./routes/NetworkWeb";
 import Layout from "./components/layout/layout";
 import Worksheet from "./routes/Worksheet";
 import Operations from "./routes/Operations";
@@ -25,7 +24,6 @@ function App() {
           element={<SuspectsDetails />}
         />
         <Route path="/teia" element={<WebChart />} />
-        <Route path="/teia-rede" element={<NetworkChart />} />
       </Route>
     </Routes>
   );

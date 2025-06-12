@@ -39,13 +39,13 @@ const Chart: React.FC<WebChartInterface> = ({ data }) => {
     const width = svgContainer ? svgContainer.clientWidth : 928;
     const height = svgContainer ? svgContainer.clientHeight : 600;
 
-    // Mapeamento explícito de cor por grupo
+    // TODO: unify colors
     const groupColorMap: Record<number, string> = {
-      1: "#808CBF", // Manhã
-      2: "#31438C", // Tarde
-      3: "#0F1E55", // Noite
+      1: "#FFD700", // Manhã
+      2: "#FFD700", // Tarde
+      3: "#FFD700", // Noite
       4: "#D62727", // Alvos
-      5: "#000A2F", // Madrugada
+      5: "#FFD700", // Madrugada
     };
 
     const svg = d3
@@ -133,11 +133,15 @@ const Chart: React.FC<WebChartInterface> = ({ data }) => {
       .join("circle")
       .attr("r", 15)
       .attr("fill", (d) => groupColorMap[d.group] || "#757575")
-      .style("cursor", (d) => (d.group !== 6 && window.location.pathname === "/teia") ? "pointer" : "default")
+      .style("cursor", (d) =>
+        d.group !== 6 && window.location.pathname === "/teia"
+          ? "pointer"
+          : "default"
+      )
       .on("dblclick", (_event, d) => {
         if (d.group !== 6 && window.location.pathname === "/teia") {
           window.open(`/dashboard/detalhesSuspeito/${d.suspeitoId}`, "_blank");
-        }	
+        }
       });
 
     const nodeText = g

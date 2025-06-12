@@ -64,12 +64,13 @@ export const ApplicationProvider = ({
 
   const [webChartFilters, setWebChartFilters] = useState<ChartFilters>({
     type: MessageFilterType.Todos,
+    chart: FilterType.INTERACTIONS,
     group: MessageFilterGroup.Ambos,
     options: [] as string[],
     dateInitial: oneMonthAgo.toISOString().split("T")[0],
     dateFinal: tomorrow.toISOString().split("T")[0],
-    timeInitial: "23:59",
-    timeFinal: "00:00",
+    timeInitial: "00:00",
+    timeFinal: "23:59",
   });
 
   useEffect(() => {

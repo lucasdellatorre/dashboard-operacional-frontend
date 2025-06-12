@@ -62,7 +62,6 @@ export const useTeiaMessageCount = () => {
           links: response.data?.links ?? [],
         });
 
-        console.log('Teia data fetched successfully:', response.data);
       } catch (err: any) {
         setError(err);
         setData({ nodes: [], links: [] });

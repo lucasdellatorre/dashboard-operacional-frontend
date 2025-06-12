@@ -9,7 +9,7 @@ describe("Web Route Tests", () => {
     cy.get('tbody input[type="checkbox"]').check().uncheck();
     cy.get("tbody tr").first().find('input[type="checkbox"]').check();
     cy.contains("Confirmar Seleção").click();
-    
+
     // Selecionar o alvo
     cy.get("tbody tr").first().find('input[type="checkbox"]').check();
     cy.contains("Confirmar Seleção").click();
@@ -44,11 +44,23 @@ describe("Web Route Tests", () => {
     });
 
     it("deve renderizar a legenda de turnos completa", () => {
-      cy.contains("Madrugada (00h-6h)").should("be.visible");
-      cy.contains("Manhã (6h-12h)").should("be.visible");
-      cy.contains("Tarde (12h-18h)").should("be.visible");
-      cy.contains("Noite (18h-00h)").should("be.visible");
+      cy.contains("Legenda de Turnos:").should("be.visible");
       cy.contains("Alvos").should("be.visible");
+      cy.contains("Suspeitos").should("be.visible");
+    });
+
+    it("deve mostrar as cores corretas na legenda", () => {
+      // Verificar cor vermelha para Alvos
+      cy.contains("Alvos")
+        .parent()
+        .find("div[style*='background-color: rgb(214, 39, 39)']")
+        .should("exist");
+
+      // Verificar cor amarela para Suspeitos
+      cy.contains("Suspeitos")
+        .parent()
+        .find("div[style*='background-color: rgb(255, 215, 0)']")
+        .should("exist");
     });
   });
 

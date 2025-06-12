@@ -34,7 +34,9 @@ export interface ChartConfig {
 export enum MessageFilterGroup {
   Grupo = "Grupo",
   Numero = "Número",
-  Ambos = "Ambos"
+  Ambos = "Ambos",
+  Ip = "IP",
+  Interlocutor = "Interlocutor"
 }
 
 export enum MessageFilterType {
@@ -56,5 +58,7 @@ export const MessageTypeToBackend: Record<MessageFilterType, string> = {
 export const MessageGroupToBackend: Record<MessageFilterGroup, string> = {
   [MessageFilterGroup.Ambos]: "all",
   [MessageFilterGroup.Grupo]: "group",
-  [MessageFilterGroup.Numero]: "number"
+  [MessageFilterGroup.Numero]: "number",
+  [MessageFilterGroup.Ip]: "ip",
+  [MessageFilterGroup.Interlocutor]: "interlocutor",
 };
