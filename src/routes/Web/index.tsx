@@ -1,16 +1,20 @@
-import { Box, MenuItem, TextField, Typography, Collapse, IconButton } from "@mui/material";
+import {
+  Box,
+  MenuItem,
+  TextField,
+  Typography,
+  Collapse,
+  IconButton,
+} from "@mui/material";
 import React, { useState, useMemo, useContext, useEffect } from "react";
 import WebChart, { Data } from "../../components/dashboard/WebChart/WebChart";
 import MultiSelect, { Option } from "../../components/multiSelect";
 import { AppContext } from "../../context/AppContext";
-import { createWeb } from "../../controllers/webController";
 import { WebLink, WebNode } from "../../interface/web/webInterface";
-import dayjs from "dayjs";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { useNavigate } from "react-router-dom";
 import { TeiaLink, TeiaNode, useTeiaMessageCount } from "../../hooks/useTeiaMessageCount";
-import { FilterType } from "../../enum/ViewSelectionFilterEnum";
 import { graficFilters, MessageFilterGroup, MessageFilterType } from "../../interface/dashboard/chartInterface";
 import ViewSelectionFilter from "../../components/filters/ViewSelection";
 import { useSuspects } from "../../hooks/useSuspects";
@@ -81,8 +85,6 @@ const WebRoute: React.FC = () => {
       const {
         suspects,
         numbers,
-        loading,
-        error: errorSuspects,
       } = useSuspects({
         searchTerm: "",
         operationIds: operationIds,
@@ -118,12 +120,10 @@ const WebRoute: React.FC = () => {
     if (!operations[0] && !numbers[0] && !suspects[0]) {
       navigate("/operacoes");
     }
-  }, [operations, numbers, suspects, navigate])
+  }, [operations, numbers, suspects, navigate]);
 
   const {
     teiaData,
-    isLoading,
-    error,
   } = useTeiaMessageCount();
 
   const [nodes, setNodes] = useState<WebNode[]>([]);

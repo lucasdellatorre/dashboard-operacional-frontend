@@ -20,6 +20,7 @@ import EditableMultilineField from "../../components/editableMultilineField";
 import { useSuspectInfo } from "../../hooks/useSuspectInfo";
 import TelephoneModal from "../../components/modal/createTelephoneModal";
 import { AppContext } from "../../context/AppContext";
+import { useSuspectNumbers } from "../../hooks/useSuspectsNumbers";
 
 interface Email extends GenericData {
   email: string;
@@ -76,7 +77,10 @@ const SuspectsDetails = () => {
     deleteSuspectNumber,
     deleteSuspectEmail,
     createSuspectNumber,
+    updateSuspectEmail,
   } = useSuspectInfo(Number(window.location.pathname.split("/").pop()));
+
+  const { suspectsNumbers } = useSuspectNumbers();
 
   const [loadingFields, setLoadingFields] = useState({
     nickname: false,
@@ -89,7 +93,7 @@ const SuspectsDetails = () => {
   const [loadingNumbersDelete, setLoadingNumbersDelete] =
     useState<boolean>(false);
   const [loadingEmailDelete, setLoadingEmailDelete] = useState<boolean>(false);
-
+  const [editingEmail, setEditingEmail] = useState<Email | null>(null);
   const [nickname, setNickname] = useState("");
   const [name, setName] = useState("");
   const [suspectCpf, setsuspectCpfSuspect] = useState("");
@@ -199,11 +203,24 @@ const SuspectsDetails = () => {
       label: "",
       iconAction: {
         icon: <EditIcon sx={{ fontSize: "1.2rem" }} />,
-        onClick: () => console.log("editar"),
+        onClick: (id: number) => {
+          handleEditEmail(id);
+        },
       },
     },
   ];
-
+  const handleEditEmail = (emailId: number) => {
+    const emailToEdit = suspect?.emails?.find((e) => e.id === emailId);
+    if (emailToEdit) {
+      setEditingEmail({
+        id: emailToEdit.id,
+        email: emailToEdit.email,
+        insertDate: emailToEdit.lastUpdateDate,
+        insertBy: emailToEdit.lastUpdateCpf,
+      });
+      setOpenEmailModal(true);
+    }
+  };
   const PhoneHeaderCells: readonly HeadCell<Phone>[] = [
     { id: "phone", label: "Celular" },
     { id: "insertDate", label: "Data de Inserção" },
@@ -224,7 +241,8 @@ const SuspectsDetails = () => {
         onClose={() => setOpenTelephoneModal(false)}
         onCreateNumber={async (numberData) => {
           try {
-            await createSuspectNumber(numberData.telephone, cpf);
+            const numbers = numberData.telephone.map((tel) => Number(tel));
+            await createSuspectNumber(numbers, cpf);
             setOpenTelephoneModal(false);
             setAlert({
               show: true,
@@ -240,25 +258,41 @@ const SuspectsDetails = () => {
             });
           }
         }}
+        suspectsNumbers={suspectsNumbers}
       />
       <EmailModal
+        isEditing={!!editingEmail}
         isOpen={openEmailModal}
-        onClose={() => setOpenEmailModal(false)}
+        onClose={() => {
+          setOpenEmailModal(false);
+          setTimeout(() => {
+            setEditingEmail(null);
+          }, 300);
+        }}
+        initialData={editingEmail ? { email: editingEmail.email } : null}
         onCreateEmail={async (emailData) => {
           try {
-            await createSuspectEmail(emailData.email, cpf);
+            if (editingEmail) {
+              await updateSuspectEmail(editingEmail.id, cpf, emailData.email);
+            } else {
+              await createSuspectEmail(emailData.email, cpf);
+            }
+
             setOpenEmailModal(false);
+            setEditingEmail(null);
             setAlert({
               show: true,
               type: "success",
-              message: "Email Adicionado com sucesso",
+              message: editingEmail
+                ? "Email atualizado com sucesso"
+                : "Email adicionado com sucesso",
             });
           } catch (err) {
-            console.log("Erro ao adicionar email:", err);
+            console.log("Erro ao processar email:", err);
             setAlert({
               show: true,
               type: "error",
-              message: "Ocorreu um erro",
+              message: "Ocorreu um erro. Tente novamente.",
             });
           }
         }}

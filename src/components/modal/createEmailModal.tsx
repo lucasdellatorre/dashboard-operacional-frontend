@@ -26,6 +26,7 @@ interface EmailModalProps {
   onClose: () => void;
   initialData?: EmailFormData | null;
   onCreateEmail: (data: EmailFormData) => Promise<void>;
+  isEditing?: boolean;
 }
 
 const EmailModal: React.FC<EmailModalProps> = ({
@@ -33,6 +34,7 @@ const EmailModal: React.FC<EmailModalProps> = ({
   onClose,
   initialData,
   onCreateEmail,
+  isEditing = false,
 }) => {
   const {
     control,
@@ -54,6 +56,7 @@ const EmailModal: React.FC<EmailModalProps> = ({
       reset({ email: "" });
     }
   }, [initialData, reset]);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const onSubmit = async (data: EmailFormData) => {
@@ -63,7 +66,7 @@ const EmailModal: React.FC<EmailModalProps> = ({
       reset();
       onClose();
     } catch (err) {
-      console.error("Erro ao criar email:", err);
+      console.error("Erro ao processar email:", err);
     } finally {
       setIsSubmitting(false);
     }
@@ -106,7 +109,7 @@ const EmailModal: React.FC<EmailModalProps> = ({
         mb="0.8rem"
       >
         <Typography sx={{ fontWeight: "900", fontSize: "1.2rem" }}>
-          {initialData ? "Editar Email" : "Adicionar Email"}
+          {isEditing ? "Editar Email" : "Adicionar Email"}
         </Typography>
       </Box>
 
@@ -177,7 +180,13 @@ const EmailModal: React.FC<EmailModalProps> = ({
             width: "100%",
           }}
         >
-          {isSubmitting ? "Adicionando..." : "Adicionar Email"}
+          {isSubmitting
+            ? isEditing
+              ? "Atualizando..."
+              : "Adicionando..."
+            : isEditing
+            ? "Atualizar Email"
+            : "Adicionar Email"}
         </Button>
       </Box>
     </Dialog>

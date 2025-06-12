@@ -18,7 +18,7 @@ export interface Option {
 
 interface MultiSelectProps {
   options: Option[];
-  selectedOptions: string[]; // Apenas os IDs selecionados
+  selectedOptions: string[] | number[]; // Apenas os IDs selecionados
   onChange: (selected: string[]) => void;
   height?: string;
   placeholder: string;
