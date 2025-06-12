@@ -6,7 +6,6 @@ import {
     MessageGroupToBackend,
     MessageTypeToBackend,
 } from "../interface/dashboard/chartInterface";
-import { all } from "axios";
 
 export const useDayMessages = () => {
     const {

@@ -6,7 +6,7 @@ import { BrowserRouter } from "react-router-dom";
 import { theme } from "../../theme";
 import Operations from "../Operations";
 import { Operation } from "../../hooks/useOperations";
-import { FilterType } from "../../enum/ViewSelectionFilterEnum";
+import { MessageFilterGroup, MessageFilterType } from "../../interface/dashboard/chartInterface";
 
 // Mocks dos hooks personalizados
 vi.mock("../../hooks/useHeaderInput", () => ({
@@ -78,18 +78,23 @@ const renderWithProviders = () =>
           worksheets: [],
           setWorksheets: () => {},
           dashboardFilters: {
-            filterType: FilterType.UNION,
-            chart: FilterType.ALL,
-            type: "Texto",
-            group: "Ambos",
+            type: MessageFilterType.Todos,
+            group: MessageFilterGroup.Ambos,
             options: [] as string[],
-            symmetry: "Ambos",
+            dateInitial: "",
+            dateFinal: "",
+            timeInitial: "",
+            timeFinal: "",
           },
           setDashboardFilters: () => {},
           webChartFilters: {
-            type: "Texto",
-            group: "Ambos",
+            type: MessageFilterType.Todos,
+            group: MessageFilterGroup.Ambos,
             options: [] as string[],
+            dateInitial: "",
+            dateFinal: "",
+            timeInitial: "",
+            timeFinal: "",
           },
           setWebChartFilters: () => {},
         }}

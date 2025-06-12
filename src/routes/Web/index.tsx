@@ -3,14 +3,12 @@ import React, { useState, useMemo, useContext, useEffect } from "react";
 import WebChart from "../../components/dashboard/WebChart/WebChart";
 import MultiSelect, { Option } from "../../components/multiSelect";
 import { AppContext } from "../../context/AppContext";
-import { createWeb } from "../../controllers/webController";
 import { WebLink, WebNode } from "../../interface/web/webInterface";
 import dayjs from "dayjs";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { useNavigate } from "react-router-dom";
 import { TeiaLink, TeiaNode, useTeiaMessageCount } from "../../hooks/useTeiaMessageCount";
-import { FilterType } from "../../enum/ViewSelectionFilterEnum";
 import { MessageFilterGroup, MessageFilterType } from "../../interface/dashboard/chartInterface";
 
 const menuItemStyles = {
@@ -82,8 +80,6 @@ const WebRoute: React.FC = () => {
 
   const {
     teiaData,
-    isLoading,
-    error,
   } = useTeiaMessageCount();
 
   // Definir data inicial como 1 mês atrás
@@ -168,7 +164,7 @@ const WebRoute: React.FC = () => {
 
     // Filtro por Tipo
     if (filters.type !== "Todos") {
-      filteredLinks = filteredLinks.filter((link) => {
+      filteredLinks = filteredLinks.filter(() => {
         // Aqui você deve implementar a lógica de filtro por tipo
         // baseado nos dados reais que você recebe da API
         return true; // Temporário até implementar a lógica real

@@ -1,7 +1,7 @@
 import { Box, MenuItem, TextField, Typography, Collapse, IconButton } from "@mui/material";
 import React, { useState, useMemo } from "react";
 import WebChart from "../../components/dashboard/WebChart/WebChart";
-import MultiSelect from "../../components/multiSelect";
+import MultiSelect, { Option } from "../../components/multiSelect";
 import dayjs from "dayjs";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
@@ -237,9 +237,13 @@ const mockData = {
   ],
 };
 
-const options = mockData.nodes
-  .filter((x) => x.group === 1)
-  .map((node) => node.id);
+
+const options: Option[] = mockData.nodes
+  .filter((x) => x.group !== 4) 
+  .map((node) => ({
+    id: node.id,
+    label: node.id,
+  }));
 
 const NetworkWebRoute: React.FC = () => {
   const [expanded, setExpanded] = useState(true);

@@ -21,6 +21,7 @@ import { useSuspectInfo } from "../../hooks/useSuspectInfo";
 import TelephoneModal from "../../components/modal/createTelephoneModal";
 import { AppContext } from "../../context/AppContext";
 import { useSuspectNumbers } from "../../hooks/useSuspectsNumbers";
+import { suspectInterface } from "../../interface/suspect/suspectInterface";
 
 interface Email extends GenericData {
   email: string;
@@ -124,20 +125,15 @@ const SuspectsDetails = () => {
     }
   }, [suspect]);
 
-  async function updateField(field: string, value: string | boolean) {
+  async function updateField(field: string, _: string | boolean) {
     setLoadingFields((prev) => ({ ...prev, [field]: true }));
 
-    const allValues = {
-      apelido: field === "nickname" ? value : nickname || null,
-      nome: field === "name" ? value : name || null,
-      suspectCpf:
-        field === "suspectCpf"
-          ? typeof value === "string"
-            ? value.replace(/\D/g, "")
-            : suspectCpf.replace(/\D/g, "")
-          : suspectCpf.replace(/\D/g, "") || null,
-      anotacoes: field === "notes" ? value : notes || null,
-      relevante: field === "relevante" ? value : relevante,
+    const allValues: suspectInterface = {
+      apelido: suspect?.apelido || null,
+      nome: suspect?.nome || null,
+      cpf: suspect?.cpf || null,
+      relevante: suspect?.relevante || false,
+      anotacoes: suspect?.anotacoes || null,
     };
 
     try {
