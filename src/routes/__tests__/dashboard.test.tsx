@@ -11,7 +11,7 @@ class ResizeObserver {
   unobserve() { }
   disconnect() { }
 }
-(globalThis as unknown).ResizeObserver = ResizeObserver;
+(globalThis).ResizeObserver = ResizeObserver;
 
 vi.mock("../../hooks/useContactMessages", () => ({
   useContactMessages: () => ({

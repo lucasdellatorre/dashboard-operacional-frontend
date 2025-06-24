@@ -91,7 +91,7 @@ export const useSuspects = ({ searchTerm, operationIds }: UseSuspectsProps) => {
     api
       .get<SuspectList>(url)
       .then(({ data }) => setData(data))
-      .catch((err) => {
+      .catch(() => {
         setError("Não foi possível carregar os alvos.");
       })
       .finally(() => setLoading(false));

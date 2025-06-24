@@ -91,7 +91,7 @@ const Dashboard: React.FC = () => {
     () => operations.map((op) => op.id),
     [operations]
   );
-  const { suspects, numbers, loading, error } = useSuspects({
+  const { suspects, numbers } = useSuspects({
     searchTerm: "",
     operationIds: operationIds,
   });

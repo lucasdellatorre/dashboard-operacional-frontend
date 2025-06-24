@@ -21,11 +21,6 @@ function getTickValues(min: number, max: number, count: number) {
   return Array.from({ length: count }, (_, i) => Math.round(min + i * step));
 }
 
-function abbreviate(value: string): string {
-  if (value.length <= 12) return value;
-  return `${value.slice(0, 6)}…${value.slice(-4)}`;
-}
-
 const CustomTooltip = ({ active, payload, label, tooltipLabel }: any) => {
   if (active && payload && payload.length) {
     const color = payload[0].payload.fill;

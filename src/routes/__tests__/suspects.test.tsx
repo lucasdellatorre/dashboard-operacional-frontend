@@ -5,8 +5,8 @@ import { AppContext } from "../../context/AppContext";
 import { BrowserRouter } from "react-router-dom";
 import { theme } from "../../theme";
 import { Suspect, Numbers } from "../../hooks/useSuspects";
-import { FilterType } from "../../enum/ViewSelectionFilterEnum";
 import Suspects from "../Suspects";
+import { MessageFilterGroup, MessageFilterType } from "../../interface/dashboard/chartInterface";
 
 const mockNavigate = vi.fn();
 
@@ -122,18 +122,23 @@ const renderWithProviders = () =>
           worksheets: [],
           setWorksheets: vi.fn(),
           dashboardFilters: {
-            filterType: FilterType.UNION,
-            chart: FilterType.ALL,
-            type: "Texto",
-            group: "Ambos",
+            type: MessageFilterType.Todos,
+            group: MessageFilterGroup.Ambos,
             options: [] as string[],
-            symmetry: "Ambos",
+            dateInitial: "",
+            dateFinal: "",
+            timeInitial: "",
+            timeFinal: "",
           },
           setDashboardFilters: vi.fn(),
           webChartFilters: {
-            type: "Texto",
-            group: "Ambos",
+            type: MessageFilterType.Todos,
+            group: MessageFilterGroup.Ambos,
             options: [] as string[],
+            dateInitial: "",
+            dateFinal: "",
+            timeInitial: "",
+            timeFinal: "",
           },
           setWebChartFilters: vi.fn(),
         }}
